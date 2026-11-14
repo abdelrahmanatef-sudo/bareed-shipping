@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>نظام بريد</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600&display=swap">
+<style>
+/* Layout: header + tabs (overview, shipments, couriers, merchants, costs); every number comes from the shipments and the cost settings */
+:root {
+  --bg: #F3F2EE;
+  --surface: #FFFFFF;
+  --ink: #1B1F24;
+  --muted: #646B73;
+  --line: #DEDCD5;
+  --accent: #C2410C;
+  --accent-soft: #FBE9DD;
+  --good: #1F7A4D;
+  --good-soft: #DDF1E6;
+  --blue: #2B5C9E;
+  --blue-soft: #E1EAF6;
+  --warn: #A5530A;
+  --warn-soft: #FBEBD8;
+  --on-accent: #FFFFFF;
+  --font-display: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14120F; --surface: #1D1B17; --ink: #ECE9E2; --muted: #A29E94; --line: #34312B;
+    --accent: #F58A55; --accent-soft: #3A2417; --good: #5FCB93; --good-soft: #17301F;
+    --blue: #8CB4EA; --blue-soft: #1B2B40; --warn: #EBA462; --warn-soft: #3A2A17; --on-accent: #1A0D05; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14120F; --surface: #1D1B17; --ink: #ECE9E2; --muted: #A29E94; --line: #34312B;
+  --accent: #F58A55; --accent-soft: #3A2417; --good: #5FCB93; --good-soft: #17301F;
+  --blue: #8CB4EA; --blue-soft: #1B2B40; --warn: #EBA462; --warn-soft: #3A2A17; --on-accent: #1A0D05; color-scheme: dark;
+}
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
+  padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.app { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; font-weight: 600; text-wrap: balance; }
+h1 { font-size: 26px; line-height: 1.2; }
+h2 { font-size: 16px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
+.head .tag { color: var(--muted); font-size: 14px; }
+.banner { font-size: 13px; padding: 8px 12px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); }
+.toast { font-size: 13px; padding: 8px 12px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); }
+
+.tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+.tab { font: inherit; font-weight: 500; color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
+.tab:hover { color: var(--ink); }
+.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; min-width: 0; }
+.tile .k { color: var(--muted); font-size: 13px; }
+.tile .v { font-family: var(--font-display); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.4; }
+.tile .v small { font-size: 13px; color: var(--muted); font-weight: 500; }
+.tile.good .v { color: var(--good); } .tile.bad .v { color: var(--warn); }
+.tile .n { font-size: 12px; color: var(--muted); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; cursor: pointer; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.search { flex: 1; min-width: 150px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; }
+.search:focus { border-color: var(--accent); outline: none; }
+
+.tablewrap { overflow-x: auto; }
+table { width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: start; font-size: 12px; font-weight: 500; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td.code { font-family: var(--font-display); font-size: 13px; color: var(--muted); }
+td small { display: block; color: var(--muted); font-size: 12px; }
+select.mini { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; max-width: 150px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
+.pill.new { background: var(--blue-soft); color: var(--blue); }
+.pill.picked_up { background: var(--blue-soft); color: var(--blue); }
+.pill.out_for_delivery { background: var(--accent-soft); color: var(--accent); }
+.pill.delivered { background: var(--good-soft); color: var(--good); }
+.pill.returned { background: var(--warn-soft); color: var(--warn); }
+
+.btn { font: inherit; font-weight: 600; color: var(--on-accent); background: var(--accent); border: 0; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
+.btn.ghost:hover { border-color: var(--accent); filter: none; }
+.btn.sm { padding: 4px 10px; font-size: 13px; }
+.btn.danger { background: transparent; color: var(--warn); border: 1px solid var(--line); font-weight: 500; }
+.btn[disabled] { opacity: .45; cursor: default; }
+
+.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 13px; font-weight: 500; }
+.field .hint { font-size: 12px; color: var(--muted); }
+.field input { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; width: 100%; box-sizing: border-box; font-variant-numeric: tabular-nums; }
+.field input:focus { border-color: var(--accent); outline: none; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+details.add { border: 1px dashed var(--line); border-radius: 10px; padding: 12px 16px; }
+details.add summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; }
+details.add form { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
+.empty { text-align: center; color: var(--muted); padding: 24px 12px; }
+.empty b { display: block; color: var(--ink); font-family: var(--font-display); margin-bottom: 4px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; background: var(--surface); }
+.card .nm { font-family: var(--font-display); font-weight: 600; }
+.card .kv { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
+.card .kv span:first-child { color: var(--muted); }
+.card .kv b { font-variant-numeric: tabular-nums; }
+.card .due { font-family: var(--font-display); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.bars { display: flex; flex-direction: column; gap: 10px; }
+.bar { display: grid; grid-template-columns: 130px minmax(0, 1fr) 80px; gap: 10px; align-items: center; font-size: 14px; }
+.bar .track { height: 12px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.bar .track i { display: block; height: 100%; border-radius: 99px; }
+.bar .num { text-align: end; font-variant-numeric: tabular-nums; font-weight: 600; }
+.bar .rev i { background: var(--blue); } .bar .cost i { background: var(--warn); } .bar .gain i { background: var(--good); }
+@media (max-width: 520px) { .bar { grid-template-columns: 100px minmax(0, 1fr) 64px; } }
+.note { font-size: 13px; color: var(--muted); }
+.result { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+</head><body>
+<main class="app">
+  <header class="head">
+    <h1>بريد</h1>
+    <span class="tag">نظام التشغيل · حوامدية <button class="btn ghost sm" id="logout" type="button" hidden>خروج</button></span>
+  </header>
+  <div id="banner" class="banner" hidden></div>
+  <div id="toast" class="toast" hidden role="status"></div>
+
+  <section id="auth" class="panel" hidden style="max-width:380px">
+    <h2>تسجيل الدخول</h2>
+    <form id="form-auth" style="display:flex;flex-direction:column;gap:12px">
+      <div class="field"><label for="a-email">الإيميل</label><input id="a-email" type="email" required autocomplete="username"></div>
+      <div class="field"><label for="a-pass">الباسورد</label><input id="a-pass" type="password" required autocomplete="current-password"></div>
+      <div class="row"><button class="btn" type="submit">دخول</button><span class="note" id="auth-msg" role="status"></span></div>
+    </form>
+  </section>
+
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-tab="ov" aria-selected="true">نظرة عامة</button>
+    <button class="tab" role="tab" data-tab="sh" aria-selected="false">الشحنات</button>
+    <button class="tab" role="tab" data-tab="co" aria-selected="false">المناديب</button>
+    <button class="tab" role="tab" data-tab="me" aria-selected="false">التجار والتسوية</button>
+    <button class="tab" role="tab" data-tab="ct" aria-selected="false">التكلفة</button>
+  </div>
+
+  <!-- overview -->
+  <section id="p-ov" class="stack" role="tabpanel"></section>
+
+  <!-- shipments -->
+  <section id="p-sh" class="stack" role="tabpanel" hidden>
+    <details class="add" id="add-sh">
+      <summary>إضافة شحنة</summary>
+      <form id="form-sh" autocomplete="off">
+        <div class="fgrid">
+          <div class="field"><label for="s-merchant">التاجر</label><input id="s-merchant" list="merchants" required maxlength="80"><datalist id="merchants"></datalist></div>
+          <div class="field"><label for="s-customer">العميل</label><input id="s-customer" required maxlength="80"></div>
+          <div class="field"><label for="s-phone">تليفون العميل</label><input id="s-phone" inputmode="tel" required maxlength="30"></div>
+          <div class="field"><label for="s-address">العنوان</label><input id="s-address" required minlength="3" maxlength="300"></div>
+          <div class="field"><label for="s-cod">قيمة الـ COD (جنيه)</label><input id="s-cod" type="number" min="0" inputmode="numeric" value="0" required></div>
+          <div class="field"><label for="s-fee">أجرة الشحن على التاجر (جنيه)</label><input id="s-fee" type="number" min="0" inputmode="numeric" required></div>
+        </div>
+        <div class="row"><button class="btn" type="submit">حفظ الشحنة</button></div>
+      </form>
+    </details>
+    <div class="panel">
+      <div class="toolbar">
+        <div id="sh-filters" class="row" role="group" aria-label="فلتر الحالة">
+          <button class="chip" type="button" data-f="all" aria-pressed="true">الكل</button>
+          <button class="chip" type="button" data-f="new" aria-pressed="false">جديدة</button>
+          <button class="chip" type="button" data-f="picked_up" aria-pressed="false">اتستلمت</button>
+          <button class="chip" type="button" data-f="out_for_delivery" aria-pressed="false">مع المندوب</button>
+          <button class="chip" type="button" data-f="delivered" aria-pressed="false">اتسلمت</button>
+          <button class="chip" type="button" data-f="returned" aria-pressed="false">مرتجعة</button>
+        </div>
+        <input class="search" id="sh-q" type="search" placeholder="ابحث بالتاجر أو العميل أو الرقم" aria-label="بحث">
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>الرقم</th><th>التاجر</th><th>العميل</th><th>COD</th><th>الأجرة</th><th>المندوب</th><th>الحالة</th><th></th></tr></thead>
+          <tbody id="sh-rows"></tbody>
+        </table>
+      </div>
+      <div id="sh-empty" class="empty" hidden></div>
+    </div>
+  </section>
+
+  <!-- couriers -->
+  <section id="p-co" class="stack" role="tabpanel" hidden>
+    <details class="add" id="add-co">
+      <summary>إضافة مندوب</summary>
+      <form id="form-co" autocomplete="off">
+        <div class="fgrid">
+          <div class="field"><label for="c-name">اسم المندوب</label><input id="c-name" required maxlength="60"></div>
+          <div class="field"><label for="c-phone">رقم التليفون</label><input id="c-phone" inputmode="tel" maxlength="20"></div>
+        </div>
+        <div class="row"><button class="btn" type="submit">حفظ المندوب</button></div>
+      </form>
+    </details>
+    <div id="co-list" class="cards"></div>
+  </section>
+
+  <!-- merchants -->
+  <section id="p-me" class="stack" role="tabpanel" hidden>
+    <p class="note" style="margin:0">المستحق للتاجر = الـ COD اللي اتحصّل، ناقص أجرة الشحن وعمولة الـ COD، وناقص رسوم المرتجع. التسوية بتتسجل لما تدفع للتاجر فعلاً.</p>
+    <div id="me-list" class="cards"></div>
+  </section>
+
+  <!-- costs -->
+  <section id="p-ct" class="stack" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>افتراضات التكلفة</h2>
+      <p class="note" style="margin:0">الأرقام دي تقديرية. غيّرها لأرقام حوامدية الحقيقية، والحساب كله بيتحدّث.</p>
+      <div class="fgrid" id="cfg-grid"></div>
+    </div>
+    <div class="panel">
+      <h2>تكلفة وربح الشحنة الواحدة</h2>
+      <div id="unit"></div>
+    </div>
+    <div class="panel">
+      <h2>لو شغلت بحجم معين</h2>
+      <div id="whatif"></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var CFG0 = { fee: 45, returnFee: 20, commissionPct: 1, courierDelivered: 20, courierReturned: 8, other: 6, fixed: 4000, rate: 90, avgCod: 450, volume: 300 };
+  var CFG_FIELDS = [
+    ['fee', 'أجرة الشحن الافتراضية على التاجر', 'جنيه'],
+    ['returnFee', 'رسوم المرتجع على التاجر', 'جنيه'],
+    ['commissionPct', 'عمولة تحصيل الـ COD', '% من القيمة'],
+    ['courierDelivered', 'أجر المندوب للشحنة المسلّمة', 'جنيه'],
+    ['courierReturned', 'أجر المندوب للشحنة المرتجعة', 'جنيه'],
+    ['other', 'بنزين وتغليف وأدوات للشحنة', 'جنيه'],
+    ['fixed', 'مصاريف ثابتة شهرية (إيجار، تليفونات، إنترنت)', 'جنيه/شهر'],
+    ['rate', 'نسبة التسليم المتوقعة', '%'],
+    ['avgCod', 'متوسط قيمة الـ COD المتوقع', 'جنيه'],
+    ['volume', 'عدد الشحنات المتوقع في الشهر', 'شحنة']
+  ];
+  var STATUS = { new: 'جديدة', picked_up: 'اتستلمت من التاجر', out_for_delivery: 'مع المندوب', delivered: 'اتسلمت', returned: 'مرتجعة' };
+
+  var store = { shipments: [], couriers: [], merchants: [] };
+  var cfg = Object.assign({}, CFG0);
+  var db = null, local = false, canWrite = true, loaded = { shipments: false, couriers: false };
+  var tab = 'ov', filter = 'all', query = '';
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+  function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+  function fmt1(n) { return (Math.round(n * 10) / 10).toLocaleString('en-US'); }
+  function money(n) { return fmt(n) + ' <small>جنيه</small>'; }
+  function num(v) { var n = parseFloat(v); return isFinite(n) && n >= 0 ? n : 0; }
+  function toast(t) { var b = el('toast'); b.textContent = t; b.hidden = !t; if (t) setTimeout(function () { if (b.textContent === t) b.hidden = true; }, 4000); }
+  function courierName(id) { var c = store.couriers.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; }
+  function monthKey(iso) { return iso ? String(iso).slice(0, 7) : ''; }
+  var NOW_MONTH = new Date().toISOString().slice(0, 7);
+
+  /* ---------- calculations ---------- */
+  function commission(s) { return (+s.cod || 0) * cfg.commissionPct / 100; }
+  function monthStats() {
+    var D = 0, R = 0, rev = 0, created = 0, codSum = 0;
+    store.shipments.forEach(function (s) {
+      if (monthKey(s.createdAt) === NOW_MONTH) created++;
+      if (monthKey(s.doneAt) !== NOW_MONTH) return;
+      if (s.status === 'delivered') { D++; rev += (+s.fee || 0) + commission(s); codSum += +s.cod || 0; }
+      else if (s.status === 'returned') { R++; rev += cfg.returnFee; }
+    });
+    var vcost = D * cfg.courierDelivered + R * cfg.courierReturned + (D + R) * cfg.other;
+    return { D: D, R: R, created: created, rev: rev, vcost: vcost, gross: rev - vcost, profit: rev - vcost - cfg.fixed, avgCod: D ? codSum / D : 0 };
+  }
+  function courierHolds() {
+    var m = {};
+    store.shipments.forEach(function (s) {
+      if (s.status === 'delivered' && !s.settled && s.courierId) {
+        m[s.courierId] = m[s.courierId] || { cod: 0, n: 0 }; m[s.courierId].cod += +s.cod || 0; m[s.courierId].n++;
+      }
+    });
+    return m;
+  }
+  function merchantDue() {
+    var m = {};
+    store.shipments.forEach(function (s) {
+      var k = s.merchant || '-';
+      m[k] = m[k] || { due: 0, delivered: 0, returned: 0, cod: 0, fees: 0, open: 0, unpaid: 0 };
+      if (s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery') m[k].open++;
+      if (s.paidMerchant) return;
+      if (s.status === 'delivered') {
+        m[k].delivered++; m[k].cod += +s.cod || 0; m[k].fees += (+s.fee || 0) + commission(s);
+        m[k].due += (+s.cod || 0) - (+s.fee || 0) - commission(s); m[k].unpaid++;
+      } else if (s.status === 'returned') {
+        m[k].returned++; m[k].fees += cfg.returnFee; m[k].due -= cfg.returnFee; m[k].unpaid++;
+      }
+    });
+    return m;
+  }
+  function unitEconomics(avgCod) {
+    var r = Math.min(100, cfg.rate) / 100;
+    var revD = cfg.fee + avgCod * cfg.commissionPct / 100;
+    var rev = r * revD + (1 - r) * cfg.returnFee;
+    var courier = r * cfg.courierDelivered + (1 - r) * cfg.courierReturned;
+    var margin = rev - courier - cfg.other;
+    return { rev: rev, courier: courier, other: cfg.other, margin: margin, be: margin > 0 ? Math.ceil(cfg.fixed / margin) : null };
+  }
+
+  /* ---------- writes ---------- */
+  function collOf(name) { return store[name]; }
+  async function put(coll, id, data) {
+    if (local) {
+      var arr = collOf(coll), i = arr.findIndex(function (x) { return x.id === id; });
+      var row = Object.assign({ id: id }, data);
+      if (i >= 0) arr[i] = row; else arr.push(row);
+      renderAll(); return;
+    }
+    if (coll === 'couriers') {
+      var rc = await sb.from('couriers').upsert({ id: id, name: data.name, phone: data.phone || null });
+      if (rc.error) throw rc.error;
+    } else {
+      var mid = data.merchantId || await merchantIdFor(data.merchant);
+      var rs = await sb.from('shipments').upsert({
+        id: id, merchant_id: mid, customer_name: data.customer, customer_phone: data.phone || '', address: data.address || '',
+        cod: data.cod, fee: data.fee, courier_id: data.courierId || null, status: data.status,
+        courier_settled: !!data.settled, merchant_settled: !!data.paidMerchant
+      });
+      if (rs.error) throw rs.error;
+    }
+    await refresh(coll);
+  }
+  async function del(coll, id) {
+    if (local) { store[coll] = store[coll].filter(function (x) { return x.id !== id; }); renderAll(); return; }
+    var r = await sb.from(coll).delete().eq('id', id); if (r.error) throw r.error; await refresh(coll);
+  }
+  function newId(p) { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : p + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function strip(s) { var o = Object.assign({}, s); delete o.id; return o; }
+  async function safe(fn) {
+    try { await fn(); }
+    catch (e) { if (e && (e.code === 'invalid_argument' || e.code === '42501')) { canWrite = false; toast('مفيش عندك صلاحية تعديل البيانات.'); renderAll(); } else toast('حصلت مشكلة في الحفظ، جرّب تاني.'); }
+  }
+  async function saveCfg() {
+    if (local) { renderAll(); return; }
+    var r = await sb.from('settings').upsert({ key: 'costs', data: cfg, updated_at: new Date().toISOString() }); if (r.error) throw r.error;
+  }
+
+  /* ---------- rendering ---------- */
+  function renderOverview() {
+    var st = monthStats(), counts = { new: 0, picked_up: 0, out_for_delivery: 0, delivered: 0, returned: 0 };
+    store.shipments.forEach(function (s) { counts[s.status] = (counts[s.status] || 0) + 1; });
+    var holds = courierHolds(), holdTotal = 0; Object.keys(holds).forEach(function (k) { holdTotal += holds[k].cod; });
+    var md = merchantDue(), dueTotal = 0; Object.keys(md).forEach(function (k) { if (md[k].due > 0) dueTotal += md[k].due; });
+    var done = st.D + st.R, rate = done ? Math.round(st.D / done * 100) : 0;
+    var u = unitEconomics(st.avgCod || cfg.avgCod);
+    var h = '<div class="tiles">' +
+      '<div class="tile"><span class="k">شحنات الشهر</span><span class="v">' + st.created + '</span><span class="n">اتسلّم ' + st.D + ' · رجع ' + st.R + '</span></div>' +
+      '<div class="tile"><span class="k">نسبة التسليم</span><span class="v">' + rate + '<small>%</small></span><span class="n">من الشحنات اللي اتقفلت</span></div>' +
+      '<div class="tile"><span class="k">فلوس عند المناديب</span><span class="v">' + money(holdTotal) + '</span><span class="n">اتحصّلت ولسه متسلمتش</span></div>' +
+      '<div class="tile"><span class="k">مستحق للتجار</span><span class="v">' + money(dueTotal) + '</span><span class="n">صافي بعد الأجرة والعمولة</span></div>' +
+      '<div class="tile ' + (st.profit >= 0 ? 'good' : 'bad') + '"><span class="k">ربح الشهر</span><span class="v">' + money(st.profit) + '</span><span class="n">بعد المصاريف الثابتة (' + fmt(cfg.fixed) + ')</span></div>' +
+      '</div>';
+    h += '<div class="panel"><h2>الشحنات حسب الحالة</h2><div class="row">' +
+      ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'].map(function (k) { return '<span class="pill ' + k + '">' + STATUS[k] + ' ' + (counts[k] || 0) + '</span>'; }).join('') + '</div>' +
+      '<p class="note" style="margin:0">' + (counts.new ? 'فيه ' + counts.new + ' شحنة جديدة محتاجة مندوب. ' : '') + (counts.out_for_delivery ? 'فيه ' + counts.out_for_delivery + ' شحنة لسه مع المناديب.' : '') + '</p></div>';
+    h += '<div class="panel"><h2>نقطة التعادل</h2>' + (u.be ?
+      '<p style="margin:0">بالافتراضات الحالية، كل شحنة بتسيب <b>' + fmt1(u.margin) + ' جنيه</b> قبل المصاريف الثابتة. محتاج حوالي <b>' + fmt(u.be) + ' شحنة في الشهر</b> عشان تغطي ' + fmt(cfg.fixed) + ' جنيه مصاريف ثابتة.</p>' :
+      '<p style="margin:0">بالافتراضات الحالية الشحنة الواحدة بتخسر. راجع الأجرة وأجر المندوب في تاب «التكلفة».</p>') + '</div>';
+    el('p-ov').innerHTML = h;
+  }
+
+  function renderShipments() {
+    var q = query.trim().toLowerCase();
+    var list = store.shipments.slice().sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).filter(function (s) {
+      if (filter !== 'all' && s.status !== filter) return false;
+      if (!q) return true;
+      return (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
+    });
+    var copts = function (sel) {
+      return '<option value="">بدون مندوب</option>' + store.couriers.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('');
+    };
+    var h = list.map(function (s) {
+      var id = esc(s.id);
+      var sopts = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'].map(function (k) { return '<option value="' + k + '"' + (k === s.status ? ' selected' : '') + '>' + STATUS[k] + '</option>'; }).join('');
+      return '<tr><td class="code">' + esc(s.code) + '</td><td>' + esc(s.merchant) + '</td><td>' + esc(s.customer) + ((s.phone || s.address) ? '<small>' + esc([s.phone, s.address].filter(Boolean).join(' · ')) + '</small>' : '') + '</td>' +
+        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td>' +
+        '<td><select class="mini" data-courier="' + id + '" aria-label="المندوب"' + (canWrite ? '' : ' disabled') + '>' + copts(s.courierId) + '</select></td>' +
+        '<td><select class="mini" data-status="' + id + '" aria-label="الحالة"' + (canWrite ? '' : ' disabled') + '>' + sopts + '</select></td>' +
+        '<td>' + (canWrite ? '<button class="btn danger sm" type="button" data-del="' + id + '">حذف</button>' : '') + '</td></tr>';
+    }).join('');
+    el('sh-rows').innerHTML = h;
+    var em = el('sh-empty');
+    if (!list.length) {
+      em.hidden = false;
+      em.innerHTML = !loaded.shipments ? '<b>جاري تحميل الشحنات</b>' : !store.shipments.length ? '<b>لسه مفيش شحنات</b>ضيف أول شحنة من «إضافة شحنة» فوق.' : '<b>مفيش نتايج</b>غيّر الفلتر أو البحث.';
+    } else em.hidden = true;
+    var ml = {}; store.shipments.forEach(function (s) { if (s.merchant) ml[s.merchant] = 1; });
+    el('merchants').innerHTML = Object.keys(ml).map(function (m) { return '<option value="' + esc(m) + '">'; }).join('');
+  }
+
+  function renderCouriers() {
+    var holds = courierHolds();
+    if (!store.couriers.length) {
+      el('co-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>لسه مفيش مناديب</b>ضيف أول مندوب من «إضافة مندوب» فوق.</div>'; return;
+    }
+    el('co-list').innerHTML = store.couriers.map(function (c) {
+      var mine = store.shipments.filter(function (s) { return s.courierId === c.id; });
+      var out = mine.filter(function (s) { return s.status === 'out_for_delivery'; }).length;
+      var dl = mine.filter(function (s) { return s.status === 'delivered'; }).length;
+      var rt = mine.filter(function (s) { return s.status === 'returned'; }).length;
+      var hd = holds[c.id] || { cod: 0, n: 0 };
+      var rate = dl + rt ? Math.round(dl / (dl + rt) * 100) : 0;
+      return '<div class="card"><span class="nm">' + esc(c.name) + '</span>' + (c.phone ? '<span class="note">' + esc(c.phone) + '</span>' : '') +
+        '<div class="kv"><span>معاه دلوقتي</span><b>' + out + ' شحنة</b></div>' +
+        '<div class="kv"><span>اتسلّم / رجع</span><b>' + dl + ' / ' + rt + (dl + rt ? ' (' + rate + '%)' : '') + '</b></div>' +
+        '<div class="kv"><span>فلوس عليه ليك</span><span class="due">' + money(hd.cod) + '</span></div>' +
+        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>استلمت منه الفلوس</button>' +
+          '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">حذف</button></div>' : '') + '</div>';
+    }).join('');
+  }
+
+  function renderMerchants() {
+    var md = merchantDue(), keys = Object.keys(md).filter(function (k) { return k !== '-'; });
+    if (!keys.length) { el('me-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>لسه مفيش تجار</b>التجار بيظهروا هنا لما تضيف شحنات باسمهم.</div>'; return; }
+    keys.sort(function (a, b) { return md[b].due - md[a].due; });
+    el('me-list').innerHTML = keys.map(function (k) {
+      var m = md[k];
+      return '<div class="card"><span class="nm">' + esc(k) + '</span>' +
+        '<div class="kv"><span>شحنات اتسلمت / رجعت</span><b>' + m.delivered + ' / ' + m.returned + '</b></div>' +
+        '<div class="kv"><span>COD اتحصّل</span><b>' + fmt(m.cod) + '</b></div>' +
+        '<div class="kv"><span>أجرة وعمولة ورسوم</span><b>' + fmt(m.fees) + '</b></div>' +
+        (m.open ? '<div class="kv"><span>لسه شغالة</span><b>' + m.open + '</b></div>' : '') +
+        '<div class="kv"><span>' + (m.due >= 0 ? 'مستحق له' : 'مستحق عليه') + '</span><span class="due">' + money(Math.abs(m.due)) + '</span></div>' +
+        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>سجّل إني سوّيت معاه</button></div>' : '') + '</div>';
+    }).join('');
+  }
+
+  function renderCosts() {
+    var st = monthStats(), avg = st.D >= 5 ? st.avgCod : cfg.avgCod;
+    var u = unitEconomics(avg), top = Math.max(u.rev, 1);
+    function bar(label, val, cls) { return '<div class="bar ' + cls + '"><span>' + label + '</span><span class="track"><i style="width:' + Math.max(0, Math.min(100, val / top * 100)) + '%"></i></span><span class="num">' + fmt1(val) + '</span></div>'; }
+    el('unit').innerHTML = '<div class="bars">' +
+      bar('إيراد الشحنة', u.rev, 'rev') + bar('أجر المندوب', u.courier, 'cost') + bar('بنزين وتغليف', u.other, 'cost') + bar('الباقي للشحنة', u.margin, 'gain') + '</div>' +
+      '<p class="note" style="margin:10px 0 0">محسوبة على نسبة تسليم ' + cfg.rate + '% ومتوسط COD ' + fmt(avg) + ' جنيه' + (st.D >= 5 ? ' (من شحناتك الفعلية)' : ' (تقدير)') + '. الأرقام بالجنيه لكل شحنة.</p>';
+    var vol = cfg.volume, profit = u.margin * vol - cfg.fixed;
+    el('whatif').innerHTML = '<div class="result">' +
+      '<div class="tile"><span class="k">إيراد الشهر</span><span class="v">' + money(u.rev * vol) + '</span></div>' +
+      '<div class="tile"><span class="k">تكلفة متغيرة</span><span class="v">' + money((u.courier + u.other) * vol) + '</span></div>' +
+      '<div class="tile"><span class="k">مصاريف ثابتة</span><span class="v">' + money(cfg.fixed) + '</span></div>' +
+      '<div class="tile ' + (profit >= 0 ? 'good' : 'bad') + '"><span class="k">الربح لـ ' + fmt(vol) + ' شحنة</span><span class="v">' + money(profit) + '</span></div>' +
+      '<div class="tile"><span class="k">نقطة التعادل</span><span class="v">' + (u.be ? fmt(u.be) + ' <small>شحنة/شهر</small>' : '-') + '</span></div></div>';
+  }
+
+  function renderAll() {
+    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderCosts();
+    var fee = el('s-fee'); if (!fee.value && document.activeElement !== fee) fee.value = cfg.fee;
+    document.querySelectorAll('#add-sh, #add-co').forEach(function (d) { d.hidden = !canWrite; });
+    CFG_FIELDS.forEach(function (f) { var i = el('cfg-' + f[0]); if (i && document.activeElement !== i) i.value = cfg[f[0]]; if (i) i.disabled = !canWrite; });
+  }
+
+  /* ---------- events ---------- */
+  el('tabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-tab]'); if (!b) return;
+    tab = b.getAttribute('data-tab');
+    document.querySelectorAll('#tabs .tab').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
+    ['ov', 'sh', 'co', 'me', 'ct'].forEach(function (k) { el('p-' + k).hidden = k !== tab; });
+  });
+  el('sh-filters').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-f]'); if (!b) return;
+    filter = b.getAttribute('data-f');
+    document.querySelectorAll('#sh-filters .chip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    renderShipments();
+  });
+  el('sh-q').addEventListener('input', function (e) { query = e.target.value; renderShipments(); });
+
+  el('form-sh').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var id = newId('s');
+    var data = {
+      code: 'B' + Date.now().toString(36).slice(-5).toUpperCase(), merchant: el('s-merchant').value.trim(), customer: el('s-customer').value.trim(),
+      phone: el('s-phone').value.trim(), address: el('s-address').value.trim(), cod: num(el('s-cod').value), fee: num(el('s-fee').value),
+      status: 'new', courierId: '', settled: false, paidMerchant: false, createdAt: new Date().toISOString()
+    };
+    safe(async function () { await put('shipments', id, data); el('form-sh').reset(); el('s-cod').value = 0; el('s-fee').value = cfg.fee; toast('تمت إضافة الشحنة'); });
+  });
+  el('form-co').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var data = { name: el('c-name').value.trim(), phone: el('c-phone').value.trim() };
+    safe(async function () { await put('couriers', newId('c'), data); el('form-co').reset(); toast('تمت إضافة المندوب'); });
+  });
+
+  el('sh-rows').addEventListener('change', function (e) {
+    var cs = e.target.getAttribute('data-courier'), ss = e.target.getAttribute('data-status');
+    var id = cs || ss; if (!id) return;
+    var s = store.shipments.filter(function (x) { return x.id === id; })[0]; if (!s) return;
+    var next = strip(s);
+    if (cs) {
+      next.courierId = e.target.value;
+      if (next.courierId && (next.status === 'new' || next.status === 'picked_up')) next.status = 'out_for_delivery';
+      if (!next.courierId && next.status === 'out_for_delivery') next.status = 'picked_up';
+    } else {
+      next.status = e.target.value;
+      if ((next.status === 'out_for_delivery' || next.status === 'delivered' || next.status === 'returned') && !next.courierId) { toast('اختار المندوب الأول.'); renderShipments(); return; }
+      if (next.status === 'new') next.courierId = '';
+    }
+    if (next.status === 'delivered' || next.status === 'returned') { if (!next.doneAt) next.doneAt = new Date().toISOString(); }
+    else next.doneAt = null;
+    if (next.status !== 'delivered') next.settled = false;
+    safe(function () { return put('shipments', id, next); });
+  });
+  el('sh-rows').addEventListener('click', function (e) {
+    var d = e.target.closest('[data-del]'); if (d) safe(function () { return del('shipments', d.getAttribute('data-del')); });
+  });
+  el('co-list').addEventListener('click', function (e) {
+    var s = e.target.closest('[data-settle]'), d = e.target.closest('[data-delc]');
+    if (s) {
+      var cid = s.getAttribute('data-settle');
+      safe(async function () {
+        var rows = store.shipments.filter(function (x) { return x.courierId === cid && x.status === 'delivered' && !x.settled; });
+        for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.settled = true; await put('shipments', rows[i].id, n); }
+        toast('اتسجّل استلام الفلوس من المندوب.');
+      });
+    } else if (d) {
+      var did = d.getAttribute('data-delc');
+      if (store.shipments.some(function (x) { return x.courierId === did && x.status === 'out_for_delivery'; })) { toast('المندوب ده معاه شحنات لسه. سلّمها أو غيّر مندوبها الأول.'); return; }
+      safe(function () { return del('couriers', did); });
+    }
+  });
+  el('me-list').addEventListener('click', function (e) {
+    var p = e.target.closest('[data-pay]'); if (!p) return;
+    var m = p.getAttribute('data-pay');
+    safe(async function () {
+      var rows = store.shipments.filter(function (x) { return x.merchant === m && !x.paidMerchant && (x.status === 'delivered' || x.status === 'returned'); });
+      for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.paidMerchant = true; await put('shipments', rows[i].id, n); }
+      toast('اتسجّلت التسوية مع ' + m);
+    });
+  });
+
+  // cost settings grid
+  el('cfg-grid').innerHTML = CFG_FIELDS.map(function (f) {
+    return '<div class="field"><label for="cfg-' + f[0] + '">' + f[1] + '</label><input id="cfg-' + f[0] + '" type="number" min="0" step="any" inputmode="decimal"><span class="hint">' + f[2] + '</span></div>';
+  }).join('');
+  el('cfg-grid').addEventListener('change', function (e) {
+    var k = e.target.id.replace('cfg-', ''); if (!(k in CFG0)) return;
+    var v = num(e.target.value); if (k === 'rate') v = Math.min(100, v);
+    cfg[k] = v; renderAll(); safe(saveCfg);
+  });
+
+  renderAll();
+
+  /* ---------- storage: Supabase ---------- */
+  var SUPABASE_URL = 'https://ybkkdjpgkkdnijafsuai.supabase.co';
+  // Public (anon) key: safe in the browser, access is limited by the database row-level security rules.
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU';
+  var sb = null, channel = null, started = false, syncTimer = null;
+
+  function banner(t) { var b = el('banner'); b.textContent = t || ''; b.hidden = !t; }
+  function showApp(on) {
+    el('auth').hidden = on; el('tabs').hidden = !on; el('logout').hidden = !on || local;
+    ['ov', 'sh', 'co', 'me', 'ct'].forEach(function (k) { el('p-' + k).hidden = !on || k !== tab; });
+  }
+  async function merchantIdFor(name) {
+    var n = String(name || '').trim().toLowerCase();
+    var m = store.merchants.filter(function (x) { return String(x.name).trim().toLowerCase() === n; })[0];
+    if (m) return m.id;
+    var r = await sb.from('merchants').insert({ name: String(name).trim(), status: 'active' }).select('id,name').single();
+    if (r.error) throw r.error;
+    store.merchants.push({ id: r.data.id, name: r.data.name });
+    return r.data.id;
+  }
+  async function refresh(name) {
+    if (name === 'shipments') {
+      var rs = await sb.from('shipments').select('*, merchants(name)').order('created_at', { ascending: false }).limit(1000);
+      if (rs.error) throw rs.error;
+      var re = await sb.from('shipment_events').select('shipment_id,status,created_at').in('status', ['delivered', 'returned']).order('created_at', { ascending: true }).limit(5000);
+      var done = {};
+      (re.data || []).forEach(function (e) { done[e.shipment_id + '|' + e.status] = e.created_at; });
+      store.shipments = rs.data.map(function (r) {
+        return { id: r.id, code: r.code, merchant: r.merchants ? r.merchants.name : '', merchantId: r.merchant_id, customer: r.customer_name, phone: r.customer_phone,
+          address: r.address, cod: +r.cod, fee: +r.fee, courierId: r.courier_id || '', status: r.status, settled: r.courier_settled, paidMerchant: r.merchant_settled,
+          createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
+      });
+    } else if (name === 'couriers') {
+      var rc = await sb.from('couriers').select('id,name,phone').order('created_at', { ascending: true });
+      if (rc.error) throw rc.error;
+      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '' }; });
+    } else if (name === 'merchants') {
+      var rm = await sb.from('merchants').select('id,name');
+      if (rm.error) throw rm.error;
+      store.merchants = rm.data;
+    }
+    loaded[name] = true; renderAll();
+  }
+  async function refreshCfg() {
+    var r = await sb.from('settings').select('data').eq('key', 'costs').maybeSingle();
+    if (!r.error && r.data) cfg = Object.assign({}, CFG0, r.data.data);
+    renderAll();
+  }
+  function syncAll() {
+    return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg()]);
+  }
+  async function startData() {
+    if (started) return; started = true;
+    try { await syncAll(); banner(''); }
+    catch (e) { banner('مش قادر أقرا البيانات من Supabase. اتأكد إن حسابك أدمن وإن الجداول موجودة.'); }
+    channel = sb.channel('bareed').on('postgres_changes', { event: '*', schema: 'public' }, function () {
+      clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncAll().catch(function () {}); }, 400);
+    }).subscribe();
+  }
+  function stopData() {
+    started = false; store.shipments = []; store.couriers = []; store.merchants = []; loaded.shipments = loaded.couriers = false;
+    if (channel) { sb.removeChannel(channel); channel = null; }
+    renderAll();
+  }
+  async function enter() {
+    var r = await sb.from('admins').select('user_id').maybeSingle();
+    if (r.error || !r.data) {
+      el('auth-msg').textContent = 'الحساب ده مش متسجل كأدمن في بريد.';
+      await sb.auth.signOut(); showApp(false); return;
+    }
+    showApp(true); startData();
+  }
+
+  (function boot() {
+    if (!window.supabase) {
+      local = true; loaded.shipments = loaded.couriers = true;
+      banner('مقدرتش أحمّل مكتبة Supabase. البيانات هنا مؤقتة ومش هتتحفظ. اتأكد من النت وافتح الصفحة تاني.');
+      showApp(true); renderAll(); return;
+    }
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    sb.auth.getSession().then(function (r) { if (r.data && r.data.session) enter(); else showApp(false); });
+    sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_OUT') { stopData(); showApp(false); } });
+    el('form-auth').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var r = await sb.auth.signInWithPassword({ email: el('a-email').value.trim(), password: el('a-pass').value });
+      if (r.error) { el('auth-msg').textContent = 'الإيميل أو الباسورد غلط.'; return; }
+      el('auth-msg').textContent = ''; el('a-pass').value = ''; enter();
+    });
+    el('logout').addEventListener('click', function () { sb.auth.signOut(); });
+  })();
+})();
+</script>
+</body></html>
