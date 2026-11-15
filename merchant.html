@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>لوحة التاجر · بريد</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%235B8DEF'/%3E%3Crect x='13' y='16' width='26' height='18' rx='4' fill='none' stroke='%23FFFFFF' stroke-width='2.8'/%3E%3Cpath d='M14.5 19.5 26 27.5l11.500-8' fill='none' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #F5F8F8; --surface: #FFFFFF; --surface-2: #EDF3F2; --ink: #0B1B1A; --muted: #546967; --line: #DCE6E5;
+  --brand: #0AA79A; --brand-2: #2ED3C4; --brand-soft: #DBF4F1; --on-brand: #FFFFFF; --accent: #5B8DEF; --head-a: #081F1E; --head-b: #0E3F3A;
+  --good: #17784A; --good-bg: #DCF2E5; --warn: #A86400; --warn-bg: #FCEBCB; --bad: #B4332E; --bad-bg: #FADEDC; --info: #2F63C9; --info-bg: #E3EBFA; --pur: #7140C8; --pur-bg: #EBE3FA;
+  --shadow: 0 1px 2px rgba(11,27,26,.05), 0 10px 30px rgba(11,27,26,.06);
+  --font-display: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif; --font-body: "IBM Plex Sans Arabic", "Readex Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #07100F; --surface: #0F1E1D; --surface-2: #152928; --ink: #E6F1EF; --muted: #92A9A5; --line: #223634; --brand: #2ED3C4; --brand-soft: #0E3633; --on-brand: #03211E; --accent: #7DA2F5; --head-a: #041110; --head-b: #0A2E2A; --shadow: none;
+  --good: #5FD494; --good-bg: #123422; --warn: #F2B558; --warn-bg: #3A2A10; --bad: #F08A85; --bad-bg: #3F1B19; --info: #8EB1F2; --info-bg: #182847; --pur: #B79BF0; --pur-bg: #2A2047; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #07100F; --surface: #0F1E1D; --surface-2: #152928; --ink: #E6F1EF; --muted: #92A9A5; --line: #223634; --brand: #2ED3C4; --brand-soft: #0E3633; --on-brand: #03211E; --accent: #7DA2F5; --head-a: #041110; --head-b: #0A2E2A; --shadow: none;
+  --good: #5FD494; --good-bg: #123422; --warn: #F2B558; --warn-bg: #3A2A10; --bad: #F08A85; --bad-bg: #3F1B19; --info: #8EB1F2; --info-bg: #182847; --pur: #B79BF0; --pur-bg: #2A2047; color-scheme: dark; }
+* { box-sizing: border-box; } [hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+h1, h2, h3, p { margin: 0; } h1, h2, h3 { font-family: var(--font-display); }
+button, input, select { font: inherit; color: inherit; } a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.logo .logo-bg { fill: var(--accent); } .logo .logo-fg { fill: none; stroke: #fff; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+.wrap { width: min(1180px, 100%); margin-inline: auto; padding-inline: max(20px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-left, 0px)); }
+.head { background: linear-gradient(160deg, var(--head-b), var(--head-a)); color: #E9F6F4; position: relative; overflow: hidden; }
+.head::before { content: ""; position: absolute; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(46,211,196,.35), transparent 65%); top: -170px; inset-inline-start: -100px; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 16px; position: relative; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+.brand small { font-family: var(--font-body); font-weight: 400; color: #93B8B3; font-size: 12px; display: block; }
+.acts { display: flex; gap: 8px; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 38px; height: 38px; padding: 0 12px; border-radius: 11px; border: 1px solid rgba(255,255,255,.22); background: transparent; color: inherit; cursor: pointer; font-weight: 600; font-size: 13px; }
+.icon-btn:hover { background: rgba(255,255,255,.1); }
+.welcome { padding-block: 10px 70px; position: relative; } .welcome h1 { font-size: clamp(22px, 3vw, 32px); } .welcome p { color: #93B8B3; margin-top: 4px; }
+main { margin-top: -48px; padding-bottom: 60px; display: grid; gap: 18px; position: relative; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 20px; box-shadow: var(--shadow); display: grid; gap: 14px; min-width: 0; }
+.card > h2 { font-size: 17px; }
+.muted { color: var(--muted); } .note { font-size: 13px; color: var(--muted); }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); transition: transform .2s; } .tile:hover { transform: translateY(-3px); }
+.tile .l { color: var(--muted); font-size: 13px; } .tile .v { font-family: var(--font-display); font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.4; } .tile .v small { font-size: 13px; color: var(--muted); font-weight: 500; }
+.tile.accent { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: var(--on-brand); border: 0; } .tile.accent .l { color: inherit; opacity: .85; } .tile.accent .v small { color: inherit; opacity: .8; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; border-radius: 11px; padding: 10px 20px; font-weight: 600; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: var(--on-brand); box-shadow: 0 4px 14px rgba(10,167,154,.28); }
+.btn:hover { filter: brightness(1.06); } .btn[disabled] { opacity: .5; cursor: default; } .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); box-shadow: none; } .btn.sm { padding: 6px 14px; font-size: 13px; }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.field { display: grid; gap: 5px; min-width: 0; } .field label { font-size: 13px; font-weight: 500; }
+.field input, .field select, .search { width: 100%; background: var(--surface-2); border: 1px solid transparent; border-radius: 11px; padding: 10px 12px; color: var(--ink); min-width: 0; }
+.field input:focus, .field select:focus, .search:focus { border-color: var(--brand); outline: none; background: var(--surface); }
+.hint { font-size: 12px; color: var(--muted); }
+.quote { background: var(--brand-soft); color: var(--brand); border-radius: 12px; padding: 10px 14px; font-weight: 600; }
+.banner { border-radius: 14px; padding: 14px 18px; font-weight: 500; } .banner.wait { background: var(--warn-bg); color: var(--warn); } .banner.bad { background: var(--bad-bg); color: var(--bad); }
+.toast { padding: 10px 14px; border-radius: 11px; font-size: 14px; font-weight: 500; } .toast.ok { background: var(--good-bg); color: var(--good); } .toast.err { background: var(--bad-bg); color: var(--bad); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } .search { flex: 1; min-width: 180px; width: auto; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; } .chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 14px; font-size: 13px; cursor: pointer; } .chip[aria-pressed="true"] { background: var(--brand); color: var(--on-brand); border-color: var(--brand); font-weight: 600; }
+.tablewrap { overflow-x: auto; } table { width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: start; font-size: 12px; font-weight: 500; color: var(--muted); padding: 8px 10px; white-space: nowrap; } td { padding: 11px 10px; border-top: 1px solid var(--line); vertical-align: middle; }
+td small { display: block; color: var(--muted); font-size: 12px; } td.code { font-family: var(--font-display); font-weight: 600; white-space: nowrap; }
+.badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.s-new { background: var(--info-bg); color: var(--info); } .s-picked_up { background: var(--pur-bg); color: var(--pur); } .s-out_for_delivery { background: var(--warn-bg); color: var(--warn); } .s-delivered { background: var(--good-bg); color: var(--good); } .s-returned { background: var(--bad-bg); color: var(--bad); }
+.empty { text-align: center; padding: 28px 12px; color: var(--muted); } .empty b { display: block; color: var(--ink); font-family: var(--font-display); }
+.pipe { display: flex; height: 12px; border-radius: 99px; overflow: hidden; background: var(--surface-2); } .pipe i { display: block; height: 100%; }
+.f-new { background: var(--info); } .f-picked_up { background: var(--pur); } .f-out_for_delivery { background: var(--warn); } .f-delivered { background: var(--good); } .f-returned { background: var(--bad); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.tl { list-style: none; margin: 8px 0 0; padding: 0; } .tl li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 4px 0; color: var(--muted); position: relative; font-size: 14px; }
+.tl li::before { content: ""; position: absolute; inset-inline-start: 12px; top: 28px; bottom: -4px; width: 2px; background: var(--line); } .tl li:last-child::before { display: none; }
+.tl .d { width: 26px; height: 26px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; z-index: 1; } .tl .d svg { width: 14px; height: 14px; }
+.tl li.done { color: var(--ink); } .tl li.done .d { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; } .tl li.now .d { background: var(--accent); color: #fff; }
+.tl small { display: block; color: var(--muted); }
+.modal { position: fixed; inset: 0; background: rgba(4,17,16,.6); backdrop-filter: blur(5px); display: grid; place-items: center; padding: 16px; z-index: 40; overflow: auto; }
+.dialog { background: var(--surface); border-radius: 20px; padding: 24px; width: min(420px, 100%); display: grid; gap: 12px; }
+.load { display: grid; place-items: center; min-height: 60vh; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style></head>
+<body>
+<div class="load" id="load">…</div>
+<div id="app" hidden>
+  <header class="head"><div class="wrap">
+    <div class="bar">
+      <a class="brand" href="./"><span id="logo"></span><span><span data-i18n="brand"></span><small data-i18n="portal"></small></span></a>
+      <div class="acts"><button class="icon-btn" id="lang" type="button"></button><button class="icon-btn" id="theme" type="button" aria-label="Theme"></button><button class="icon-btn" id="logout" type="button" data-i18n="logout"></button></div>
+    </div>
+    <div class="welcome"><h1 id="hello"></h1><p id="sub"></p></div>
+  </div></header>
+  <div class="wrap"><main>
+    <div id="banner" hidden></div>
+    <div id="toast" hidden role="status"></div>
+    <div id="dash" style="display:grid;gap:18px">
+      <div class="tiles" id="tiles"></div>
+      <div class="card"><h2 data-i18n="h_status"></h2><div class="pipe" id="pipe"></div><div class="legend" id="legend"></div></div>
+      <div class="card"><h2 data-i18n="h_new"></h2>
+        <form id="form" autocomplete="off" style="display:grid;gap:14px">
+          <div class="fgrid">
+            <div class="field"><label for="f-name" data-i18n="f_customer"></label><input id="f-name" required maxlength="120"></div>
+            <div class="field"><label for="f-phone" data-i18n="f_phone"></label><input id="f-phone" required inputmode="tel" minlength="5" maxlength="30" dir="ltr"></div>
+            <div class="field"><label for="f-gov" data-i18n="f_gov"></label><select id="f-gov"></select></div>
+            <div class="field"><label for="f-city" data-i18n="f_city"></label><select id="f-city" required></select></div>
+            <div class="field"><label for="f-addr" data-i18n="f_addr"></label><input id="f-addr" required minlength="3" maxlength="300"></div>
+            <div class="field"><label for="f-cod" data-i18n="f_cod"></label><input id="f-cod" type="number" min="0" max="1000000" value="0" inputmode="numeric" required></div>
+          </div>
+          <div id="quote" class="quote" hidden></div>
+          <div><button class="btn" type="submit" id="f-go" data-i18n="f_save"></button></div>
+          <p class="note" data-i18n="f_note"></p>
+        </form>
+      </div>
+      <div class="card"><h2 data-i18n="h_ships"></h2>
+        <div class="toolbar"><div class="chips" id="filters"></div><input class="search" id="q" type="search" data-i18n-ph="search"><button class="btn ghost sm" id="csv" type="button" data-i18n="export"></button></div>
+        <div class="tablewrap"><table><thead><tr><th data-i18n="th_code"></th><th data-i18n="f_customer"></th><th data-i18n="th_area"></th><th data-i18n="th_cod"></th><th data-i18n="th_fee"></th><th data-i18n="th_status"></th><th data-i18n="th_date"></th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+        <div id="empty" class="empty" hidden></div>
+      </div>
+    </div>
+  </main></div>
+</div>
+<div class="modal" id="modal" hidden><div class="dialog" role="dialog" aria-modal="true"><div style="display:flex;justify-content:space-between;align-items:center"><h2 id="m-code"></h2><button class="btn ghost sm" id="m-close" type="button" data-i18n="close"></button></div><div id="m-body"></div></div></div>
+
+<script>
+(function () {
+  var D = {
+    ar: { brand: 'بريد', portal: 'بوابة التاجر', logout: 'خروج', hello: 'أهلاً {n}', sub: 'تابع شحناتك ومستحقاتك وضيف شحنات جديدة.',
+      pending: 'حسابك قيد المراجعة. هنفعّله قريباً وتقدر تضيف شحنات بعدها.', suspended: 'حسابك موقوف. تواصل مع بريد.', nomerchant: 'مفيش حساب تاجر مرتبط بالإيميل ده.',
+      k_all: 'كل الشحنات', k_open: 'شحنات شغّالة', k_del: 'اتسلّمت', k_ret: 'مرتجعة', k_cod: 'COD اتحصّل', k_due: 'مستحقاتك عند بريد', cur: 'جنيه',
+      h_status: 'شحناتك حسب الحالة', h_new: 'شحنة جديدة', h_ships: 'شحناتك', f_customer: 'اسم العميل', f_phone: 'تليفون العميل', f_gov: 'المحافظة', f_city: 'المدينة', f_addr: 'العنوان بالتفصيل', f_cod: 'قيمة الـ COD (جنيه)', f_save: 'سجّل الشحنة',
+      f_note: 'المدن اللي مكتوب جنبها «قريباً» لسه مش مفتوحة للتوصيل.', soon: 'قريباً', pick: 'اختار المدينة', quote: 'أجرة الشحن لـ {c}: {f} جنيه',
+      search: 'ابحث بالكود أو اسم العميل', export: 'تصدير Excel', th_code: 'الكود', th_area: 'المنطقة', th_cod: 'COD', th_fee: 'الأجرة', th_status: 'الحالة', th_date: 'التاريخ', track: 'تتبع', close: 'قفل',
+      fl_all: 'الكل', fl_new: 'جديدة', fl_picked_up: 'اتستلمت', fl_out_for_delivery: 'مع المندوب', fl_delivered: 'اتسلمت', fl_returned: 'مرتجعة',
+      st_new: 'جديدة', st_picked_up: 'اتستلمت من التاجر', st_out_for_delivery: 'مع المندوب', st_delivered: 'اتسلمت', st_returned: 'مرتجعة',
+      e_none: 'لسه مفيش شحنات', e_none_h: 'سجّل أول شحنة من النموذج فوق.', e_res: 'مفيش نتايج', ok: 'تم تسجيل الشحنة. هتلاقيها في الجدول تحت.', e_save: 'تعذّر التسجيل. تأكد من البيانات وجرّب تاني.', e_area: 'المنطقة دي مش مفتوحة للتوصيل لسه.', e_inactive: 'حسابك لسه مش مفعّل.', e_load: 'تعذّر تحميل البيانات.' },
+    en: { brand: 'Bareed', portal: 'Merchant portal', logout: 'Sign out', hello: 'Welcome, {n}', sub: 'Follow your shipments and balance, and add new shipments.',
+      pending: 'Your account is under review. We will activate it soon, then you can add shipments.', suspended: 'Your account is suspended. Please contact Bareed.', nomerchant: 'No merchant account is linked to this email.',
+      k_all: 'All shipments', k_open: 'In progress', k_del: 'Delivered', k_ret: 'Returned', k_cod: 'COD collected', k_due: 'Balance owed to you', cur: 'EGP',
+      h_status: 'Your shipments by status', h_new: 'New shipment', h_ships: 'Your shipments', f_customer: 'Customer name', f_phone: 'Customer phone', f_gov: 'Governorate', f_city: 'City', f_addr: 'Full address', f_cod: 'COD amount (EGP)', f_save: 'Create shipment',
+      f_note: 'Cities marked “Soon” are not open for delivery yet.', soon: 'Soon', pick: 'Choose a city', quote: 'Shipping fee to {c}: {f} EGP',
+      search: 'Search by code or customer', export: 'Export Excel', th_code: 'Code', th_area: 'Area', th_cod: 'COD', th_fee: 'Fee', th_status: 'Status', th_date: 'Date', track: 'Track', close: 'Close',
+      fl_all: 'All', fl_new: 'New', fl_picked_up: 'Picked up', fl_out_for_delivery: 'Out', fl_delivered: 'Delivered', fl_returned: 'Returned',
+      st_new: 'New', st_picked_up: 'Picked up from merchant', st_out_for_delivery: 'Out for delivery', st_delivered: 'Delivered', st_returned: 'Returned',
+      e_none: 'No shipments yet', e_none_h: 'Create your first shipment with the form above.', e_res: 'No results', ok: 'Shipment created. You will find it in the table below.', e_save: 'Could not create it. Check the details and try again.', e_area: 'This area is not open for delivery yet.', e_inactive: 'Your account is not active yet.', e_load: 'Could not load data.' }
+  };
+  var lang = 'ar'; try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
+  function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
+  function el(id) { return document.getElementById(id); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+  function fmt(n) { return Math.round(+n || 0).toLocaleString('en-US'); }
+  var STAT = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'];
+  var ICON = { box: '<path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/>', truck: '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="17.500" r="1.800"/><circle cx="17" cy="17.500" r="1.800"/>', check: '<path d="m5 12 5 5 9-10"/>', rotate: '<path d="M3 12a9 9 0 1 0 3-6.700L3 8M3 3v5h5"/>', sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.900 4.900l1.400 1.400M17.700 17.700l1.400 1.400M2 12h2M20 12h2M4.900 19.100l1.400-1.400M17.700 6.300l1.400-1.400"/>', moon: '<path d="M20 14.500A8 8 0 1 1 9.500 4a6.500 6.500 0 0 0 10.500 10.500Z"/>' };
+  function ic(n) { return '<svg class="i" viewBox="0 0 24 24">' + ICON[n] + '</svg>'; }
+  function logo(s) { return '<svg class="logo" width="' + s + '" height="' + s + '" viewBox="0 0 48 48" aria-hidden="true"><rect class="logo-bg" width="48" height="48" rx="13"/><rect class="logo-fg" x="13" y="16" width="26" height="18" rx="4"/><path class="logo-fg" d="M14.5 19.500 26 27.500l11.500-8"/><path class="logo-fg" d="M6 22h4M7.500 28H10"/></svg>'; }
+
+  var sb = null, me = null, areas = [], ships = [], events = {}, filter = 'all', query = '';
+
+  function renderStatic() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-i18n]').forEach(function (n) { n.textContent = t(n.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function (n) { n.placeholder = t(n.getAttribute('data-i18n-ph')); });
+    el('lang').textContent = lang === 'ar' ? 'EN' : 'عربي'; el('logo').innerHTML = logo(38);
+    if (me) { el('hello').textContent = t('hello', { n: me.name }); el('sub').textContent = t('sub'); }
+    paintTheme();
+  }
+  function banner(cls, k) { var b = el('banner'); b.hidden = !k; if (k) { b.className = 'banner ' + cls; b.textContent = t(k); } }
+  function toast(cls, text) { var b = el('toast'); b.className = 'toast ' + cls; b.textContent = text; b.hidden = false; setTimeout(function () { b.hidden = true; }, 5000); }
+
+  function renderTiles() {
+    var c = { all: ships.length, open: 0, del: 0, ret: 0 }, cod = 0, due = 0;
+    ships.forEach(function (s) {
+      if (s.status === 'delivered') { c.del++; cod += +s.cod; if (!s.merchant_settled) due += +s.cod - +s.fee; }
+      else if (s.status === 'returned') { c.ret++; }
+      else c.open++;
+    });
+    var cur = '<small>' + t('cur') + '</small>';
+    el('tiles').innerHTML = [['k_all', c.all, ''], ['k_open', c.open, ''], ['k_del', c.del, ''], ['k_ret', c.ret, ''], ['k_cod', fmt(cod) + ' ' + cur, ''], ['k_due', fmt(due) + ' ' + cur, 'accent']].map(function (x) {
+      return '<div class="tile ' + x[2] + '"><div class="l">' + t(x[0]) + '</div><div class="v">' + x[1] + '</div></div>'; }).join('');
+    var cnt = {}; STAT.forEach(function (k) { cnt[k] = 0; }); ships.forEach(function (s) { cnt[s.status] = (cnt[s.status] || 0) + 1; });
+    el('pipe').innerHTML = STAT.map(function (k) { return cnt[k] ? '<i class="f-' + k + '" style="width:' + cnt[k] / ships.length * 100 + '%"></i>' : ''; }).join('');
+    el('legend').innerHTML = STAT.map(function (k) { return '<span class="badge s-' + k + '">' + t('st_' + k) + ' ' + cnt[k] + '</span>'; }).join('');
+  }
+  function dt(iso, long) { try { return new Date(iso).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', long ? { dateStyle: 'medium', timeStyle: 'short' } : { dateStyle: 'medium' }); } catch (e) { return ''; } }
+  function renderRows() {
+    var q = query.trim().toLowerCase();
+    var list = ships.filter(function (s) { return (filter === 'all' || s.status === filter) && (!q || (s.code + ' ' + s.customer_name).toLowerCase().indexOf(q) !== -1); });
+    el('rows').innerHTML = list.map(function (s) {
+      return '<tr><td class="code">' + esc(s.code) + '</td><td>' + esc(s.customer_name) + '<small dir="ltr" style="text-align:start">' + esc(s.customer_phone) + '</small></td><td>' + esc(s.zone || '') + '<small>' + esc(s.address) + '</small></td>' +
+        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td><td><span class="badge s-' + s.status + '">' + t('st_' + s.status) + '</span></td><td>' + esc(dt(s.created_at)) + '</td>' +
+        '<td><button class="btn ghost sm" type="button" data-track="' + esc(s.id) + '">' + t('track') + '</button></td></tr>'; }).join('');
+    var em = el('empty'); em.hidden = !!list.length;
+    if (!list.length) em.innerHTML = ships.length ? '<b>' + t('e_res') + '</b>' : '<b>' + t('e_none') + '</b>' + t('e_none_h');
+    var FK = { all: 'fl_all', new: 'fl_new', picked_up: 'fl_picked_up', out_for_delivery: 'fl_out_for_delivery', delivered: 'fl_delivered', returned: 'fl_returned' };
+    el('filters').innerHTML = Object.keys(FK).map(function (k) { return '<button class="chip" type="button" data-f="' + k + '" aria-pressed="' + (k === filter) + '">' + t(FK[k]) + '</button>'; }).join('');
+  }
+  function gname(a) { return lang === 'ar' ? a.gov_ar : a.gov_en; } function cname(a) { return lang === 'ar' ? a.city_ar : a.city_en; }
+  function renderForm() {
+    var gs = [], seen = {}; areas.forEach(function (a) { if (!seen[a.gov_ar]) { seen[a.gov_ar] = 1; gs.push(a); } });
+    gs.sort(function (a, b) { return (b.open - a.open) || 0; });
+    var open = {}; areas.forEach(function (a) { if (a.is_active) open[a.gov_ar] = 1; });
+    var gsel = el('f-gov'), cur = gsel.value || 'الجيزة';
+    gs.sort(function (a, b) { return (open[b.gov_ar] ? 1 : 0) - (open[a.gov_ar] ? 1 : 0); });
+    gsel.innerHTML = gs.map(function (a) { return '<option value="' + esc(a.gov_ar) + '"' + (a.gov_ar === cur ? ' selected' : '') + '>' + esc(gname(a)) + '</option>'; }).join('');
+    fillCities();
+  }
+  function fillCities() {
+    var g = el('f-gov').value, csel = el('f-city'), prev = csel.value;
+    var cs = areas.filter(function (a) { return a.gov_ar === g; }).sort(function (a, b) { return (b.is_active - a.is_active) || a.city_ar.localeCompare(b.city_ar, 'ar'); });
+    csel.innerHTML = '<option value="">' + t('pick') + '</option>' + cs.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.is_active ? '' : ' disabled') + (a.id === prev ? ' selected' : '') + '>' + esc(cname(a)) + (a.is_active ? '' : ' · ' + t('soon')) + '</option>'; }).join('');
+    showQuote();
+  }
+  function showQuote() {
+    var a = areas.filter(function (x) { return x.id === el('f-city').value; })[0], q = el('quote');
+    q.hidden = !a; if (a) q.textContent = t('quote', { c: cname(a), f: fmt(a.fee) });
+  }
+  function renderAll() { renderStatic(); if (me && me.status === 'active') { renderTiles(); renderRows(); renderForm(); } }
+
+  /* data */
+  async function load() {
+    var r = await sb.from('shipments').select('id,code,customer_name,customer_phone,address,cod,fee,status,zone,merchant_settled,created_at').order('created_at', { ascending: false }).limit(1000);
+    if (r.error) { toast('err', t('e_load')); return; }
+    ships = r.data; renderAll();
+  }
+  async function loadAreas() { var r = await sb.from('areas').select('id,gov_ar,gov_en,city_ar,city_en,is_active,fee'); if (!r.error) areas = r.data; }
+
+  async function start() {
+    var s = await sb.auth.getSession();
+    if (!s.data.session) { location.href = './'; return; }
+    var a = await sb.from('admins').select('user_id').maybeSingle();
+    if (a.data) { location.href = 'admin'; return; }
+    var m = await sb.from('merchants').select('id,name,status').maybeSingle();
+    el('load').hidden = true; el('app').hidden = false;
+    if (m.error || !m.data) { me = { name: '', status: 'none' }; renderStatic(); el('dash').hidden = true; banner('bad', 'nomerchant'); return; }
+    me = m.data; renderStatic();
+    if (me.status !== 'active') { el('dash').hidden = true; banner(me.status === 'pending' ? 'wait' : 'bad', me.status === 'pending' ? 'pending' : 'suspended'); return; }
+    banner('', null);
+    await loadAreas(); renderAll(); await load();
+    sb.channel('m-ships').on('postgres_changes', { event: '*', schema: 'public', table: 'shipments' }, function () { load(); }).subscribe();
+  }
+
+  /* events */
+  el('f-gov').addEventListener('change', fillCities); el('f-city').addEventListener('change', showQuote);
+  el('form').addEventListener('submit', async function (e) {
+    e.preventDefault(); var go = el('f-go'); go.disabled = true;
+    var r = await sb.rpc('create_shipment', { p_customer_name: el('f-name').value, p_customer_phone: el('f-phone').value, p_address: el('f-addr').value, p_cod: +el('f-cod').value || 0, p_area_id: el('f-city').value });
+    go.disabled = false;
+    if (r.error) { toast('err', /area_not_covered/.test(r.error.message) ? t('e_area') : /not_active/.test(r.error.message) ? t('e_inactive') : t('e_save')); return; }
+    toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; el('f-cod').value = 0; await load();
+  });
+  el('filters').addEventListener('click', function (e) { var b = e.target.closest('[data-f]'); if (b) { filter = b.getAttribute('data-f'); renderRows(); } });
+  el('q').addEventListener('input', function (e) { query = e.target.value; renderRows(); });
+  el('rows').addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-track]'); if (!b) return;
+    var s = ships.filter(function (x) { return x.id === b.getAttribute('data-track'); })[0]; if (!s) return;
+    var r = await sb.from('shipment_events').select('status,created_at').eq('shipment_id', s.id).order('created_at', { ascending: true });
+    var ev = r.data || [];
+    var steps = [['new', 'box'], ['picked_up', 'box'], ['out_for_delivery', 'truck'], [s.status === 'returned' ? 'returned' : 'delivered', s.status === 'returned' ? 'rotate' : 'check']];
+    var idx = -1; steps.forEach(function (x, i) { if (x[0] === s.status) idx = i; });
+    el('m-code').textContent = s.code;
+    el('m-body').innerHTML = '<ul class="tl">' + steps.map(function (x, i) { var w = ev.filter(function (y) { return y.status === x[0]; })[0]; var c = i < idx ? 'done' : i === idx ? 'now' : ''; return '<li class="' + c + '"><span class="d">' + ic(x[1]) + '</span><div>' + t('st_' + x[0]) + (w ? '<small>' + esc(dt(w.created_at, true)) + '</small>' : '') + '</div></li>'; }).join('') + '</ul>';
+    el('modal').hidden = false;
+  });
+  el('m-close').addEventListener('click', function () { el('modal').hidden = true; });
+  el('modal').addEventListener('click', function (e) { if (e.target === el('modal')) el('modal').hidden = true; });
+  el('csv').addEventListener('click', function () {
+    var rows = [['code', 'customer', 'phone', 'area', 'address', 'cod', 'fee', 'status', 'date']].concat(ships.map(function (s) { return [s.code, s.customer_name, s.customer_phone, s.zone || '', s.address, s.cod, s.fee, s.status, s.created_at]; }));
+    var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { var v = String(c == null ? '' : c); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'bareed-shipments.csv'; document.body.appendChild(a); a.click(); a.remove();
+  });
+  el('lang').addEventListener('click', function () { lang = lang === 'ar' ? 'en' : 'ar'; try { localStorage.setItem('bareed.lang', lang); } catch (e) {} renderAll(); if (me && me.status !== 'active') banner(me.status === 'pending' ? 'wait' : 'bad', me.status === 'pending' ? 'pending' : me.status === 'none' ? 'nomerchant' : 'suspended'); });
+  try { var th = localStorage.getItem('bareed.theme'); if (th === 'light' || th === 'dark') document.documentElement.setAttribute('data-theme', th); } catch (e) {}
+  function curTheme() { return document.documentElement.getAttribute('data-theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+  function paintTheme() { el('theme').innerHTML = ic(curTheme() === 'dark' ? 'sun' : 'moon'); }
+  el('theme').addEventListener('click', function () { var n = curTheme() === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', n); try { localStorage.setItem('bareed.theme', n); } catch (e) {} paintTheme(); });
+  el('logout').addEventListener('click', async function () { await sb.auth.signOut(); location.href = './'; });
+
+  var SUPABASE_URL = 'https://ybkkdjpgkkdnijafsuai.supabase.co';
+  // Public (anon) key: safe in the browser; row-level security limits each merchant to their own rows.
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU';
+  renderStatic();
+  if (!window.supabase) { el('load').textContent = 'Supabase library not loaded'; return; }
+  sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  start();
+})();
+</script>
+</body></html>

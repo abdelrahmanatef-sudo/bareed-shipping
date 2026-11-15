@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>بريد · Bareed — شحن وتوصيل</title>
+<meta name="description" content="بريد: شركة شحن وتوصيل داخل مصر. بنبدأ من المنيب لحد البدرشين في الجيزة. تتبّع شحنتك وسجّل كتاجر.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%235B8DEF'/%3E%3Crect x='13' y='16' width='26' height='18' rx='4' fill='none' stroke='%23FFFFFF' stroke-width='2.8'/%3E%3Cpath d='M14.5 19.5 26 27.5l11.500-8' fill='none' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 22h4M7.500 28H10' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --bg: #F5F8F8; --surface: #FFFFFF; --surface-2: #EDF3F2; --ink: #0B1B1A; --muted: #546967; --line: #DCE6E5;
+  --brand: #0AA79A; --brand-2: #2ED3C4; --brand-soft: #DBF4F1; --on-brand: #FFFFFF; --accent: #5B8DEF;
+  --hero-a: #081F1E; --hero-b: #0E3F3A; --hero-ink: #E9F6F4; --hero-muted: #93B8B3;
+  --good: #17784A; --good-bg: #DCF2E5; --warn: #A86400; --warn-bg: #FCEBCB; --bad: #B4332E; --bad-bg: #FADEDC; --info: #2F63C9; --info-bg: #E3EBFA; --pur: #7140C8; --pur-bg: #EBE3FA;
+  --shadow: 0 1px 2px rgba(11,27,26,.05), 0 10px 30px rgba(11,27,26,.07);
+  --font-display: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Readex Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #07100F; --surface: #0F1E1D; --surface-2: #152928; --ink: #E6F1EF; --muted: #92A9A5; --line: #223634;
+  --brand: #2ED3C4; --brand-soft: #0E3633; --on-brand: #03211E; --accent: #7DA2F5; --hero-a: #041110; --hero-b: #0A2E2A; --shadow: none;
+  --good: #5FD494; --good-bg: #123422; --warn: #F2B558; --warn-bg: #3A2A10; --bad: #F08A85; --bad-bg: #3F1B19; --info: #8EB1F2; --info-bg: #182847; --pur: #B79BF0; --pur-bg: #2A2047; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #07100F; --surface: #0F1E1D; --surface-2: #152928; --ink: #E6F1EF; --muted: #92A9A5; --line: #223634;
+  --brand: #2ED3C4; --brand-soft: #0E3633; --on-brand: #03211E; --accent: #7DA2F5; --hero-a: #041110; --hero-b: #0A2E2A; --shadow: none;
+  --good: #5FD494; --good-bg: #123422; --warn: #F2B558; --warn-bg: #3A2A10; --bad: #F08A85; --bad-bg: #3F1B19; --info: #8EB1F2; --info-bg: #182847; --pur: #B79BF0; --pur-bg: #2A2047; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.65; }
+h1, h2, h3, p { margin: 0; } h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.25; }
+button, input, select { font: inherit; color: inherit; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.wrap { width: min(1160px, 100%); margin-inline: auto; padding-inline: max(20px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-left, 0px)); }
+.logo .logo-bg { fill: var(--accent); } .logo .logo-fg { fill: none; stroke: #fff; stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; border-radius: 12px; padding: 11px 22px; font-weight: 600; background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: var(--on-brand); box-shadow: 0 6px 18px rgba(10,167,154,.30); transition: transform .18s, box-shadow .18s; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(10,167,154,.38); }
+.btn.ghost { background: transparent; color: inherit; border: 1px solid color-mix(in srgb, currentColor 28%, transparent); box-shadow: none; }
+.btn.lg { padding: 14px 28px; font-size: 17px; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid color-mix(in srgb, currentColor 22%, transparent); background: transparent; color: inherit; cursor: pointer; font-weight: 600; font-size: 14px; }
+.icon-btn:hover { border-color: var(--brand-2); }
+
+/* nav + hero */
+.hero { position: relative; overflow: hidden; background: linear-gradient(160deg, var(--hero-b) 0%, var(--hero-a) 70%); color: var(--hero-ink); isolation: isolate; }
+.blob { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; z-index: -1; animation: float 14s ease-in-out infinite; }
+.blob.a { width: 420px; height: 420px; background: #1fb9a9; top: -140px; inset-inline-start: -120px; }
+.blob.b { width: 360px; height: 360px; background: #4a74d6; bottom: -160px; inset-inline-end: -80px; animation-delay: -5s; opacity: .4; }
+.blob.c { width: 220px; height: 220px; background: #5B8DEF; top: 40%; inset-inline-start: 45%; animation-delay: -9s; opacity: .25; }
+@keyframes float { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(30px,-26px,0) scale(1.08); } }
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-block: 18px; }
+.brand { display: flex; align-items: center; gap: 12px; font-family: var(--font-display); font-weight: 700; font-size: 24px; }
+.brand small { display: block; font-weight: 400; font-size: 12px; color: var(--hero-muted); font-family: var(--font-body); }
+.links { display: flex; gap: 6px; }
+.links a { padding: 8px 14px; border-radius: 10px; color: var(--hero-muted); font-weight: 500; font-size: 15px; }
+.links a:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav-r { display: flex; gap: 8px; align-items: center; }
+.hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; align-items: center; padding-block: 56px 96px; }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 99px; padding: 6px 14px; font-size: 13px; color: var(--hero-muted); }
+.eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 0 rgba(74,222,128,.6); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
+.hero h1 { font-size: clamp(34px, 5vw, 58px); font-weight: 700; margin-top: 18px; }
+.hero h1 em { font-style: normal; background: linear-gradient(120deg, #2ED3C4, #7DA2F5); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.hero .lead { color: var(--hero-muted); font-size: 18px; max-width: 46ch; margin-top: 16px; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.track { margin-top: 30px; display: flex; gap: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); backdrop-filter: blur(8px); border-radius: 16px; padding: 8px; max-width: 480px; }
+.track input { flex: 1; min-width: 0; background: transparent; border: 0; color: #fff; padding: 8px 12px; outline: none; direction: ltr; text-align: start; }
+.track input::placeholder { color: var(--hero-muted); }
+#tr-out { margin-top: 14px; max-width: 480px; }
+.tr-card { background: var(--surface); color: var(--ink); border-radius: 16px; padding: 18px; box-shadow: var(--shadow); }
+.tl { list-style: none; margin: 14px 0 0; padding: 0; }
+.tl li { display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 6px 0; position: relative; color: var(--muted); }
+.tl li::before { content: ""; position: absolute; inset-inline-start: 14px; top: 34px; bottom: -6px; width: 2px; background: var(--line); }
+.tl li:last-child::before { display: none; }
+.tl .d { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); z-index: 1; }
+.tl .d svg { width: 16px; height: 16px; }
+.tl li.done { color: var(--ink); } .tl li.done .d { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
+.tl li.now .d { background: var(--accent); color: #fff; box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent); }
+.tl small { display: block; color: var(--muted); }
+.badge { display: inline-block; padding: 3px 12px; border-radius: 99px; font-size: 13px; font-weight: 600; }
+
+/* hero visual: the route */
+.route-card { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); border-radius: 24px; padding: 26px; backdrop-filter: blur(10px); transform: perspective(1000px) rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg)); transition: transform .15s ease-out; }
+.route-card h3 { font-size: 15px; color: var(--hero-muted); font-weight: 500; }
+.route { position: relative; margin-top: 20px; display: flex; flex-direction: column; gap: 0; }
+.stop { display: grid; grid-template-columns: 28px 1fr auto; gap: 14px; align-items: center; padding: 11px 0; position: relative; }
+.stop::before { content: ""; position: absolute; inset-inline-start: 13px; top: 34px; bottom: -12px; width: 2px; background: linear-gradient(var(--brand-2), rgba(255,255,255,.12)); }
+.stop:last-child::before { display: none; }
+.stop .pin { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-2); display: grid; place-items: center; color: #04201B; box-shadow: 0 0 0 6px rgba(46,211,196,.18); z-index: 1; }
+.stop .pin svg { width: 15px; height: 15px; }
+.stop b { font-family: var(--font-display); font-weight: 600; font-size: 17px; }
+.stop span.t { font-size: 12px; color: var(--hero-muted); }
+.truck { position: absolute; inset-inline-start: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #0a6e64; display: grid; place-items: center; z-index: 2; box-shadow: 0 6px 16px rgba(0,0,0,.3); animation: drive 7s ease-in-out infinite; }
+.truck svg { width: 16px; height: 16px; }
+@keyframes drive { 0% { transform: translateY(0); } 50% { transform: translateY(var(--travel, 220px)); } 100% { transform: translateY(0); } }
+
+/* sections */
+section { padding-block: 84px; }
+.sec-h { max-width: 640px; margin-bottom: 40px; }
+.sec-h .k { color: var(--brand); font-weight: 600; font-size: 14px; letter-spacing: .04em; }
+.sec-h h2 { font-size: clamp(26px, 3.4vw, 40px); margin-top: 6px; }
+.sec-h p { color: var(--muted); margin-top: 12px; font-size: 17px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: -52px; position: relative; z-index: 3; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; box-shadow: var(--shadow); }
+.stat b { display: block; font-family: var(--font-display); font-size: 38px; line-height: 1.2; font-variant-numeric: tabular-nums; background: linear-gradient(120deg, var(--brand), var(--accent)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.stat span { color: var(--muted); font-size: 14px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; counter-reset: s; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 26px; position: relative; transition: transform .25s, box-shadow .25s; overflow: hidden; }
+.step:hover { transform: translateY(-6px); box-shadow: 0 18px 40px rgba(10,167,154,.16); }
+.step::after { counter-increment: s; content: counter(s); position: absolute; inset-block-start: 8px; inset-inline-end: 18px; font-family: var(--font-display); font-weight: 700; font-size: 72px; color: var(--brand-soft); line-height: 1; }
+.step .ic { width: 48px; height: 48px; border-radius: 14px; background: var(--brand-soft); color: var(--brand); display: grid; place-items: center; margin-bottom: 16px; position: relative; z-index: 1; }
+.step h3 { font-size: 19px; position: relative; z-index: 1; } .step p { color: var(--muted); margin-top: 8px; position: relative; z-index: 1; }
+.feat { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.feat div { background: var(--surface-2); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 6px; }
+.feat svg { color: var(--accent); width: 26px; height: 26px; } .feat b { font-family: var(--font-display); } .feat span { color: var(--muted); font-size: 15px; }
+
+/* coverage */
+.cov { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 24px; box-shadow: var(--shadow); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1px solid var(--line); background: var(--surface-2); border-radius: 99px; padding: 6px 14px; font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; transition: transform .15s, border-color .15s; }
+.chip:hover { transform: translateY(-2px); border-color: var(--brand); }
+.chip.on { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: var(--on-brand); border-color: transparent; font-weight: 600; }
+.chip.open { border-color: var(--brand); }
+.chip.open::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.chip.soon { color: var(--muted); cursor: default; } .chip.soon:hover { transform: none; border-color: var(--line); }
+.chip.city.open { background: var(--good-bg); color: var(--good); border-color: transparent; font-weight: 600; }
+.sel { display: grid; gap: 12px; margin-top: 8px; }
+.sel select, .field input, .field select { width: 100%; background: var(--surface-2); border: 1px solid transparent; border-radius: 12px; padding: 11px 14px; color: var(--ink); }
+.sel select:focus, .field input:focus, .field select:focus { border-color: var(--brand); outline: none; }
+.verdict { margin-top: 14px; padding: 14px 16px; border-radius: 14px; font-weight: 500; }
+.verdict.yes { background: var(--good-bg); color: var(--good); } .verdict.no { background: var(--warn-bg); color: var(--warn); }
+.pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; }
+.price { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 10px; }
+.price.hot { background: linear-gradient(160deg, var(--hero-b), var(--hero-a)); color: var(--hero-ink); border: 0; }
+.price .n { font-family: var(--font-display); font-size: 42px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.price ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.price li { display: flex; gap: 10px; align-items: flex-start; } .price li svg { color: var(--brand-2); margin-top: 3px; }
+.cta { background: linear-gradient(135deg, var(--hero-b), var(--hero-a)); color: var(--hero-ink); border-radius: 28px; padding: clamp(28px, 5vw, 56px); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; position: relative; overflow: hidden; }
+.cta h2 { font-size: clamp(24px, 3vw, 36px); max-width: 20ch; } .cta p { color: var(--hero-muted); margin-top: 8px; }
+footer { padding-block: 36px 48px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+/* modal */
+.modal { position: fixed; inset: 0; z-index: 50; background: rgba(4,17,16,.62); backdrop-filter: blur(6px); display: grid; place-items: center; padding: 16px; overflow: auto; }
+.dialog { width: min(440px, 100%); background: var(--surface); border-radius: 24px; padding: 28px; box-shadow: 0 30px 80px rgba(0,0,0,.4); display: grid; gap: 16px; animation: pop .25s ease; }
+@keyframes pop { from { transform: translateY(14px) scale(.97); opacity: 0; } }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); border-radius: 12px; padding: 4px; }
+.tabs button { border: 0; background: transparent; border-radius: 9px; padding: 8px; cursor: pointer; font-weight: 600; color: var(--muted); }
+.tabs button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+.field { display: grid; gap: 5px; } .field label { font-size: 13px; font-weight: 500; }
+.msg { font-size: 14px; min-height: 20px; } .msg.err { color: var(--bad); } .msg.ok { color: var(--good); }
+.x { justify-self: end; }
+
+/* reveal */
+.rv { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s ease; transition-delay: var(--d, 0ms); }
+.rv.in { opacity: 1; transform: none; }
+
+@media (max-width: 900px) {
+  .hero-grid, .cov { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .links { display: none; } .hero-grid { padding-block: 32px 80px; }
+  .route-card { transform: none !important; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .rv { opacity: 1; transform: none; } }
+</style></head>
+<body>
+
+<header class="hero" id="top">
+  <i class="blob a"></i><i class="blob b"></i><i class="blob c"></i>
+  <div class="wrap">
+    <nav class="nav">
+      <a class="brand" href="#top"><span id="logo1"></span><span><span data-i18n="brand"></span><small data-i18n="tag"></small></span></a>
+      <div class="links"><a href="#how" data-i18n="n_how"></a><a href="#coverage" data-i18n="n_cov"></a><a href="#pricing" data-i18n="n_price"></a></div>
+      <div class="nav-r">
+        <button class="icon-btn" id="lang" type="button"></button>
+        <button class="icon-btn" id="theme" type="button" aria-label="Theme"></button>
+        <button class="btn" id="login-btn" type="button" data-i18n="login"></button>
+      </div>
+    </nav>
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow"><i></i><span data-i18n="eyebrow"></span></span>
+        <h1 data-i18n-html="h1"></h1>
+        <p class="lead" data-i18n="lead"></p>
+        <div class="cta-row"><button class="btn lg" id="signup-btn" type="button" data-i18n="signup"></button><a class="btn ghost lg" href="#coverage" data-i18n="n_cov"></a></div>
+        <form class="track" id="track-form"><input id="tr-in" required maxlength="20" autocomplete="off" data-i18n-ph="tr_ph" aria-label="Tracking code"><button class="btn" type="submit" data-i18n="tr_btn"></button></form>
+        <div id="tr-out" aria-live="polite"></div>
+      </div>
+      <div class="route-card" id="rc">
+        <h3 data-i18n="rc_t"></h3>
+        <div class="route" id="route"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap"><div class="stats" id="stats"></div></div>
+
+  <section id="how"><div class="wrap">
+    <div class="sec-h rv"><span class="k" data-i18n="n_how"></span><h2 data-i18n="how_h"></h2><p data-i18n="how_p"></p></div>
+    <div class="steps">
+      <div class="step rv"><div class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><h3 data-i18n="s1h"></h3><p data-i18n="s1p"></p></div>
+      <div class="step rv" style="--d:100ms"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg></div><h3 data-i18n="s2h"></h3><p data-i18n="s2p"></p></div>
+      <div class="step rv" style="--d:200ms"><div class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H5a2 2 0 0 1-2-2Z"/><path d="M16 14h2"/></svg></div><h3 data-i18n="s3h"></h3><p data-i18n="s3p"></p></div>
+    </div>
+    <div class="feat" style="margin-top:20px">
+      <div class="rv"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><b data-i18n="f1h"></b><span data-i18n="f1p"></span></div>
+      <div class="rv" style="--d:100ms"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><b data-i18n="f2h"></b><span data-i18n="f2p"></span></div>
+      <div class="rv" style="--d:200ms"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><b data-i18n="f3h"></b><span data-i18n="f3p"></span></div>
+    </div>
+  </div></section>
+
+  <section id="coverage" style="background:var(--surface-2)"><div class="wrap">
+    <div class="sec-h rv"><span class="k" data-i18n="n_cov"></span><h2 data-i18n="cov_h"></h2><p data-i18n="cov_p"></p></div>
+    <div class="cov">
+      <div class="panel rv"><h3 data-i18n="cov_gov" style="margin-bottom:14px"></h3><div class="chips" id="govs"></div></div>
+      <div style="display:grid;gap:18px">
+        <div class="panel rv" style="--d:100ms"><h3 id="city-h" style="margin-bottom:14px"></h3><div class="chips" id="cities"></div></div>
+        <div class="panel rv" style="--d:150ms"><h3 data-i18n="chk_h"></h3>
+          <div class="sel"><select id="chk-gov" aria-label="Governorate"></select><select id="chk-city" aria-label="City"></select></div>
+          <div id="verdict"></div></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section id="pricing"><div class="wrap">
+    <div class="sec-h rv"><span class="k" data-i18n="n_price"></span><h2 data-i18n="pr_h"></h2><p data-i18n="pr_p"></p></div>
+    <div class="pricing">
+      <div class="price hot rv"><span data-i18n="pr_from"></span><div class="n" id="price-n">45</div><span data-i18n="pr_unit"></span>
+        <ul><li><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg><span data-i18n="pr_1"></span></li><li><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg><span data-i18n="pr_2"></span></li><li><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg><span data-i18n="pr_3"></span></li></ul></div>
+      <div class="price rv" style="--d:100ms"><b style="font-family:var(--font-display);font-size:20px" data-i18n="pr_soon_h"></b><p style="color:var(--muted)" data-i18n="pr_soon_p"></p>
+        <ul><li><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg><span data-i18n="pr_4"></span></li><li><svg class="i" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></svg><span data-i18n="pr_5"></span></li></ul></div>
+    </div>
+  </div></section>
+
+  <section style="padding-top:0"><div class="wrap"><div class="cta rv">
+    <div><h2 data-i18n="cta_h"></h2><p data-i18n="cta_p"></p></div>
+    <button class="btn lg" id="signup-btn2" type="button" data-i18n="signup"></button>
+  </div></div></section>
+</main>
+
+<footer><div class="wrap"><span><span data-i18n="brand"></span> · <span data-i18n="foot"></span></span><span data-i18n="foot2"></span></div></footer>
+
+<div class="modal" id="modal" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
+    <button class="icon-btn x" id="m-close" type="button" aria-label="Close" style="border-color:var(--line)"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="tabs" role="tablist"><button type="button" role="tab" id="tab-login" aria-selected="true" data-i18n="login"></button><button type="button" role="tab" id="tab-signup" aria-selected="false" data-i18n="signup"></button></div>
+    <h2 id="dlg-t" style="font-size:24px"></h2>
+    <form id="auth-form" style="display:grid;gap:14px">
+      <div class="field" data-su><label for="a-name" data-i18n="a_name"></label><input id="a-name" maxlength="80" autocomplete="organization"></div>
+      <div class="field" data-su><label for="a-phone" data-i18n="a_phone"></label><input id="a-phone" inputmode="tel" maxlength="30" dir="ltr" autocomplete="tel"></div>
+      <div class="field"><label for="a-email" data-i18n="a_email"></label><input id="a-email" type="email" required dir="ltr" autocomplete="username"></div>
+      <div class="field"><label for="a-pass" data-i18n="a_pass"></label><input id="a-pass" type="password" required minlength="8" dir="ltr" autocomplete="current-password"></div>
+      <button class="btn" type="submit" id="a-submit"></button>
+      <p class="msg" id="a-msg" role="status"></p>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  var D = {
+    ar: {
+      brand: 'بريد', tag: 'شحن وتوصيل داخل مصر', n_how: 'إزاي بنشتغل', n_cov: 'التغطية', n_price: 'الأسعار', login: 'دخول', signup: 'سجّل كتاجر', dash: 'لوحة التحكم',
+      eyebrow: 'شغّالين دلوقتي في الجيزة · من المنيب للبدرشين',
+      h1: 'شحنتك توصل <em>بسرعة</em> وبحساب واضح',
+      lead: 'بريد بيوصّل طلبات متجرك لحد باب العميل، وبيحصّل الـ COD ويسوّيه معاك بشفافية. بنبدأ بالجيزة وبنكبر لكل مصر.',
+      tr_ph: 'كود الشحنة، مثال: BR-00001', tr_btn: 'تتبّع',
+      tr_none: 'مفيش شحنة بالكود ده. اتأكد منه.', tr_err: 'تعذّر التتبع دلوقتي، جرّب تاني.',
+      rc_t: 'خط التغطية المفتوح دلوقتي',
+      how_h: 'من الطلب لحد التسوية في 3 خطوات', how_p: 'مفيش ورق ولا مكالمات كتير. كل حاجة على لوحة التاجر.',
+      s1h: 'سجّل حساب تاجر', s1p: 'سجّل ببيانات متجرك وإحنا بنراجع الحساب ونفعّله.',
+      s2h: 'ضيف شحناتك', s2p: 'اكتب بيانات العميل والمنطقة والـ COD، وأجرة الشحن بتتحسب لوحدها.',
+      s3h: 'استلم فلوسك', s3p: 'المندوب بيستلم ويوصّل ويحصّل، وإحنا بنسوّي معاك مستحقاتك.',
+      f1h: 'تتبّع لحظي', f1p: 'العميل والتاجر يشوفوا حالة الشحنة بالكود في أي وقت.', f2h: 'لوحة تحكم كاملة', f2p: 'إحصائيات، مستحقات، وسجل كل شحنة في مكان واحد.', f3h: 'تسوية شفافة', f3p: 'مستحقاتك = الـ COD ناقص الأجرة والعمولة. أرقام واضحة.',
+      cov_h: 'مفتوحين في الجيزة، وبنوسّع لكل المحافظات', cov_p: 'كل محافظات ومدن مصر موجودة هنا. المدن الخضرا مفتوحة للتوصيل دلوقتي، والباقي قريباً.',
+      cov_gov: 'المحافظات', cov_open: 'مفتوحة', cov_soon: 'قريباً', city_in: 'مدن {g}', chk_h: 'اتأكد إن منطقتك متاحة', chk_pick: 'اختار المدينة',
+      v_yes: 'التوصيل متاح في {c}، {g}. أجرة الشحن {f} جنيه.', v_no: '{c} لسه مش مفتوحة. بنوسّع قريباً، سجّل وهنبلّغك أول ما تتفتح.',
+      st_gov: 'محافظة في خطة التغطية', st_city: 'مدينة ومركز', st_open: 'مدن مفتوحة للتوصيل', st_fee: 'أجرة الشحن تبدأ من (جنيه)',
+      pr_h: 'سعر واضح من غير مفاجآت', pr_p: 'الأجرة بتتحدد حسب المنطقة وبتظهر لك قبل ما تأكد الشحنة.', pr_from: 'الشحن داخل الجيزة (المناطق المفتوحة) يبدأ من', pr_unit: 'جنيه للشحنة',
+      pr_1: 'تحصيل COD وتسوية مع التاجر', pr_2: 'تتبع بالكود للتاجر والعميل', pr_3: 'لوحة تحكم وتقارير', pr_soon_h: 'باقي المحافظات', pr_soon_p: 'هنعلن أسعارها أول ما نفتح كل منطقة.', pr_4: 'سجّل دلوقتي واحجز مكانك', pr_5: 'هنبلّغك لما منطقتك تتفتح',
+      cta_h: 'جاهز تبدأ توصّل مع بريد؟', cta_p: 'التسجيل مجاني. بنراجع حسابك ونفعّله بسرعة.',
+      foot: 'شحن وتوصيل داخل مصر', foot2: 'بنبدأ من الجيزة',
+      a_name: 'اسم المتجر', a_phone: 'رقم التليفون', a_email: 'الإيميل', a_pass: 'الباسورد (8 حروف على الأقل)',
+      t_login: 'تسجيل الدخول', t_signup: 'إنشاء حساب تاجر', go_login: 'دخول', go_signup: 'إنشاء الحساب',
+      e_login: 'الإيميل أو الباسورد غلط.', e_fail: 'حصلت مشكلة، جرّب تاني.', e_name: 'اكتب اسم المتجر ورقم التليفون.',
+      ok_signup: 'تم إنشاء الحساب. لو وصلك إيميل تأكيد افتحه الأول، وبعدها سجّل دخول.', no_lib: 'الخدمة مش متاحة دلوقتي. اتأكد من النت وحدّث الصفحة.',
+      st_new: 'جديدة', st_picked_up: 'اتستلمت من التاجر', st_out_for_delivery: 'مع المندوب', st_delivered: 'اتسلمت', st_returned: 'مرتجعة'
+    },
+    en: {
+      brand: 'Bareed', tag: 'Delivery across Egypt', n_how: 'How it works', n_cov: 'Coverage', n_price: 'Pricing', login: 'Sign in', signup: 'Join as a merchant', dash: 'Dashboard',
+      eyebrow: 'Now live in Giza · Monib to Badrashin',
+      h1: 'Your parcels arrive <em>fast</em>, with clear numbers',
+      lead: 'Bareed delivers your store orders to the customer’s door, collects the COD and settles it with you transparently. We start in Giza and grow across Egypt.',
+      tr_ph: 'Tracking code, e.g. BR-00001', tr_btn: 'Track',
+      tr_none: 'No shipment with this code. Check it and try again.', tr_err: 'Tracking is unavailable right now. Try again.',
+      rc_t: 'The route that is open today',
+      how_h: 'From order to settlement in 3 steps', how_p: 'No paperwork and no endless calls. Everything lives on your merchant dashboard.',
+      s1h: 'Create a merchant account', s1p: 'Sign up with your store details. We review and activate the account.',
+      s2h: 'Add your shipments', s2p: 'Enter the customer, area and COD. The shipping fee is calculated for you.',
+      s3h: 'Get paid', s3p: 'Our courier picks up, delivers and collects, then we settle what we owe you.',
+      f1h: 'Live tracking', f1p: 'Customers and merchants see a shipment’s status by its code at any time.', f2h: 'Full dashboard', f2p: 'Stats, balances and every shipment’s history in one place.', f3h: 'Transparent settlement', f3p: 'You receive the COD minus shipping fee and commission. Clear numbers.',
+      cov_h: 'Open in Giza, expanding to every governorate', cov_p: 'Every Egyptian governorate and city is listed here. Green cities are open for delivery now; the rest are coming soon.',
+      cov_gov: 'Governorates', cov_open: 'Open', cov_soon: 'Soon', city_in: 'Cities in {g}', chk_h: 'Check if your area is covered', chk_pick: 'Choose a city',
+      v_yes: 'Delivery is available in {c}, {g}. Shipping fee: {f} EGP.', v_no: '{c} is not open yet. We are expanding soon. Sign up and we will tell you when it opens.',
+      st_gov: 'governorates in the coverage plan', st_city: 'cities and districts', st_open: 'cities open for delivery', st_fee: 'shipping from (EGP)',
+      pr_h: 'Clear pricing, no surprises', pr_p: 'The fee depends on the area and is shown before you confirm a shipment.', pr_from: 'Shipping inside the open Giza areas starts at', pr_unit: 'EGP per shipment',
+      pr_1: 'COD collection and merchant settlement', pr_2: 'Tracking by code for merchant and customer', pr_3: 'Dashboard and reports', pr_soon_h: 'Other governorates', pr_soon_p: 'We will publish prices as soon as each area opens.', pr_4: 'Sign up now to reserve your place', pr_5: 'We will notify you when your area opens',
+      cta_h: 'Ready to ship with Bareed?', cta_p: 'Signing up is free. We review and activate your account quickly.',
+      foot: 'Delivery across Egypt', foot2: 'Starting in Giza',
+      a_name: 'Store name', a_phone: 'Phone number', a_email: 'Email', a_pass: 'Password (at least 8 characters)',
+      t_login: 'Sign in', t_signup: 'Create a merchant account', go_login: 'Sign in', go_signup: 'Create account',
+      e_login: 'Wrong email or password.', e_fail: 'Something went wrong. Try again.', e_name: 'Enter your store name and phone number.',
+      ok_signup: 'Account created. If you received a confirmation email, open it first, then sign in.', no_lib: 'The service is unavailable right now. Check your connection and reload.',
+      st_new: 'New', st_picked_up: 'Picked up from merchant', st_out_for_delivery: 'Out for delivery', st_delivered: 'Delivered', st_returned: 'Returned'
+    }
+  };
+  var lang = 'ar';
+  try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
+  function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
+  function el(id) { return document.getElementById(id); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+  function gname(a) { return lang === 'ar' ? a.gov_ar : a.gov_en; }
+  function cname(a) { return lang === 'ar' ? a.city_ar : a.city_en; }
+  var ICON = {
+    pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.800 12 21 12 21Z"/><circle cx="12" cy="9.500" r="2.500"/>',
+    truck: '<path d="M3 6h11v10H3zM14 9h4l3 3v4h-7"/><circle cx="7" cy="17.500" r="1.800"/><circle cx="17" cy="17.500" r="1.800"/>',
+    box: '<path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/>', check: '<path d="m5 12 5 5 9-10"/>', rotate: '<path d="M3 12a9 9 0 1 0 3-6.700L3 8M3 3v5h5"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.900 4.900l1.400 1.400M17.700 17.700l1.400 1.400M2 12h2M20 12h2M4.900 19.100l1.400-1.400M17.700 6.300l1.400-1.400"/>',
+    moon: '<path d="M20 14.500A8 8 0 1 1 9.500 4a6.500 6.500 0 0 0 10.500 10.500Z"/>'
+  };
+  function ic(n) { return '<svg class="i" viewBox="0 0 24 24">' + ICON[n] + '</svg>'; }
+  function logo(sz) { return '<svg class="logo" width="' + sz + '" height="' + sz + '" viewBox="0 0 48 48" aria-hidden="true"><rect class="logo-bg" width="48" height="48" rx="13"/><rect class="logo-fg" x="13" y="16" width="26" height="18" rx="4"/><path class="logo-fg" d="M14.5 19.500 26 27.500l11.500-8"/><path class="logo-fg" d="M6 22h4M7.500 28H10"/></svg>'; }
+
+  /* ---------- state ---------- */
+  var areas = [], govSel = null, sb = null, signedIn = false, role = null, mode = 'login';
+  var ROUTE = ['المنيب', 'أبو النمرس', 'الحوامدية', 'البدرشين', 'ميت رهينة', 'سقارة'];
+  var FALLBACK_GOVS = ['القاهرة|Cairo', 'الجيزة|Giza', 'الإسكندرية|Alexandria', 'القليوبية|Qalyubia', 'الشرقية|Sharqia', 'الدقهلية|Dakahlia', 'الغربية|Gharbia', 'المنوفية|Menoufia', 'كفر الشيخ|Kafr El Sheikh', 'البحيرة|Beheira', 'دمياط|Damietta', 'بورسعيد|Port Said', 'الإسماعيلية|Ismailia', 'السويس|Suez', 'شمال سيناء|North Sinai', 'جنوب سيناء|South Sinai', 'الفيوم|Fayoum', 'بني سويف|Beni Suef', 'المنيا|Minya', 'أسيوط|Asyut', 'سوهاج|Sohag', 'قنا|Qena', 'الأقصر|Luxor', 'أسوان|Aswan', 'البحر الأحمر|Red Sea', 'مطروح|Matrouh', 'الوادي الجديد|New Valley'];
+
+  function govList() {
+    var m = {}, out = [];
+    areas.forEach(function (a) { if (!m[a.gov_ar]) { m[a.gov_ar] = { ar: a.gov_ar, en: a.gov_en, n: 0, open: 0 }; out.push(m[a.gov_ar]); } m[a.gov_ar].n++; if (a.is_active) m[a.gov_ar].open++; });
+    if (!out.length) FALLBACK_GOVS.forEach(function (g) { var p = g.split('|'); out.push({ ar: p[0], en: p[1], n: 0, open: p[0] === 'الجيزة' ? 6 : 0 }); });
+    return out;
+  }
+
+  /* ---------- render ---------- */
+  function renderStatic() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-i18n]').forEach(function (n) { n.textContent = t(n.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-html]').forEach(function (n) { n.innerHTML = t(n.getAttribute('data-i18n-html')); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function (n) { n.placeholder = t(n.getAttribute('data-i18n-ph')); });
+    el('lang').textContent = lang === 'ar' ? 'EN' : 'عربي';
+    el('logo1').innerHTML = logo(44);
+    el('login-btn').textContent = signedIn ? t('dash') : t('login');
+    paintTheme(); renderAuthTexts();
+  }
+  function renderRoute() {
+    var act = areas.filter(function (a) { return a.is_active; });
+    var names = ROUTE.filter(function (r) { return !areas.length || act.some(function (a) { return a.city_ar === r; }); });
+    var h = '<span class="truck">' + ic('truck') + '</span>';
+    names.forEach(function (r, i) {
+      var a = areas.filter(function (x) { return x.city_ar === r && x.gov_ar === 'الجيزة'; })[0];
+      h += '<div class="stop"><span class="pin">' + ic('pin') + '</span><b>' + esc(a ? cname(a) : r) + '</b><span class="t">' + (i === 0 ? (lang === 'ar' ? 'البداية' : 'Start') : i === names.length - 1 ? (lang === 'ar' ? 'النهاية' : 'End') : '') + '</span></div>';
+    });
+    var box = el('route'); box.innerHTML = h; box.style.setProperty('--travel', Math.max(0, (names.length - 1) * 54) + 'px');
+  }
+  function renderStats() {
+    var gs = govList(), open = areas.filter(function (a) { return a.is_active; }), fees = open.map(function (a) { return +a.fee; });
+    var minFee = fees.length ? Math.min.apply(null, fees) : 45;
+    var items = [[gs.length, t('st_gov')], [areas.length || 130, t('st_city')], [open.length || 6, t('st_open')], [minFee, t('st_fee')]];
+    el('stats').innerHTML = items.map(function (x, i) { return '<div class="stat rv" style="--d:' + i * 80 + 'ms"><b data-count="' + x[0] + '">0</b><span>' + x[1] + '</span></div>'; }).join('');
+    el('price-n').textContent = minFee;
+    observe();
+  }
+  function renderCoverage() {
+    var gs = govList();
+    if (!govSel) govSel = 'الجيزة';
+    el('govs').innerHTML = gs.map(function (g) {
+      return '<button type="button" class="chip' + (g.open ? ' open' : '') + (g.ar === govSel ? ' on' : '') + '" data-g="' + esc(g.ar) + '">' + esc(lang === 'ar' ? g.ar : g.en) + '</button>';
+    }).join('');
+    var g = gs.filter(function (x) { return x.ar === govSel; })[0];
+    el('city-h').textContent = t('city_in', { g: g ? (lang === 'ar' ? g.ar : g.en) : '' });
+    var cs = areas.filter(function (a) { return a.gov_ar === govSel; }).sort(function (a, b) { return (b.is_active - a.is_active) || a.city_ar.localeCompare(b.city_ar, 'ar'); });
+    el('cities').innerHTML = cs.map(function (a) { return '<span class="chip city ' + (a.is_active ? 'open' : 'soon') + '">' + esc(cname(a)) + (a.is_active ? '' : ' · ' + t('cov_soon')) + '</span>'; }).join('') || '<p style="color:var(--muted)">…</p>';
+    var cg = el('chk-gov'), cur = cg.value || govSel;
+    cg.innerHTML = gs.map(function (x) { return '<option value="' + esc(x.ar) + '"' + (x.ar === cur ? ' selected' : '') + '>' + esc(lang === 'ar' ? x.ar : x.en) + '</option>'; }).join('');
+    fillCheckCities();
+  }
+  function fillCheckCities() {
+    var gv = el('chk-gov').value, cc = el('chk-city'), prev = cc.value;
+    var cs = areas.filter(function (a) { return a.gov_ar === gv; });
+    cc.innerHTML = '<option value="">' + t('chk_pick') + '</option>' + cs.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.id === prev ? ' selected' : '') + '>' + esc(cname(a)) + '</option>'; }).join('');
+    showVerdict();
+  }
+  function showVerdict() {
+    var id = el('chk-city').value, v = el('verdict'); if (!id) { v.innerHTML = ''; return; }
+    var a = areas.filter(function (x) { return x.id === id; })[0]; if (!a) return;
+    v.innerHTML = a.is_active ? '<div class="verdict yes">' + esc(t('v_yes', { c: cname(a), g: gname(a), f: fmt(a.fee) })) + '</div>' : '<div class="verdict no">' + esc(t('v_no', { c: cname(a) })) + '</div>';
+  }
+  function fmt(n) { return Math.round(+n).toLocaleString('en-US'); }
+  function renderAll() { renderStatic(); renderRoute(); renderStats(); renderCoverage(); }
+
+  /* ---------- animation helpers ---------- */
+  var io = null;
+  function observe() {
+    var els = document.querySelectorAll('.rv:not(.in), [data-count]');
+    if (!('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); finishCount(e); }); return; }
+    if (!io) io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); if (e.target.hasAttribute('data-count')) count(e.target); io.unobserve(e.target); } }); }, { threshold: .15 });
+    els.forEach(function (e) { io.observe(e); });
+  }
+  function finishCount(e) { if (e.hasAttribute && e.hasAttribute('data-count')) e.textContent = fmt(e.getAttribute('data-count')); }
+  function count(e) {
+    var to = +e.getAttribute('data-count'), t0 = null;
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) { e.textContent = fmt(to); return; }
+    function step(ts) { if (!t0) t0 = ts; var p = Math.min(1, (ts - t0) / 1100); e.textContent = fmt(to * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  var rc = el('rc');
+  document.querySelector('.hero').addEventListener('mousemove', function (e) {
+    var r = rc.getBoundingClientRect(), x = (e.clientX - (r.left + r.width / 2)) / r.width, y = (e.clientY - (r.top + r.height / 2)) / r.height;
+    rc.style.setProperty('--ry', (x * 8) + 'deg'); rc.style.setProperty('--rx', (-y * 8) + 'deg');
+  });
+  document.querySelector('.hero').addEventListener('mouseleave', function () { rc.style.setProperty('--ry', '0deg'); rc.style.setProperty('--rx', '0deg'); });
+
+  /* ---------- theme / lang ---------- */
+  try { var th = localStorage.getItem('bareed.theme'); if (th === 'light' || th === 'dark') document.documentElement.setAttribute('data-theme', th); } catch (e) {}
+  function curTheme() { return document.documentElement.getAttribute('data-theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
+  function paintTheme() { el('theme').innerHTML = ic(curTheme() === 'dark' ? 'sun' : 'moon'); }
+  el('theme').addEventListener('click', function () { var n = curTheme() === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', n); try { localStorage.setItem('bareed.theme', n); } catch (e) {} paintTheme(); });
+  el('lang').addEventListener('click', function () { lang = lang === 'ar' ? 'en' : 'ar'; try { localStorage.setItem('bareed.lang', lang); } catch (e) {} renderAll(); });
+
+  /* ---------- coverage events ---------- */
+  el('govs').addEventListener('click', function (e) { var b = e.target.closest('[data-g]'); if (!b) return; govSel = b.getAttribute('data-g'); renderCoverage(); });
+  el('chk-gov').addEventListener('change', fillCheckCities);
+  el('chk-city').addEventListener('change', showVerdict);
+
+  /* ---------- tracking ---------- */
+  el('track-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var code = el('tr-in').value.trim().toUpperCase(), out = el('tr-out');
+    if (!sb) { out.innerHTML = '<div class="tr-card">' + esc(t('no_lib')) + '</div>'; return; }
+    out.innerHTML = '<div class="tr-card">…</div>';
+    sb.rpc('track_shipment', { p_code: code }).then(function (r) {
+      if (r.error) { out.innerHTML = '<div class="tr-card">' + esc(t('tr_err')) + '</div>'; return; }
+      if (!r.data) { out.innerHTML = '<div class="tr-card">' + esc(t('tr_none')) + '</div>'; return; }
+      out.innerHTML = trackHTML(r.data);
+    }).catch(function () { out.innerHTML = '<div class="tr-card">' + esc(t('tr_err')) + '</div>'; });
+  });
+  function dt(iso) { try { return new Date(iso).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return ''; } }
+  function trackHTML(d) {
+    var steps = [['new', 'box'], ['picked_up', 'box'], ['out_for_delivery', 'truck'], [d.status === 'returned' ? 'returned' : 'delivered', d.status === 'returned' ? 'rotate' : 'check']];
+    var idx = -1; steps.forEach(function (s, i) { if (s[0] === d.status) idx = i; });
+    var when = function (k) { if (k === 'new') return d.created_at; var ev = (d.events || []).filter(function (e) { return e.status === k; })[0]; return ev ? ev.created_at : null; };
+    return '<div class="tr-card"><b style="font-family:var(--font-display)">' + esc(d.code) + '</b> <span class="badge" style="background:var(--brand-soft);color:var(--brand)">' + esc(t('st_' + d.status)) + '</span><ul class="tl">' +
+      steps.map(function (s, i) { var c = i < idx ? 'done' : i === idx ? 'now' : '', w = when(s[0]); return '<li class="' + c + '"><span class="d">' + ic(s[1]) + '</span><div>' + esc(t('st_' + s[0])) + (w ? '<small>' + esc(dt(w)) + '</small>' : '') + '</div></li>'; }).join('') + '</ul></div>';
+  }
+
+  /* ---------- auth ---------- */
+  function renderAuthTexts() {
+    el('dlg-t').textContent = t(mode === 'login' ? 't_login' : 't_signup');
+    el('a-submit').textContent = t(mode === 'login' ? 'go_login' : 'go_signup');
+    document.querySelectorAll('[data-su]').forEach(function (n) { n.hidden = mode === 'login'; });
+    el('a-pass').setAttribute('autocomplete', mode === 'login' ? 'current-password' : 'new-password');
+  }
+  function setMode(m) { mode = m; el('tab-login').setAttribute('aria-selected', String(m === 'login')); el('tab-signup').setAttribute('aria-selected', String(m === 'signup')); el('a-msg').textContent = ''; renderAuthTexts(); }
+  function openModal(m) { if (signedIn && m === 'login') { go(); return; } setMode(m); el('modal').hidden = false; setTimeout(function () { el(m === 'signup' ? 'a-name' : 'a-email').focus(); }, 30); }
+  function closeModal() { el('modal').hidden = true; }
+  function msg(k, ok) { var m = el('a-msg'); m.textContent = k ? t(k) : ''; m.className = 'msg ' + (ok ? 'ok' : 'err'); }
+  async function go() {
+    var a = await sb.from('admins').select('user_id').maybeSingle();
+    location.href = (a.data ? 'admin' : 'merchant');
+  }
+  el('login-btn').addEventListener('click', function () { openModal('login'); });
+  el('signup-btn').addEventListener('click', function () { openModal('signup'); });
+  el('signup-btn2').addEventListener('click', function () { openModal('signup'); });
+  el('m-close').addEventListener('click', closeModal);
+  el('modal').addEventListener('click', function (e) { if (e.target === el('modal')) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+  el('tab-login').addEventListener('click', function () { setMode('login'); });
+  el('tab-signup').addEventListener('click', function () { setMode('signup'); });
+  el('auth-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    if (!sb) { msg('no_lib'); return; }
+    var email = el('a-email').value.trim(), pass = el('a-pass').value;
+    try {
+      if (mode === 'login') {
+        var r = await sb.auth.signInWithPassword({ email: email, password: pass });
+        if (r.error) { msg('e_login'); return; }
+        await go();
+      } else {
+        var name = el('a-name').value.trim(), phone = el('a-phone').value.trim();
+        if (!name || !phone) { msg('e_name'); return; }
+        var s = await sb.auth.signUp({ email: email, password: pass, options: { data: { name: name, phone: phone } } });
+        if (s.error) { msg('e_fail'); return; }
+        if (s.data && s.data.session) { location.href = 'merchant'; } else { msg('ok_signup', true); }
+      }
+    } catch (err) { msg('e_fail'); }
+  });
+
+  /* ---------- boot ---------- */
+  renderAll(); observe();
+  var SUPABASE_URL = 'https://ybkkdjpgkkdnijafsuai.supabase.co';
+  // Public (anon) key: safe in the browser; row-level security limits what it can read.
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU';
+  if (window.supabase) {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    sb.from('areas').select('id,gov_ar,gov_en,city_ar,city_en,is_active,fee').then(function (r) { if (!r.error && r.data) { areas = r.data; renderAll(); } });
+    sb.auth.getSession().then(function (r) { if (r.data && r.data.session) { signedIn = true; el('login-btn').textContent = t('dash'); } });
+  }
+})();
+</script>
+</body></html>
