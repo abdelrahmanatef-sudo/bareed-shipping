@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>بريد · Bareed — شحن وتوصيل</title>
-<meta name="description" content="بريد: شركة شحن وتوصيل داخل مصر. بنبدأ من المنيب لحد البدرشين في الجيزة. تتبّع شحنتك وسجّل كتاجر.">
+<meta name="description" content="بريد: شركة شحن وتوصيل داخل مصر. بنبدأ من المنيب لحد العياط في الجيزة. تتبّع شحنتك وسجّل كتاجر.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%235B8DEF'/%3E%3Crect x='13' y='16' width='26' height='18' rx='4' fill='none' stroke='%23FFFFFF' stroke-width='2.8'/%3E%3Cpath d='M14.5 19.5 26 27.5l11.500-8' fill='none' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 22h4M7.500 28H10' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
@@ -266,7 +266,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   var D = {
     ar: {
       brand: 'بريد', tag: 'شحن وتوصيل داخل مصر', n_how: 'إزاي بنشتغل', n_cov: 'التغطية', n_price: 'الأسعار', login: 'دخول', signup: 'سجّل كتاجر', dash: 'لوحة التحكم',
-      eyebrow: 'شغّالين دلوقتي في الجيزة · من المنيب للبدرشين',
+      eyebrow: 'شغّالين دلوقتي في الجيزة · من المنيب للعياط',
       h1: 'شحنتك توصل <em>بسرعة</em> وبحساب واضح',
       lead: 'بريد بيوصّل طلبات متجرك لحد باب العميل، وبيحصّل الـ COD ويسوّيه معاك بشفافية. بنبدأ بالجيزة وبنكبر لكل مصر.',
       tr_ph: 'كود الشحنة، مثال: BR-00001', tr_btn: 'تتبّع',
@@ -293,7 +293,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     },
     en: {
       brand: 'Bareed', tag: 'Delivery across Egypt', n_how: 'How it works', n_cov: 'Coverage', n_price: 'Pricing', login: 'Sign in', signup: 'Join as a merchant', dash: 'Dashboard',
-      eyebrow: 'Now live in Giza · Monib to Badrashin',
+      eyebrow: 'Now live in Giza · Monib to Ayat',
       h1: 'Your parcels arrive <em>fast</em>, with clear numbers',
       lead: 'Bareed delivers your store orders to the customer’s door, collects the COD and settles it with you transparently. We start in Giza and grow across Egypt.',
       tr_ph: 'Tracking code, e.g. BR-00001', tr_btn: 'Track',
@@ -338,7 +338,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
   /* ---------- state ---------- */
   var areas = [], govSel = null, sb = null, signedIn = false, role = null, mode = 'login';
-  var ROUTE = ['المنيب', 'أبو النمرس', 'الحوامدية', 'البدرشين', 'ميت رهينة', 'سقارة'];
+  var ROUTE = ['المنيب', 'أبو النمرس', 'الحوامدية', 'البدرشين', 'ميت رهينة', 'سقارة', 'المرازيق', 'الصف', 'أطفيح', 'العياط'];
   var FALLBACK_GOVS = ['القاهرة|Cairo', 'الجيزة|Giza', 'الإسكندرية|Alexandria', 'القليوبية|Qalyubia', 'الشرقية|Sharqia', 'الدقهلية|Dakahlia', 'الغربية|Gharbia', 'المنوفية|Menoufia', 'كفر الشيخ|Kafr El Sheikh', 'البحيرة|Beheira', 'دمياط|Damietta', 'بورسعيد|Port Said', 'الإسماعيلية|Ismailia', 'السويس|Suez', 'شمال سيناء|North Sinai', 'جنوب سيناء|South Sinai', 'الفيوم|Fayoum', 'بني سويف|Beni Suef', 'المنيا|Minya', 'أسيوط|Asyut', 'سوهاج|Sohag', 'قنا|Qena', 'الأقصر|Luxor', 'أسوان|Aswan', 'البحر الأحمر|Red Sea', 'مطروح|Matrouh', 'الوادي الجديد|New Valley'];
 
   function govList() {
@@ -360,19 +360,19 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     paintTheme(); renderAuthTexts();
   }
   function renderRoute() {
-    var act = areas.filter(function (a) { return a.is_active; });
-    var names = ROUTE.filter(function (r) { return !areas.length || act.some(function (a) { return a.city_ar === r; }); });
+    var act = areas.filter(function (a) { return a.is_active && a.gov_ar === 'الجيزة'; });
+    var names = areas.length ? ROUTE.filter(function (r) { return act.some(function (a) { return a.city_ar === r; }); }).concat(act.map(function (a) { return a.city_ar; }).filter(function (c) { return ROUTE.indexOf(c) === -1; })) : ROUTE.slice(0, 6);
     var h = '<span class="truck">' + ic('truck') + '</span>';
     names.forEach(function (r, i) {
       var a = areas.filter(function (x) { return x.city_ar === r && x.gov_ar === 'الجيزة'; })[0];
-      h += '<div class="stop"><span class="pin">' + ic('pin') + '</span><b>' + esc(a ? cname(a) : r) + '</b><span class="t">' + (i === 0 ? (lang === 'ar' ? 'البداية' : 'Start') : i === names.length - 1 ? (lang === 'ar' ? 'النهاية' : 'End') : '') + '</span></div>';
+      h += '<div class="stop"><span class="pin">' + ic('pin') + '</span><b>' + esc(a ? cname(a) : r) + '</b><span class="t">' + (i === 0 ? (lang === 'ar' ? 'البداية' : 'Start') : i === names.length - 1 ? (lang === 'ar' ? 'آخر محطة' : 'Last stop') : '') + '</span></div>';
     });
     var box = el('route'); box.innerHTML = h; box.style.setProperty('--travel', Math.max(0, (names.length - 1) * 54) + 'px');
   }
   function renderStats() {
     var gs = govList(), open = areas.filter(function (a) { return a.is_active; }), fees = open.map(function (a) { return +a.fee; });
     var minFee = fees.length ? Math.min.apply(null, fees) : 45;
-    var items = [[gs.length, t('st_gov')], [areas.length || 130, t('st_city')], [open.length || 6, t('st_open')], [minFee, t('st_fee')]];
+    var items = [[gs.length, t('st_gov')], [areas.length || 130, t('st_city')], [open.length || 10, t('st_open')], [minFee, t('st_fee')]];
     el('stats').innerHTML = items.map(function (x, i) { return '<div class="stat rv" style="--d:' + i * 80 + 'ms"><b data-count="' + x[0] + '">0</b><span>' + x[1] + '</span></div>'; }).join('');
     el('price-n').textContent = minFee;
     observe();

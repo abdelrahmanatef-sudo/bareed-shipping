@@ -556,6 +556,14 @@ select.search { appearance: auto; cursor: pointer; }
         </div>
         <div class="card"><h2 data-i18n="h_unit"></h2><div id="unit"></div></div>
         <div class="card"><h2 data-i18n="h_whatif"></h2><div id="whatif"></div></div>
+        <div class="card" id="areas-card"><h2 data-i18n="h_areas"></h2><p class="note" data-i18n="areas_note"></p>
+          <select class="search" id="ar-gov" style="max-width:260px" aria-label="Governorate"></select>
+          <div id="ar-list"></div>
+          <div class="row" id="ar-add">
+            <input class="search" id="ar-n1" data-i18n-ph="a_city_ar" style="max-width:170px"><input class="search" id="ar-n2" data-i18n-ph="a_city_en" style="max-width:170px" dir="ltr">
+            <input class="search" id="ar-fee" type="number" min="0" inputmode="numeric" data-i18n-ph="a_fee" style="max-width:110px"><button class="btn sm" id="ar-btn" type="button" data-i18n="a_add"></button>
+          </div>
+        </div>
       </section>
 
       <section id="p-tr" class="stack" hidden>
@@ -594,6 +602,7 @@ select.search { appearance: auto; cursor: pointer; }
       nav_rp: 'التقارير', pg_rp: 'التقارير', rp_m: 'الشهر ده', rp_90: 'آخر 90 يوم', rp_all: 'الكل', rp_created: 'شحنات جديدة', rp_deliv: 'تم تسليمها', rp_ret: 'مرتجع', rp_rate: 'نسبة النجاح', rp_rev: 'الإيراد', rp_cod: 'COD محصّل', rp_trend: 'الإيراد آخر 6 شهور', rp_couriers: 'أداء المناديب', rp_merchants: 'أكبر التجار', rp_empty: 'مفيش بيانات في الفترة دي', th_hours: 'متوسط التسليم (ساعة)', th_n: 'الشحنات', th_rate: 'النجاح', th_rev: 'الإيراد',
       c_del_ship: 'تمسح الشحنة دي نهائياً؟', c_del_courier: 'تمسح المندوب ده؟', c_settle_c: 'تأكيد تسوية كل شحنات المندوب المسلّمة؟', c_settle_m: 'تأكيد تحويل مستحقات {m}؟', date_from: 'من', date_to: 'إلى',
       brand: 'بريد', brand_sub: 'للشحن السريع', logout: 'خروج',
+      h_areas: 'مناطق التغطية (إنت اللي بتفتحها)', areas_note: 'المدن المفتوحة بس هي اللي التجار يقدروا يسجّلوا ليها شحنات، والكل بيشوف حالتها في الصفحة الرئيسية. غيّر الحالة والأجرة من هنا.', a_open: 'مفتوحة', a_closed: 'قريباً', a_city_ar: 'اسم المدينة بالعربي', a_city_en: 'City (English)', a_fee: 'الأجرة', a_add: 'ضيف مدينة', a_ok: 'تم الحفظ',
       h_mreq: 'طلبات وحسابات التجار', mr_pending: 'قيد المراجعة', mr_active: 'مفعّل', mr_suspended: 'موقوف', mr_approve: 'تفعيل', mr_suspend: 'إيقاف', mr_reactivate: 'إعادة تفعيل',
       nav_ov: 'نظرة عامة', nav_sh: 'الشحنات', nav_co: 'المناديب', nav_me: 'التجار', nav_ct: 'التكلفة',
       pg_ov: 'نظرة عامة', pg_sh: 'الشحنات', pg_co: 'المناديب', pg_me: 'التجار والتسوية', pg_ct: 'التكلفة والربح',
@@ -648,6 +657,7 @@ select.search { appearance: auto; cursor: pointer; }
       nav_rp: 'Reports', pg_rp: 'Reports', rp_m: 'This month', rp_90: 'Last 90 days', rp_all: 'All time', rp_created: 'New shipments', rp_deliv: 'Delivered', rp_ret: 'Returned', rp_rate: 'Success rate', rp_rev: 'Revenue', rp_cod: 'COD collected', rp_trend: 'Revenue, last 6 months', rp_couriers: 'Courier performance', rp_merchants: 'Top merchants', rp_empty: 'No data in this period', th_hours: 'Avg delivery (h)', th_n: 'Shipments', th_rate: 'Success', th_rev: 'Revenue',
       c_del_ship: 'Delete this shipment permanently?', c_del_courier: 'Delete this courier?', c_settle_c: 'Confirm settling all of this courier\'s delivered shipments?', c_settle_m: 'Confirm paying out {m}?', date_from: 'From', date_to: 'To',
       brand: 'Bareed', brand_sub: 'Fast Delivery', logout: 'Sign out',
+      h_areas: 'Coverage areas (you decide what opens)', areas_note: 'Only open cities accept merchant shipments, and everyone sees their status on the home page. Change status and fee here.', a_open: 'Open', a_closed: 'Soon', a_city_ar: 'City name (Arabic)', a_city_en: 'City (English)', a_fee: 'Fee', a_add: 'Add city', a_ok: 'Saved',
       h_mreq: 'Merchant accounts & requests', mr_pending: 'Pending review', mr_active: 'Active', mr_suspended: 'Suspended', mr_approve: 'Approve', mr_suspend: 'Suspend', mr_reactivate: 'Reactivate',
       nav_ov: 'Overview', nav_sh: 'Shipments', nav_co: 'Couriers', nav_me: 'Merchants', nav_ct: 'Costs',
       pg_ov: 'Overview', pg_sh: 'Shipments', pg_co: 'Couriers', pg_me: 'Merchants & settlement', pg_ct: 'Costs & profit',
@@ -1038,7 +1048,7 @@ select.search { appearance: auto; cursor: pointer; }
   });
 
   function renderAll() {
-    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts();
+    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts(); if (typeof renderAreas === "function") renderAreas(); if (typeof renderMreq === "function") renderMreq();
     var fee = el('s-fee'); if (!fee.value && document.activeElement !== fee) fee.value = cfg.fee;
     document.querySelectorAll('#add-sh, #add-co').forEach(function (d) { d.hidden = !canWrite; });
     var za = el('zone-add'); if (za) za.hidden = !canWrite;
@@ -1350,6 +1360,38 @@ select.search { appearance: auto; cursor: pointer; }
     if (!rz.error && rz.data && Array.isArray(rz.data.data)) store.zones = rz.data.data;
     renderAll();
   }
+  var areaRows = [], areaGov = 'الجيزة';
+  async function loadAreasAdmin() {
+    var r = await sb.from('areas').select('id,gov_ar,gov_en,city_ar,city_en,is_active,fee').order('city_ar', { ascending: true });
+    if (r.error) return; areaRows = r.data || []; renderAreas();
+  }
+  function renderAreas() {
+    var sel = el('ar-gov'); if (!sel) return;
+    var gs = [], seen = {}; (areaRows || []).forEach(function (x) { if (!seen[x.gov_ar]) { seen[x.gov_ar] = 1; gs.push(x); } });
+    sel.innerHTML = gs.map(function (x) { return '<option value="' + esc(x.gov_ar) + '"' + (x.gov_ar === areaGov ? ' selected' : '') + '>' + esc(lang === 'ar' ? x.gov_ar : x.gov_en) + '</option>'; }).join('');
+    var rows = (areaRows || []).filter(function (x) { return x.gov_ar === areaGov; }).sort(function (a, b) { return (b.is_active - a.is_active) || a.city_ar.localeCompare(b.city_ar, 'ar'); });
+    el('ar-list').innerHTML = rows.map(function (x) {
+      var id = esc(x.id);
+      return '<div class="zone-row"><b>' + esc(lang === 'ar' ? x.city_ar : x.city_en) + '</b>' +
+        '<button type="button" class="chip" data-atog="' + id + '" aria-pressed="' + !!x.is_active + '"' + (canWrite ? '' : ' disabled') + '>' + t(x.is_active ? 'a_open' : 'a_closed') + '</button>' +
+        '<input class="search" type="number" min="0" inputmode="numeric" value="' + (+x.fee) + '" data-afee="' + id + '" aria-label="' + t('a_fee') + '"' + (canWrite ? '' : ' disabled') + '><span></span></div>';
+    }).join('');
+    el('ar-add').hidden = !canWrite;
+  }
+  document.addEventListener('change', function (e) {
+    var f = e.target.getAttribute && e.target.getAttribute('data-afee'); if (f) { safe(async function () { var r = await sb.from('areas').update({ fee: num(e.target.value) }).eq('id', f); if (r.error) throw r.error; await loadAreasAdmin(); toast(t('a_ok')); }); }
+    if (e.target.id === 'ar-gov') { areaGov = e.target.value; renderAreas(); }
+  });
+  document.addEventListener('click', function (e) {
+    var tg = e.target.closest && e.target.closest('[data-atog]');
+    if (tg) { var row = areaRows.filter(function (x) { return x.id === tg.getAttribute('data-atog'); })[0]; if (!row) return;
+      safe(async function () { var r = await sb.from('areas').update({ is_active: !row.is_active }).eq('id', row.id); if (r.error) throw r.error; await loadAreasAdmin(); toast(t('a_ok')); }); return; }
+    if (e.target.id === 'ar-btn') {
+      var n1 = el('ar-n1').value.trim(), n2 = el('ar-n2').value.trim() || n1, g = areaRows.filter(function (x) { return x.gov_ar === areaGov; })[0];
+      if (!n1 || !g) return;
+      safe(async function () { var r = await sb.from('areas').insert({ gov_ar: g.gov_ar, gov_en: g.gov_en, city_ar: n1, city_en: n2, fee: num(el('ar-fee').value) || 45, is_active: false }); if (r.error) throw r.error; el('ar-n1').value = ''; el('ar-n2').value = ''; el('ar-fee').value = ''; await loadAreasAdmin(); toast(t('a_ok')); });
+    }
+  });
   var mreqRows = [];
   async function loadMerchantReqs() {
     var r = await sb.from('merchants').select('id,name,phone,email,status').order('status', { ascending: true });
@@ -1357,7 +1399,7 @@ select.search { appearance: auto; cursor: pointer; }
   }
   function renderMreq() {
     var card = el('mreq-card'); if (!card) return;
-    var rows = mreqRows.filter(function (m) { return m.email || m.status !== 'active'; });
+    var rows = (mreqRows || []).filter(function (m) { return m.email || m.status !== 'active'; });
     card.hidden = !rows.length;
     el('mreq').innerHTML = '<div class="tablewrap"><table><tbody>' + rows.map(function (m) {
       var st = m.status, id = esc(m.id);
@@ -1372,7 +1414,7 @@ select.search { appearance: auto; cursor: pointer; }
     var p = b.getAttribute('data-ms').split('|');
     safe(async function () { var r = await sb.from('merchants').update({ status: p[1] }).eq('id', p[0]); if (r.error) throw r.error; await loadMerchantReqs(); });
   });
-  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs()]); }
+  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin()]); }
   async function startData() {
     if (started) return; started = true;
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
