@@ -398,7 +398,6 @@ select.search { appearance: auto; cursor: pointer; }
 }
 
 </style>
-<base target="_blank">
 </head>
 <body>
 
@@ -566,6 +565,7 @@ select.search { appearance: auto; cursor: pointer; }
 <div id="label-print"></div>
 
 <script>
+(function () {
   /* ---------- translations ---------- */
   var I18N = {
     ar: {
@@ -1201,6 +1201,7 @@ select.search { appearance: auto; cursor: pointer; }
      create policy "public events" on shipment_events for select to anon using (true);
      -- اختياري لو عايز المنطقة تتحفظ على الشحنة:
      alter table shipments add column zone text;
+  */
 
   async function merchantIdFor(name) {
     var n = String(name || '').trim().toLowerCase();
