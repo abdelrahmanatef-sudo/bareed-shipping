@@ -1,274 +1,508 @@
 <!doctype html>
-<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>نظام بريد</title>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>بريد · Bareed</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%23F5B700'/%3E%3Crect x='13' y='16' width='26' height='18' rx='4' fill='none' stroke='%230C2421' stroke-width='2.8'/%3E%3Cpath d='M14.5 19.5 26 27.5l11.500-8' fill='none' stroke='%230C2421' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 22h4M7.500 28H10' stroke='%230C2421' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600&display=swap">
 <style>
-/* Layout: header + tabs (overview, shipments, couriers, merchants, costs); every number comes from the shipments and the cost settings */
+/* Layout: dark sidebar (bottom tab bar on phones) + sticky top bar + content. Brand: deep green-black, teal actions, amber mark. */
 :root {
-  --bg: #F3F2EE;
+  --bg: #F4F6F6;
   --surface: #FFFFFF;
-  --ink: #1B1F24;
-  --muted: #646B73;
-  --line: #DEDCD5;
-  --accent: #C2410C;
-  --accent-soft: #FBE9DD;
-  --good: #1F7A4D;
-  --good-soft: #DDF1E6;
-  --blue: #2B5C9E;
-  --blue-soft: #E1EAF6;
-  --warn: #A5530A;
-  --warn-soft: #FBEBD8;
-  --on-accent: #FFFFFF;
+  --surface-2: #EEF2F1;
+  --ink: #0F1B1A;
+  --muted: #5B6967;
+  --line: #E1E7E6;
+  --brand: #0B7F70;
+  --brand-soft: #DAF2EC;
+  --on-brand: #FFFFFF;
+  --accent: #F5B700;
+  --logo-fg: #0C2421;
+  --side-bg: #0C2421;
+  --side-ink: #E6F1EF;
+  --side-muted: #86A8A2;
+  --side-hover: rgba(255, 255, 255, .07);
+  --side-active: rgba(245, 183, 0, .16);
+  --s-new: #2F63C9;      --s-new-bg: #E3EBFA;
+  --s-picked: #7140C8;   --s-picked-bg: #EBE3FA;
+  --s-out: #A86400;      --s-out-bg: #FCEBCB;
+  --s-delivered: #17784A; --s-delivered-bg: #DCF2E5;
+  --s-returned: #B4332E; --s-returned-bg: #FADEDC;
+  --shadow: 0 1px 2px rgba(15, 27, 26, .05), 0 4px 14px rgba(15, 27, 26, .04);
   --font-display: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --font-body: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Readex Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #14120F; --surface: #1D1B17; --ink: #ECE9E2; --muted: #A29E94; --line: #34312B;
-    --accent: #F58A55; --accent-soft: #3A2417; --good: #5FCB93; --good-soft: #17301F;
-    --blue: #8CB4EA; --blue-soft: #1B2B40; --warn: #EBA462; --warn-soft: #3A2A17; --on-accent: #1A0D05; color-scheme: dark;
+    --bg: #0A1312; --surface: #121F1D; --surface-2: #182927; --ink: #E7F0EE; --muted: #93A9A5; --line: #24362F;
+    --brand: #2FC4AE; --brand-soft: #123B35; --on-brand: #04201B; --side-bg: #071110; --side-active: rgba(245, 183, 0, .14);
+    --s-new: #8EB1F2; --s-new-bg: #182847; --s-picked: #B79BF0; --s-picked-bg: #2A2047;
+    --s-out: #F2B558; --s-out-bg: #3A2A10; --s-delivered: #5FD494; --s-delivered-bg: #123422;
+    --s-returned: #F08A85; --s-returned-bg: #3F1B19; --shadow: none; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #14120F; --surface: #1D1B17; --ink: #ECE9E2; --muted: #A29E94; --line: #34312B;
-  --accent: #F58A55; --accent-soft: #3A2417; --good: #5FCB93; --good-soft: #17301F;
-  --blue: #8CB4EA; --blue-soft: #1B2B40; --warn: #EBA462; --warn-soft: #3A2A17; --on-accent: #1A0D05; color-scheme: dark;
+  --bg: #0A1312; --surface: #121F1D; --surface-2: #182927; --ink: #E7F0EE; --muted: #93A9A5; --line: #24362F;
+  --brand: #2FC4AE; --brand-soft: #123B35; --on-brand: #04201B; --side-bg: #071110; --side-active: rgba(245, 183, 0, .14);
+  --s-new: #8EB1F2; --s-new-bg: #182847; --s-picked: #B79BF0; --s-picked-bg: #2A2047;
+  --s-out: #F2B558; --s-out-bg: #3A2A10; --s-delivered: #5FD494; --s-delivered-bg: #123422;
+  --s-returned: #F08A85; --s-returned-bg: #3F1B19; --shadow: none; color-scheme: dark;
 }
+
+* { box-sizing: border-box; }
 [hidden] { display: none !important; }
-body {
-  margin: 0;
-  background: var(--bg); color: var(--ink);
-  font-family: var(--font-body); font-size: 15px; line-height: 1.6;
-  padding-block: 20px 40px;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.logo { display: block; flex: none; }
+.logo .logo-bg { fill: var(--accent); }
+.logo .logo-fg { fill: none; stroke: var(--logo-fg); stroke-width: 2.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- shell ---------- */
+.shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+.side { position: sticky; top: 0; height: 100vh; background: var(--side-bg); color: var(--side-ink); display: flex; flex-direction: column; gap: 28px; padding: 22px 14px; }
+.brand { display: flex; align-items: center; gap: 12px; padding-inline: 8px; }
+.brand b { display: block; font-family: var(--font-display); font-size: 22px; line-height: 1.1; font-weight: 600; }
+.brand small { display: block; color: var(--side-muted); font-size: 12px; margin-top: 2px; }
+.nav { display: flex; flex-direction: column; gap: 4px; }
+.nav-item { display: flex; align-items: center; gap: 12px; background: none; border: 0; color: var(--side-muted); padding: 10px 12px; border-radius: 10px; cursor: pointer; text-align: start; font-weight: 500; }
+.nav-item:hover { background: var(--side-hover); color: var(--side-ink); }
+.nav-item[aria-current="page"] { background: var(--side-active); color: var(--side-ink); }
+.nav-item[aria-current="page"] svg { color: var(--accent); }
+.side-foot { margin-top: auto; color: var(--side-muted); font-size: 12px; padding-inline: 8px; }
+
+.main { min-width: 0; display: flex; flex-direction: column; }
+.topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px max(20px, env(safe-area-inset-right, 0px)) 14px max(20px, env(safe-area-inset-left, 0px)); background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.topbar h1 { font-size: 20px; }
+.mini-brand { display: none; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 600; font-size: 18px; }
+.tb-actions { display: flex; gap: 8px; }
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 38px; height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font-weight: 600; font-size: 13px; }
+.icon-btn:hover { border-color: var(--brand); }
+.content { padding: 22px max(20px, env(safe-area-inset-right, 0px)) 48px max(20px, env(safe-area-inset-left, 0px)); max-width: 1180px; width: 100%; margin-inline: auto; display: flex; flex-direction: column; gap: 18px; }
+
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .side { position: fixed; inset: auto 0 0 0; height: auto; z-index: 20; flex-direction: row; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); gap: 0; border-top: 1px solid rgba(255, 255, 255, .08); }
+  .side .brand, .side .side-foot { display: none; }
+  .nav { flex-direction: row; width: 100%; justify-content: space-between; gap: 2px; }
+  .nav-item { flex: 1; flex-direction: column; gap: 3px; padding: 7px 4px; font-size: 11px; text-align: center; min-width: 0; }
+  .nav-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+  .mini-brand { display: flex; }
+  .topbar h1 { display: none; }
+  .content { padding-bottom: 96px; }
 }
-.app { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
-h1, h2, h3 { font-family: var(--font-display); margin: 0; font-weight: 600; text-wrap: balance; }
-h1 { font-size: 26px; line-height: 1.2; }
-h2 { font-size: 16px; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 16px; }
-.head .tag { color: var(--muted); font-size: 14px; }
-.banner { font-size: 13px; padding: 8px 12px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); }
-.toast { font-size: 13px; padding: 8px 12px; border-radius: 8px; background: var(--blue-soft); color: var(--blue); }
 
-.tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); }
-.tab { font: inherit; font-weight: 500; color: var(--muted); background: none; border: 0; border-bottom: 2px solid transparent; padding: 10px 14px; cursor: pointer; white-space: nowrap; }
-.tab:hover { color: var(--ink); }
-.tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+/* ---------- common ---------- */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+.card > h2 { font-size: 16px; }
+.muted { color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); }
+.banner { font-size: 13px; padding: 10px 14px; border-radius: 10px; background: var(--s-out-bg); color: var(--s-out); }
+.toast { font-size: 13px; padding: 10px 14px; border-radius: 10px; background: var(--brand-soft); color: var(--brand); font-weight: 500; }
+.stack { display: flex; flex-direction: column; gap: 18px; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 
-.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-.stack { display: flex; flex-direction: column; gap: 16px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
-.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; display: flex; flex-direction: column; min-width: 0; }
-.tile .k { color: var(--muted); font-size: 13px; }
-.tile .v { font-family: var(--font-display); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.4; }
-.tile .v small { font-size: 13px; color: var(--muted); font-weight: 500; }
-.tile.good .v { color: var(--good); } .tile.bad .v { color: var(--warn); }
-.tile .n { font-size: 12px; color: var(--muted); }
-
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.chip { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; cursor: pointer; }
-.chip:hover { border-color: var(--accent); }
-.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
-.search { flex: 1; min-width: 150px; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; }
-.search:focus { border-color: var(--accent); outline: none; }
-
-.tablewrap { overflow-x: auto; }
-table { width: 100%; min-width: 760px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-th { text-align: start; font-size: 12px; font-weight: 500; color: var(--muted); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-td.code { font-family: var(--font-display); font-size: 13px; color: var(--muted); }
-td small { display: block; color: var(--muted); font-size: 12px; }
-select.mini { font: inherit; font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; max-width: 150px; }
-.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; white-space: nowrap; }
-.pill.new { background: var(--blue-soft); color: var(--blue); }
-.pill.picked_up { background: var(--blue-soft); color: var(--blue); }
-.pill.out_for_delivery { background: var(--accent-soft); color: var(--accent); }
-.pill.delivered { background: var(--good-soft); color: var(--good); }
-.pill.returned { background: var(--warn-soft); color: var(--warn); }
-
-.btn { font: inherit; font-weight: 600; color: var(--on-accent); background: var(--accent); border: 0; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
-.btn:hover { filter: brightness(1.08); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 10px; background: var(--brand); color: var(--on-brand); font-weight: 600; padding: 9px 18px; cursor: pointer; }
+.btn:hover { filter: brightness(1.07); }
+.btn.sm { padding: 6px 12px; font-size: 13px; }
 .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); font-weight: 500; }
-.btn.ghost:hover { border-color: var(--accent); filter: none; }
-.btn.sm { padding: 4px 10px; font-size: 13px; }
-.btn.danger { background: transparent; color: var(--warn); border: 1px solid var(--line); font-weight: 500; }
-.btn[disabled] { opacity: .45; cursor: default; }
+.btn.ghost:hover { border-color: var(--brand); filter: none; }
+.btn.danger { background: transparent; color: var(--s-returned); border: 1px solid var(--line); font-weight: 500; }
+.btn[disabled] { opacity: .45; cursor: default; filter: none; }
 
-.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
-.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .field label { font-size: 13px; font-weight: 500; }
 .field .hint { font-size: 12px; color: var(--muted); }
-.field input { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0; width: 100%; box-sizing: border-box; font-variant-numeric: tabular-nums; }
-.field input:focus { border-color: var(--accent); outline: none; }
-.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-details.add { border: 1px dashed var(--line); border-radius: 10px; padding: 12px 16px; }
-details.add summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; }
-details.add form { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; }
-.empty { text-align: center; color: var(--muted); padding: 24px 12px; }
+.field input { font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid transparent; border-radius: 10px; padding: 10px 12px; min-width: 0; width: 100%; font-variant-numeric: tabular-nums; }
+.field input:focus { border-color: var(--brand); outline: none; background: var(--surface); }
+
+details.add { background: var(--surface); border: 1px dashed var(--line); border-radius: 14px; padding: 4px 20px; }
+details.add[open] { padding-block: 14px 18px; }
+details.add summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; padding-block: 10px; list-style: none; display: flex; align-items: center; gap: 10px; color: var(--brand); }
+details.add summary::-webkit-details-marker { display: none; }
+details.add form { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+
+/* ---------- kpis ---------- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tile .top { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+.tile .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand); }
+.tile .ic svg { width: 18px; height: 18px; }
+.tile .v { font-family: var(--font-display); font-size: 28px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.35; margin-top: 4px; }
+.tile .v small { font-size: 13px; color: var(--muted); font-weight: 500; }
+.tile .n { font-size: 12px; color: var(--muted); }
+.tile.pos .v { color: var(--s-delivered); } .tile.neg .v { color: var(--s-returned); }
+.tile.pos .ic { background: var(--s-delivered-bg); color: var(--s-delivered); } .tile.neg .ic { background: var(--s-returned-bg); color: var(--s-returned); }
+
+.pipe { display: flex; height: 14px; border-radius: 99px; overflow: hidden; background: var(--surface-2); }
+.pipe i { display: block; height: 100%; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; }
+.dot { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 12px; border-radius: 99px; font-weight: 500; }
+.dot b { font-variant-numeric: tabular-nums; }
+.c-new { background: var(--s-new-bg); color: var(--s-new); } .c-picked_up { background: var(--s-picked-bg); color: var(--s-picked); }
+.c-out_for_delivery { background: var(--s-out-bg); color: var(--s-out); } .c-delivered { background: var(--s-delivered-bg); color: var(--s-delivered); }
+.c-returned { background: var(--s-returned-bg); color: var(--s-returned); }
+.f-new { background: var(--s-new); } .f-picked_up { background: var(--s-picked); } .f-out_for_delivery { background: var(--s-out); } .f-delivered { background: var(--s-delivered); } .f-returned { background: var(--s-returned); }
+.progress { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--brand); border-radius: 99px; }
+
+/* ---------- table ---------- */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 5px 14px; font-size: 13px; cursor: pointer; }
+.chip:hover { border-color: var(--brand); }
+.chip[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: var(--on-brand); font-weight: 600; }
+.search { flex: 1; min-width: 180px; font: inherit; color: var(--ink); background: var(--surface-2); border: 1px solid transparent; border-radius: 10px; padding: 8px 12px; }
+.search:focus { border-color: var(--brand); outline: none; background: var(--surface); }
+.tablewrap { overflow-x: auto; margin-inline: -4px; }
+table { width: 100%; min-width: 780px; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th { text-align: start; font-size: 12px; font-weight: 500; color: var(--muted); padding: 8px 10px; white-space: nowrap; }
+td { padding: 11px 10px; border-top: 1px solid var(--line); vertical-align: middle; }
+td.code { font-family: var(--font-display); font-size: 13px; color: var(--muted); white-space: nowrap; }
+td.m { font-weight: 600; }
+td small { display: block; color: var(--muted); font-size: 12px; }
+select.mini { font: inherit; font-size: 13px; font-weight: 500; color: var(--ink); background: var(--surface-2); border: 1px solid transparent; border-radius: 99px; padding: 5px 10px; max-width: 160px; cursor: pointer; }
+select.mini:focus { border-color: var(--brand); outline: none; }
+select.st-new { background: var(--s-new-bg); color: var(--s-new); } select.st-picked_up { background: var(--s-picked-bg); color: var(--s-picked); }
+select.st-out_for_delivery { background: var(--s-out-bg); color: var(--s-out); } select.st-delivered { background: var(--s-delivered-bg); color: var(--s-delivered); }
+select.st-returned { background: var(--s-returned-bg); color: var(--s-returned); }
+.icon-del { border: 0; background: transparent; color: var(--muted); width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; }
+.icon-del:hover { background: var(--s-returned-bg); color: var(--s-returned); }
+.empty { text-align: center; color: var(--muted); padding: 30px 12px; }
 .empty b { display: block; color: var(--ink); font-family: var(--font-display); margin-bottom: 4px; }
 
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-.card { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; background: var(--surface); }
-.card .nm { font-family: var(--font-display); font-weight: 600; }
-.card .kv { display: flex; justify-content: space-between; gap: 8px; font-size: 14px; }
-.card .kv span:first-child { color: var(--muted); }
-.card .kv b { font-variant-numeric: tabular-nums; }
-.card .due { font-family: var(--font-display); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* ---------- cards ---------- */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+.person { display: flex; align-items: center; gap: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand); font-family: var(--font-display); font-weight: 600; font-size: 17px; flex: none; }
+.person b { font-family: var(--font-display); font-weight: 600; display: block; line-height: 1.3; }
+.kv { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.kv span:first-child { color: var(--muted); }
+.kv b { font-variant-numeric: tabular-nums; font-weight: 600; }
+.due { font-family: var(--font-display); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.due small { font-size: 13px; color: var(--muted); font-weight: 500; }
+.sep { height: 1px; background: var(--line); }
 
-.bars { display: flex; flex-direction: column; gap: 10px; }
-.bar { display: grid; grid-template-columns: 130px minmax(0, 1fr) 80px; gap: 10px; align-items: center; font-size: 14px; }
-.bar .track { height: 12px; background: var(--bg); border-radius: 99px; overflow: hidden; border: 1px solid var(--line); }
+.bars { display: flex; flex-direction: column; gap: 12px; }
+.bar { display: grid; grid-template-columns: 140px minmax(0, 1fr) 70px; gap: 12px; align-items: center; font-size: 14px; }
+.bar .track { height: 12px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
 .bar .track i { display: block; height: 100%; border-radius: 99px; }
 .bar .num { text-align: end; font-variant-numeric: tabular-nums; font-weight: 600; }
-.bar .rev i { background: var(--blue); } .bar .cost i { background: var(--warn); } .bar .gain i { background: var(--good); }
-@media (max-width: 520px) { .bar { grid-template-columns: 100px minmax(0, 1fr) 64px; } }
-.note { font-size: 13px; color: var(--muted); }
-.result { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.bar.rev i { background: var(--s-new); } .bar.cost i { background: var(--s-out); } .bar.gain i { background: var(--s-delivered); }
+@media (max-width: 520px) { .bar { grid-template-columns: 100px minmax(0, 1fr) 56px; gap: 8px; } }
+.result { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+
+/* ---------- auth ---------- */
+.auth { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.auth-hero { background: var(--side-bg); color: var(--side-ink); padding: 48px; display: flex; flex-direction: column; justify-content: space-between; gap: 32px; }
+.auth-hero h2 { font-size: 34px; line-height: 1.3; max-width: 16ch; }
+.auth-hero p { color: var(--side-muted); max-width: 38ch; margin-top: 14px; }
+.auth-hero .brand b { font-size: 26px; }
+.auth-pane { padding: 28px max(24px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; }
+.auth-pane .tb-actions { align-self: flex-end; }
+.auth-form { margin: auto; width: min(380px, 100%); display: flex; flex-direction: column; gap: 18px; padding-block: 24px; }
+.auth-form h2 { font-size: 26px; }
+.auth-mobile-brand { display: none; align-items: center; gap: 12px; }
+.auth-mobile-brand b { font-family: var(--font-display); font-size: 24px; font-weight: 600; }
+@media (max-width: 860px) {
+  .auth { grid-template-columns: minmax(0, 1fr); }
+  .auth-hero { display: none; }
+  .auth-mobile-brand { display: flex; }
+}
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.dt { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.dt .search { flex: none; min-width: 0; width: 140px; }
 </style>
+</head>
+<body>
 
-</head><body>
-<main class="app">
-  <header class="head">
-    <h1>بريد</h1>
-    <span class="tag">نظام التشغيل · حوامدية <button class="btn ghost sm" id="logout" type="button" hidden>خروج</button></span>
-  </header>
-  <div id="banner" class="banner" hidden></div>
-  <div id="toast" class="toast" hidden role="status"></div>
-
-  <section id="auth" class="panel" hidden style="max-width:380px">
-    <h2>تسجيل الدخول</h2>
-    <form id="form-auth" style="display:flex;flex-direction:column;gap:12px">
-      <div class="field"><label for="a-email">الإيميل</label><input id="a-email" type="email" required autocomplete="username"></div>
-      <div class="field"><label for="a-pass">الباسورد</label><input id="a-pass" type="password" required autocomplete="current-password"></div>
-      <div class="row"><button class="btn" type="submit">دخول</button><span class="note" id="auth-msg" role="status"></span></div>
+<!-- ======== sign in ======== -->
+<div class="auth" id="view-auth" hidden>
+  <aside class="auth-hero">
+    <div class="brand"><span data-logo="44"></span><div><b data-i18n="brand"></b><small data-i18n="brand_sub"></small></div></div>
+    <div>
+      <h2 data-i18n="hero_h"></h2>
+      <p data-i18n="hero_p"></p>
+    </div>
+    <small style="color:var(--side-muted)" data-i18n="brand_sub"></small>
+  </aside>
+  <section class="auth-pane">
+    <div class="tb-actions"><button class="icon-btn js-lang" type="button"></button><button class="icon-btn js-theme" type="button" aria-label="Theme"></button></div>
+    <form class="auth-form" id="form-auth">
+      <div class="auth-mobile-brand"><span data-logo="44"></span><b data-i18n="brand"></b></div>
+      <div><h2 data-i18n="auth_title"></h2><p class="muted" data-i18n="auth_sub"></p></div>
+      <div class="field"><label for="a-email" data-i18n="email"></label><input id="a-email" type="email" required autocomplete="username" dir="ltr"></div>
+      <div class="field"><label for="a-pass" data-i18n="password"></label><input id="a-pass" type="password" required autocomplete="current-password" dir="ltr"></div>
+      <button class="btn" type="submit" data-i18n="enter"></button>
+      <p class="note" id="auth-msg" role="status"></p>
     </form>
   </section>
+</div>
 
-  <div class="tabs" role="tablist" id="tabs">
-    <button class="tab" role="tab" data-tab="ov" aria-selected="true">نظرة عامة</button>
-    <button class="tab" role="tab" data-tab="sh" aria-selected="false">الشحنات</button>
-    <button class="tab" role="tab" data-tab="co" aria-selected="false">المناديب</button>
-    <button class="tab" role="tab" data-tab="me" aria-selected="false">التجار والتسوية</button>
-    <button class="tab" role="tab" data-tab="ct" aria-selected="false">التكلفة</button>
+<!-- ======== app ======== -->
+<div class="shell" id="view-app" hidden>
+  <aside class="side">
+    <div class="brand"><span data-logo="40"></span><div><b data-i18n="brand"></b><small data-i18n="brand_sub"></small></div></div>
+    <nav class="nav" id="tabs">
+      <button class="nav-item" data-tab="ov" aria-current="page"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-i18n="nav_ov"></span></button>
+      <button class="nav-item" data-tab="sh"><svg class="i" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg><span data-i18n="nav_sh"></span></button>
+      <button class="nav-item" data-tab="co"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span data-i18n="nav_co"></span></button>
+      <button class="nav-item" data-tab="me"><svg class="i" viewBox="0 0 24 24"><path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/></svg><span data-i18n="nav_me"></span></button>
+      <button class="nav-item" data-tab="rp"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span data-i18n="nav_rp"></span></button>
+      <button class="nav-item" data-tab="ct"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg><span data-i18n="nav_ct"></span></button>
+    </nav>
+    <div class="side-foot" data-i18n="brand_sub"></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="mini-brand"><span data-logo="32"></span><span data-i18n="brand"></span></div>
+      <h1 id="page-title"></h1>
+      <div class="tb-actions">
+        <button class="icon-btn js-lang" type="button"></button>
+        <button class="icon-btn js-theme" type="button" aria-label="Theme"></button>
+        <button class="icon-btn" id="logout" type="button" hidden><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span data-i18n="logout"></span></button>
+      </div>
+    </header>
+
+    <main class="content">
+      <div id="banner" class="banner" hidden></div>
+      <div id="toast" class="toast" hidden role="status"></div>
+
+      <section id="p-ov" class="stack"></section>
+
+      <section id="p-sh" class="stack" hidden>
+        <details class="add" id="add-sh">
+          <summary><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="add_ship"></span></summary>
+          <form id="form-sh" autocomplete="off">
+            <div class="fgrid">
+              <div class="field"><label for="s-merchant" data-i18n="f_merchant"></label><input id="s-merchant" list="merchants" required maxlength="80"><datalist id="merchants"></datalist></div>
+              <div class="field"><label for="s-customer" data-i18n="f_customer"></label><input id="s-customer" required maxlength="80"></div>
+              <div class="field"><label for="s-phone" data-i18n="f_phone"></label><input id="s-phone" inputmode="tel" required maxlength="30" dir="ltr"></div>
+              <div class="field"><label for="s-address" data-i18n="f_address"></label><input id="s-address" required minlength="3" maxlength="300"></div>
+              <div class="field"><label for="s-cod" data-i18n="f_cod"></label><input id="s-cod" type="number" min="0" inputmode="numeric" value="0" required></div>
+              <div class="field"><label for="s-fee" data-i18n="f_fee"></label><input id="s-fee" type="number" min="0" inputmode="numeric" required></div>
+            </div>
+            <div class="row"><button class="btn" type="submit" data-i18n="save_ship"></button></div>
+          </form>
+        </details>
+        <div class="card">
+          <div class="toolbar">
+            <div id="sh-filters" class="chips" role="group">
+              <button class="chip" type="button" data-f="all" aria-pressed="true"></button>
+              <button class="chip" type="button" data-f="new" aria-pressed="false"></button>
+              <button class="chip" type="button" data-f="picked_up" aria-pressed="false"></button>
+              <button class="chip" type="button" data-f="out_for_delivery" aria-pressed="false"></button>
+              <button class="chip" type="button" data-f="delivered" aria-pressed="false"></button>
+              <button class="chip" type="button" data-f="returned" aria-pressed="false"></button>
+            </div>
+            <input class="search" id="sh-q" type="search" data-i18n-ph="search_ph">
+            <label class="dt"><span data-i18n="date_from"></span><input class="search" type="date" id="sh-from"></label>
+            <label class="dt"><span data-i18n="date_to"></span><input class="search" type="date" id="sh-to"></label>
+            <button class="btn ghost sm" type="button" id="sh-csv" data-i18n="export_csv"></button>
+          </div>
+          <div class="tablewrap">
+            <table>
+              <thead><tr><th data-i18n="th_code"></th><th data-i18n="f_merchant"></th><th data-i18n="f_customer"></th><th data-i18n="th_cod"></th><th data-i18n="th_fee"></th><th data-i18n="th_courier"></th><th data-i18n="th_status"></th><th></th></tr></thead>
+              <tbody id="sh-rows"></tbody>
+            </table>
+          </div>
+          <div id="sh-empty" class="empty" hidden></div>
+        </div>
+      </section>
+
+      <section id="p-co" class="stack" hidden>
+        <details class="add" id="add-co">
+          <summary><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="add_courier"></span></summary>
+          <form id="form-co" autocomplete="off">
+            <div class="fgrid">
+              <div class="field"><label for="c-name" data-i18n="c_name"></label><input id="c-name" required maxlength="60"></div>
+              <div class="field"><label for="c-phone" data-i18n="c_phone"></label><input id="c-phone" inputmode="tel" maxlength="20" dir="ltr"></div>
+            </div>
+            <div class="row"><button class="btn" type="submit" data-i18n="save_courier"></button></div>
+          </form>
+        </details>
+        <div id="co-list" class="cards"></div>
+      </section>
+
+      <section id="p-me" class="stack" hidden>
+        <p class="note" data-i18n="me_note"></p>
+        <div id="me-list" class="cards"></div>
+      </section>
+
+      <section id="p-rp" class="stack" hidden>
+        <div class="card"><div class="toolbar"><div id="rp-range" class="chips" role="group">
+          <button class="chip" type="button" data-r="m" aria-pressed="true"></button><button class="chip" type="button" data-r="90" aria-pressed="false"></button><button class="chip" type="button" data-r="all" aria-pressed="false"></button>
+        </div></div></div>
+        <div id="rp-tiles" class="tiles"></div>
+        <div class="card"><h2 data-i18n="rp_trend"></h2><div id="rp-trend" style="display:flex;flex-direction:column;gap:10px"></div></div>
+        <div class="card"><h2 data-i18n="rp_couriers"></h2><div class="tablewrap" id="rp-co"></div></div>
+        <div class="card"><h2 data-i18n="rp_merchants"></h2><div class="tablewrap" id="rp-me"></div></div>
+      </section>
+      <section id="p-ct" class="stack" hidden>
+        <div class="card">
+          <h2 data-i18n="h_assume"></h2>
+          <p class="note" data-i18n="assume_note"></p>
+          <div class="fgrid" id="cfg-grid"></div>
+        </div>
+        <div class="card"><h2 data-i18n="h_unit"></h2><div id="unit"></div></div>
+        <div class="card"><h2 data-i18n="h_whatif"></h2><div id="whatif"></div></div>
+      </section>
+    </main>
   </div>
-
-  <!-- overview -->
-  <section id="p-ov" class="stack" role="tabpanel"></section>
-
-  <!-- shipments -->
-  <section id="p-sh" class="stack" role="tabpanel" hidden>
-    <details class="add" id="add-sh">
-      <summary>إضافة شحنة</summary>
-      <form id="form-sh" autocomplete="off">
-        <div class="fgrid">
-          <div class="field"><label for="s-merchant">التاجر</label><input id="s-merchant" list="merchants" required maxlength="80"><datalist id="merchants"></datalist></div>
-          <div class="field"><label for="s-customer">العميل</label><input id="s-customer" required maxlength="80"></div>
-          <div class="field"><label for="s-phone">تليفون العميل</label><input id="s-phone" inputmode="tel" required maxlength="30"></div>
-          <div class="field"><label for="s-address">العنوان</label><input id="s-address" required minlength="3" maxlength="300"></div>
-          <div class="field"><label for="s-cod">قيمة الـ COD (جنيه)</label><input id="s-cod" type="number" min="0" inputmode="numeric" value="0" required></div>
-          <div class="field"><label for="s-fee">أجرة الشحن على التاجر (جنيه)</label><input id="s-fee" type="number" min="0" inputmode="numeric" required></div>
-        </div>
-        <div class="row"><button class="btn" type="submit">حفظ الشحنة</button></div>
-      </form>
-    </details>
-    <div class="panel">
-      <div class="toolbar">
-        <div id="sh-filters" class="row" role="group" aria-label="فلتر الحالة">
-          <button class="chip" type="button" data-f="all" aria-pressed="true">الكل</button>
-          <button class="chip" type="button" data-f="new" aria-pressed="false">جديدة</button>
-          <button class="chip" type="button" data-f="picked_up" aria-pressed="false">اتستلمت</button>
-          <button class="chip" type="button" data-f="out_for_delivery" aria-pressed="false">مع المندوب</button>
-          <button class="chip" type="button" data-f="delivered" aria-pressed="false">اتسلمت</button>
-          <button class="chip" type="button" data-f="returned" aria-pressed="false">مرتجعة</button>
-        </div>
-        <input class="search" id="sh-q" type="search" placeholder="ابحث بالتاجر أو العميل أو الرقم" aria-label="بحث">
-      </div>
-      <div class="tablewrap">
-        <table>
-          <thead><tr><th>الرقم</th><th>التاجر</th><th>العميل</th><th>COD</th><th>الأجرة</th><th>المندوب</th><th>الحالة</th><th></th></tr></thead>
-          <tbody id="sh-rows"></tbody>
-        </table>
-      </div>
-      <div id="sh-empty" class="empty" hidden></div>
-    </div>
-  </section>
-
-  <!-- couriers -->
-  <section id="p-co" class="stack" role="tabpanel" hidden>
-    <details class="add" id="add-co">
-      <summary>إضافة مندوب</summary>
-      <form id="form-co" autocomplete="off">
-        <div class="fgrid">
-          <div class="field"><label for="c-name">اسم المندوب</label><input id="c-name" required maxlength="60"></div>
-          <div class="field"><label for="c-phone">رقم التليفون</label><input id="c-phone" inputmode="tel" maxlength="20"></div>
-        </div>
-        <div class="row"><button class="btn" type="submit">حفظ المندوب</button></div>
-      </form>
-    </details>
-    <div id="co-list" class="cards"></div>
-  </section>
-
-  <!-- merchants -->
-  <section id="p-me" class="stack" role="tabpanel" hidden>
-    <p class="note" style="margin:0">المستحق للتاجر = الـ COD اللي اتحصّل، ناقص أجرة الشحن وعمولة الـ COD، وناقص رسوم المرتجع. التسوية بتتسجل لما تدفع للتاجر فعلاً.</p>
-    <div id="me-list" class="cards"></div>
-  </section>
-
-  <!-- costs -->
-  <section id="p-ct" class="stack" role="tabpanel" hidden>
-    <div class="panel">
-      <h2>افتراضات التكلفة</h2>
-      <p class="note" style="margin:0">الأرقام دي تقديرية. غيّرها لأرقام حوامدية الحقيقية، والحساب كله بيتحدّث.</p>
-      <div class="fgrid" id="cfg-grid"></div>
-    </div>
-    <div class="panel">
-      <h2>تكلفة وربح الشحنة الواحدة</h2>
-      <div id="unit"></div>
-    </div>
-    <div class="panel">
-      <h2>لو شغلت بحجم معين</h2>
-      <div id="whatif"></div>
-    </div>
-  </section>
-</main>
+</div>
 
 <script>
 (function () {
+  /* ---------- translations ---------- */
+  var I18N = {
+    ar: {
+      nav_rp: 'التقارير', pg_rp: 'التقارير', rp_m: 'الشهر ده', rp_90: 'آخر 90 يوم', rp_all: 'الكل', rp_created: 'شحنات جديدة', rp_deliv: 'تم تسليمها', rp_ret: 'مرتجع', rp_rate: 'نسبة النجاح', rp_rev: 'الإيراد', rp_cod: 'COD محصّل', rp_trend: 'الإيراد آخر 6 شهور', rp_couriers: 'أداء المناديب', rp_merchants: 'أكبر التجار', rp_empty: 'مفيش بيانات في الفترة دي', th_hours: 'متوسط التسليم (ساعة)', th_n: 'الشحنات', th_rate: 'النجاح', th_rev: 'الإيراد',
+      date_from: 'من', date_to: 'إلى', print_ship: 'طباعة بوليصة', waybill: 'بوليصة شحن', created: 'التاريخ',
+      c_del_ship: 'تمسح الشحنة دي نهائياً؟', c_del_courier: 'تمسح المندوب ده؟', c_settle_c: 'تأكيد تسوية كل شحنات المندوب المسلّمة؟', c_settle_m: 'تأكيد تحويل مستحقات {m}؟', export_csv: 'تصدير Excel', csv_none: 'مفيش شحنات للتصدير',
+      brand: 'بريد', brand_sub: 'للشحن · حوامدية', logout: 'خروج',
+      nav_ov: 'نظرة عامة', nav_sh: 'الشحنات', nav_co: 'المناديب', nav_me: 'التجار', nav_ct: 'التكلفة',
+      pg_ov: 'نظرة عامة', pg_sh: 'الشحنات', pg_co: 'المناديب', pg_me: 'التجار والتسوية', pg_ct: 'التكلفة والربح',
+      hero_h: 'كل شحناتك وفلوسك في مكان واحد', hero_p: 'تابع الشحنات والمناديب وتسوية الـ COD وربح كل شحنة.',
+      auth_title: 'تسجيل الدخول', auth_sub: 'لفريق بريد بس.', email: 'الإيميل', password: 'الباسورد', enter: 'دخول',
+      err_login: 'الإيميل أو الباسورد غلط.', err_admin: 'الحساب ده مش متسجل كأدمن في بريد.',
+      cur: 'جنيه',
+      k_month: 'شحنات الشهر', n_month: 'اتسلّم {d} · رجع {r}', k_rate: 'نسبة التسليم', n_rate: 'من الشحنات اللي اتقفلت',
+      k_hold: 'فلوس عند المناديب', n_hold: 'اتحصّلت ولسه متسلمتش', k_due: 'مستحق للتجار', n_due: 'صافي بعد الأجرة والعمولة',
+      k_profit: 'ربح الشهر', n_profit: 'بعد المصاريف الثابتة ({n})',
+      h_status: 'الشحنات حسب الحالة', msg_new: 'فيه {n} شحنة جديدة محتاجة مندوب.', msg_out: 'فيه {n} شحنة لسه مع المناديب.',
+      h_be: 'نقطة التعادل', be_text: 'كل شحنة بتسيب <b>{m}</b> قبل المصاريف الثابتة. محتاج حوالي <b>{n} شحنة في الشهر</b> عشان تغطي {f} مصاريف ثابتة.',
+      be_loss: 'بالافتراضات الحالية الشحنة الواحدة بتخسر. راجع الأجرة وأجر المندوب في تاب «التكلفة».', be_prog: '{a} من {b} شحنة هذا الشهر',
+      add_ship: 'إضافة شحنة', f_merchant: 'التاجر', f_customer: 'العميل', f_phone: 'تليفون العميل', f_address: 'العنوان',
+      f_cod: 'قيمة الـ COD (جنيه)', f_fee: 'أجرة الشحن على التاجر (جنيه)', save_ship: 'حفظ الشحنة',
+      fl_all: 'الكل', fl_new: 'جديدة', fl_picked: 'اتستلمت', fl_out: 'مع المندوب', fl_del: 'اتسلمت', fl_ret: 'مرتجعة',
+      search_ph: 'ابحث بالتاجر أو العميل أو الرقم', th_code: 'الرقم', th_cod: 'COD', th_fee: 'الأجرة', th_courier: 'المندوب', th_status: 'الحالة',
+      no_courier: 'بدون مندوب', del: 'حذف',
+      st_new: 'جديدة', st_picked_up: 'اتستلمت من التاجر', st_out_for_delivery: 'مع المندوب', st_delivered: 'اتسلمت', st_returned: 'مرتجعة',
+      e_loading: 'جاري تحميل الشحنات', e_ship: 'لسه مفيش شحنات', e_ship_h: 'ضيف أول شحنة من «إضافة شحنة» فوق.', e_none: 'مفيش نتايج', e_none_h: 'غيّر الفلتر أو البحث.',
+      add_courier: 'إضافة مندوب', c_name: 'اسم المندوب', c_phone: 'رقم التليفون', save_courier: 'حفظ المندوب',
+      c_now: 'معاه دلوقتي', c_ship: '{n} شحنة', c_done: 'اتسلّم / رجع', c_owes: 'فلوس عليه ليك', c_settle: 'استلمت منه الفلوس',
+      e_courier: 'لسه مفيش مناديب', e_courier_h: 'ضيف أول مندوب من «إضافة مندوب» فوق.',
+      me_note: 'المستحق للتاجر = الـ COD اللي اتحصّل، ناقص أجرة الشحن وعمولة الـ COD، وناقص رسوم المرتجع. التسوية بتتسجل لما تدفع للتاجر فعلاً.',
+      m_dr: 'اتسلمت / رجعت', m_cod: 'COD اتحصّل', m_fees: 'أجرة وعمولة ورسوم', m_open: 'لسه شغالة', m_to: 'مستحق له', m_from: 'مستحق عليه', m_settle: 'سجّل إني سوّيت معاه',
+      e_merchant: 'لسه مفيش تجار', e_merchant_h: 'التجار بيظهروا هنا لما تضيف شحنات باسمهم.',
+      h_assume: 'افتراضات التكلفة', assume_note: 'الأرقام دي تقديرية. غيّرها لأرقام حوامدية الحقيقية، والحساب كله بيتحدّث.',
+      cfg_fee: 'أجرة الشحن الافتراضية على التاجر', cfg_returnFee: 'رسوم المرتجع على التاجر', cfg_commissionPct: 'عمولة تحصيل الـ COD',
+      cfg_courierDelivered: 'أجر المندوب للشحنة المسلّمة', cfg_courierReturned: 'أجر المندوب للشحنة المرتجعة', cfg_other: 'بنزين وتغليف وأدوات للشحنة',
+      cfg_fixed: 'مصاريف ثابتة شهرية (إيجار، تليفونات، إنترنت)', cfg_rate: 'نسبة التسليم المتوقعة', cfg_avgCod: 'متوسط قيمة الـ COD المتوقع', cfg_volume: 'عدد الشحنات المتوقع في الشهر',
+      u_egp: 'جنيه', u_pctcod: '% من القيمة', u_month: 'جنيه/شهر', u_pct: '%', u_ship: 'شحنة',
+      h_unit: 'تكلفة وربح الشحنة الواحدة', b_rev: 'إيراد الشحنة', b_courier: 'أجر المندوب', b_fuel: 'بنزين وتغليف', b_left: 'الباقي للشحنة',
+      unit_note: 'محسوبة على نسبة تسليم {r}% ومتوسط COD {a} جنيه ({s}). الأرقام بالجنيه لكل شحنة.', src_real: 'من شحناتك الفعلية', src_est: 'تقدير',
+      h_whatif: 'لو شغلت بحجم معين', w_rev: 'إيراد الشهر', w_var: 'تكلفة متغيرة', w_fixed: 'مصاريف ثابتة', w_profit: 'الربح لـ {n} شحنة', w_be: 'نقطة التعادل', w_be_u: 'شحنة/شهر',
+      t_ship_ok: 'تمت إضافة الشحنة', t_courier_ok: 'تمت إضافة المندوب', t_pick: 'اختار المندوب الأول.', t_busy: 'المندوب ده معاه شحنات لسه. سلّمها أو غيّر مندوبها الأول.',
+      t_settled_c: 'اتسجّل استلام الفلوس من المندوب.', t_settled_m: 'اتسجّلت التسوية مع {m}', t_noperm: 'مفيش عندك صلاحية تعديل البيانات.', t_err: 'حصلت مشكلة في الحفظ، جرّب تاني.',
+      bn_local: 'مقدرتش أحمّل مكتبة Supabase. البيانات هنا مؤقتة ومش هتتحفظ. اتأكد من النت وافتح الصفحة تاني.',
+      bn_read: 'مش قادر أقرا البيانات من Supabase. اتأكد إن حسابك أدمن وإن الجداول موجودة.'
+    },
+    en: {
+      nav_rp: 'Reports', pg_rp: 'Reports', rp_m: 'This month', rp_90: 'Last 90 days', rp_all: 'All time', rp_created: 'New shipments', rp_deliv: 'Delivered', rp_ret: 'Returned', rp_rate: 'Success rate', rp_rev: 'Revenue', rp_cod: 'COD collected', rp_trend: 'Revenue, last 6 months', rp_couriers: 'Courier performance', rp_merchants: 'Top merchants', rp_empty: 'No data in this period', th_hours: 'Avg delivery (h)', th_n: 'Shipments', th_rate: 'Success', th_rev: 'Revenue',
+      date_from: 'From', date_to: 'To', print_ship: 'Print waybill', waybill: 'Waybill', created: 'Date',
+      c_del_ship: 'Delete this shipment permanently?', c_del_courier: 'Delete this courier?', c_settle_c: 'Confirm settling all of this courier\'s delivered shipments?', c_settle_m: 'Confirm paying out {m}?', export_csv: 'Export CSV', csv_none: 'No shipments to export',
+      brand: 'Bareed', brand_sub: 'Delivery · Hawamdiya', logout: 'Sign out',
+      nav_ov: 'Overview', nav_sh: 'Shipments', nav_co: 'Couriers', nav_me: 'Merchants', nav_ct: 'Costs',
+      pg_ov: 'Overview', pg_sh: 'Shipments', pg_co: 'Couriers', pg_me: 'Merchants & settlement', pg_ct: 'Costs & profit',
+      hero_h: 'All your deliveries and cash in one place', hero_p: 'Track shipments, couriers, COD settlement and the profit on every shipment.',
+      auth_title: 'Sign in', auth_sub: 'For the Bareed team only.', email: 'Email', password: 'Password', enter: 'Sign in',
+      err_login: 'Wrong email or password.', err_admin: 'This account is not an admin of Bareed.',
+      cur: 'EGP',
+      k_month: 'Shipments this month', n_month: 'Delivered {d} · Returned {r}', k_rate: 'Delivery rate', n_rate: 'of closed shipments',
+      k_hold: 'Cash with couriers', n_hold: 'collected, not handed over', k_due: 'Owed to merchants', n_due: 'net of fees and commission',
+      k_profit: 'Profit this month', n_profit: 'after fixed costs ({n})',
+      h_status: 'Shipments by status', msg_new: '{n} new shipments need a courier.', msg_out: '{n} shipments are still with couriers.',
+      h_be: 'Break-even', be_text: 'Each shipment leaves <b>{m}</b> before fixed costs. You need about <b>{n} shipments a month</b> to cover {f} of fixed costs.',
+      be_loss: 'With the current assumptions each shipment loses money. Review the fee and courier pay in the Costs tab.', be_prog: '{a} of {b} shipments this month',
+      add_ship: 'Add shipment', f_merchant: 'Merchant', f_customer: 'Customer', f_phone: 'Customer phone', f_address: 'Address',
+      f_cod: 'COD amount (EGP)', f_fee: 'Shipping fee charged to merchant (EGP)', save_ship: 'Save shipment',
+      fl_all: 'All', fl_new: 'New', fl_picked: 'Picked up', fl_out: 'Out for delivery', fl_del: 'Delivered', fl_ret: 'Returned',
+      search_ph: 'Search merchant, customer or code', th_code: 'Code', th_cod: 'COD', th_fee: 'Fee', th_courier: 'Courier', th_status: 'Status',
+      no_courier: 'No courier', del: 'Delete',
+      st_new: 'New', st_picked_up: 'Picked up from merchant', st_out_for_delivery: 'Out for delivery', st_delivered: 'Delivered', st_returned: 'Returned',
+      e_loading: 'Loading shipments', e_ship: 'No shipments yet', e_ship_h: 'Add your first shipment with “Add shipment” above.', e_none: 'No results', e_none_h: 'Change the filter or the search.',
+      add_courier: 'Add courier', c_name: 'Courier name', c_phone: 'Phone number', save_courier: 'Save courier',
+      c_now: 'Carrying now', c_ship: '{n} shipments', c_done: 'Delivered / returned', c_owes: 'Cash owed to you', c_settle: 'Mark cash received',
+      e_courier: 'No couriers yet', e_courier_h: 'Add your first courier with “Add courier” above.',
+      me_note: 'Amount owed to a merchant = COD collected, minus shipping fees, COD commission and return fees. Settlement is recorded when you actually pay the merchant.',
+      m_dr: 'Delivered / returned', m_cod: 'COD collected', m_fees: 'Fees and commission', m_open: 'In progress', m_to: 'You owe', m_from: 'Owes you', m_settle: 'Record settlement',
+      e_merchant: 'No merchants yet', e_merchant_h: 'Merchants appear here once you add shipments for them.',
+      h_assume: 'Cost assumptions', assume_note: 'These numbers are estimates. Change them to real Hawamdiya figures and everything recalculates.',
+      cfg_fee: 'Default shipping fee to merchant', cfg_returnFee: 'Return fee to merchant', cfg_commissionPct: 'COD collection commission',
+      cfg_courierDelivered: 'Courier pay per delivered shipment', cfg_courierReturned: 'Courier pay per returned shipment', cfg_other: 'Fuel, packaging and supplies per shipment',
+      cfg_fixed: 'Monthly fixed costs (rent, phones, internet)', cfg_rate: 'Expected delivery rate', cfg_avgCod: 'Expected average COD', cfg_volume: 'Expected shipments per month',
+      u_egp: 'EGP', u_pctcod: '% of COD value', u_month: 'EGP / month', u_pct: '%', u_ship: 'shipments',
+      h_unit: 'Cost and profit per shipment', b_rev: 'Revenue', b_courier: 'Courier pay', b_fuel: 'Fuel & packaging', b_left: 'Left per shipment',
+      unit_note: 'Based on a {r}% delivery rate and an average COD of {a} EGP ({s}). Figures are EGP per shipment.', src_real: 'from your real shipments', src_est: 'estimate',
+      h_whatif: 'If you run at a given volume', w_rev: 'Monthly revenue', w_var: 'Variable costs', w_fixed: 'Fixed costs', w_profit: 'Profit at {n} shipments', w_be: 'Break-even', w_be_u: 'shipments/mo',
+      t_ship_ok: 'Shipment added', t_courier_ok: 'Courier added', t_pick: 'Pick a courier first.', t_busy: 'This courier still has shipments. Deliver them or reassign first.',
+      t_settled_c: 'Cash received from courier recorded.', t_settled_m: 'Settlement with {m} recorded', t_noperm: 'You do not have permission to edit data.', t_err: 'Could not save. Try again.',
+      bn_local: 'Could not load the Supabase library. Data here is temporary and will not be saved. Check your connection and reload.',
+      bn_read: 'Could not read data from Supabase. Make sure your account is an admin and the tables exist.'
+    }
+  };
+  var lang = 'ar';
+  try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
+  function t(k, v) {
+    var s = (I18N[lang] && I18N[lang][k]) || I18N.ar[k] || k;
+    if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); });
+    return s;
+  }
+
+  /* ---------- config ---------- */
   var CFG0 = { fee: 45, returnFee: 20, commissionPct: 1, courierDelivered: 20, courierReturned: 8, other: 6, fixed: 4000, rate: 90, avgCod: 450, volume: 300 };
-  var CFG_FIELDS = [
-    ['fee', 'أجرة الشحن الافتراضية على التاجر', 'جنيه'],
-    ['returnFee', 'رسوم المرتجع على التاجر', 'جنيه'],
-    ['commissionPct', 'عمولة تحصيل الـ COD', '% من القيمة'],
-    ['courierDelivered', 'أجر المندوب للشحنة المسلّمة', 'جنيه'],
-    ['courierReturned', 'أجر المندوب للشحنة المرتجعة', 'جنيه'],
-    ['other', 'بنزين وتغليف وأدوات للشحنة', 'جنيه'],
-    ['fixed', 'مصاريف ثابتة شهرية (إيجار، تليفونات، إنترنت)', 'جنيه/شهر'],
-    ['rate', 'نسبة التسليم المتوقعة', '%'],
-    ['avgCod', 'متوسط قيمة الـ COD المتوقع', 'جنيه'],
-    ['volume', 'عدد الشحنات المتوقع في الشهر', 'شحنة']
-  ];
-  var STATUS = { new: 'جديدة', picked_up: 'اتستلمت من التاجر', out_for_delivery: 'مع المندوب', delivered: 'اتسلمت', returned: 'مرتجعة' };
+  var CFG_FIELDS = [['fee', 'u_egp'], ['returnFee', 'u_egp'], ['commissionPct', 'u_pctcod'], ['courierDelivered', 'u_egp'], ['courierReturned', 'u_egp'],
+    ['other', 'u_egp'], ['fixed', 'u_month'], ['rate', 'u_pct'], ['avgCod', 'u_egp'], ['volume', 'u_ship']];
+  var STATUSES = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'];
+  var FILTER_KEYS = { all: 'fl_all', new: 'fl_new', picked_up: 'fl_picked', out_for_delivery: 'fl_out', delivered: 'fl_del', returned: 'fl_ret' };
+  var PAGES = ['ov', 'sh', 'co', 'me', 'rp', 'ct'];
 
   var store = { shipments: [], couriers: [], merchants: [] };
   var cfg = Object.assign({}, CFG0);
-  var db = null, local = false, canWrite = true, loaded = { shipments: false, couriers: false };
-  var tab = 'ov', filter = 'all', query = '';
+  var local = false, canWrite = true, loaded = { shipments: false, couriers: false };
+  var tab = 'ov', filter = 'all', query = '', signedIn = false;
+  var bannerKey = null, dFrom = '', dTo = '';
+  function inRange(s) {
+    if (!dFrom && !dTo) return true;
+    var d = new Date(s.createdAt); if (isNaN(d)) return false;
+    var k = d.toLocaleDateString('en-CA');
+    return !(dFrom && k < dFrom) && !(dTo && k > dTo);
+  }
 
   function el(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
   function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
   function fmt1(n) { return (Math.round(n * 10) / 10).toLocaleString('en-US'); }
-  function money(n) { return fmt(n) + ' <small>جنيه</small>'; }
+  function money(n) { return fmt(n) + ' <small>' + t('cur') + '</small>'; }
   function num(v) { var n = parseFloat(v); return isFinite(n) && n >= 0 ? n : 0; }
-  function toast(t) { var b = el('toast'); b.textContent = t; b.hidden = !t; if (t) setTimeout(function () { if (b.textContent === t) b.hidden = true; }, 4000); }
-  function courierName(id) { var c = store.couriers.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; }
+  function toast(text) { var b = el('toast'); b.textContent = text; b.hidden = !text; if (text) setTimeout(function () { if (b.textContent === text) b.hidden = true; }, 4000); }
   function monthKey(iso) { return iso ? String(iso).slice(0, 7) : ''; }
   var NOW_MONTH = new Date().toISOString().slice(0, 7);
+
+  /* ---------- logo + icons ---------- */
+  function logo(size) {
+    return '<svg class="logo" width="' + size + '" height="' + size + '" viewBox="0 0 48 48" aria-hidden="true"><rect class="logo-bg" width="48" height="48" rx="13"/>' +
+      '<rect class="logo-fg" x="13" y="16" width="26" height="18" rx="4"/><path class="logo-fg" d="M14.5 19.5 26 27.5l11.5-8"/><path class="logo-fg" d="M6 22h4M7.5 28H10"/></svg>';
+  }
+  var ICON = {
+    box: '<path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+    check: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+    wallet: '<path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H5a2 2 0 0 1-2-2Z"/><path d="M16 14h2"/>',
+    store: '<path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/>',
+    trend: '<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+    trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>'
+  };
+  function ic(name) { return '<svg class="i" viewBox="0 0 24 24">' + ICON[name] + '</svg>'; }
 
   /* ---------- calculations ---------- */
   function commission(s) { return (+s.cod || 0) * cfg.commissionPct / 100; }
@@ -281,14 +515,12 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
       else if (s.status === 'returned') { R++; rev += cfg.returnFee; }
     });
     var vcost = D * cfg.courierDelivered + R * cfg.courierReturned + (D + R) * cfg.other;
-    return { D: D, R: R, created: created, rev: rev, vcost: vcost, gross: rev - vcost, profit: rev - vcost - cfg.fixed, avgCod: D ? codSum / D : 0 };
+    return { D: D, R: R, created: created, rev: rev, profit: rev - vcost - cfg.fixed, avgCod: D ? codSum / D : 0 };
   }
   function courierHolds() {
     var m = {};
     store.shipments.forEach(function (s) {
-      if (s.status === 'delivered' && !s.settled && s.courierId) {
-        m[s.courierId] = m[s.courierId] || { cod: 0, n: 0 }; m[s.courierId].cod += +s.cod || 0; m[s.courierId].n++;
-      }
+      if (s.status === 'delivered' && !s.settled && s.courierId) { m[s.courierId] = m[s.courierId] || { cod: 0, n: 0 }; m[s.courierId].cod += +s.cod || 0; m[s.courierId].n++; }
     });
     return m;
   }
@@ -302,9 +534,7 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
       if (s.status === 'delivered') {
         m[k].delivered++; m[k].cod += +s.cod || 0; m[k].fees += (+s.fee || 0) + commission(s);
         m[k].due += (+s.cod || 0) - (+s.fee || 0) - commission(s); m[k].unpaid++;
-      } else if (s.status === 'returned') {
-        m[k].returned++; m[k].fees += cfg.returnFee; m[k].due -= cfg.returnFee; m[k].unpaid++;
-      }
+      } else if (s.status === 'returned') { m[k].returned++; m[k].fees += cfg.returnFee; m[k].due -= cfg.returnFee; m[k].unpaid++; }
     });
     return m;
   }
@@ -318,10 +548,9 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
   }
 
   /* ---------- writes ---------- */
-  function collOf(name) { return store[name]; }
   async function put(coll, id, data) {
     if (local) {
-      var arr = collOf(coll), i = arr.findIndex(function (x) { return x.id === id; });
+      var arr = store[coll], i = arr.findIndex(function (x) { return x.id === id; });
       var row = Object.assign({ id: id }, data);
       if (i >= 0) arr[i] = row; else arr.push(row);
       renderAll(); return;
@@ -348,7 +577,7 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
   function strip(s) { var o = Object.assign({}, s); delete o.id; return o; }
   async function safe(fn) {
     try { await fn(); }
-    catch (e) { if (e && (e.code === 'invalid_argument' || e.code === '42501')) { canWrite = false; toast('مفيش عندك صلاحية تعديل البيانات.'); renderAll(); } else toast('حصلت مشكلة في الحفظ، جرّب تاني.'); }
+    catch (e) { if (e && (e.code === 'invalid_argument' || e.code === '42501')) { canWrite = false; toast(t('t_noperm')); renderAll(); } else toast(t('t_err')); }
   }
   async function saveCfg() {
     if (local) { renderAll(); return; }
@@ -356,26 +585,37 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
   }
 
   /* ---------- rendering ---------- */
+  function tile(icon, cls, label, value, note) {
+    return '<div class="tile ' + cls + '"><div class="top"><span class="ic">' + ic(icon) + '</span>' + label + '</div><div class="v">' + value + '</div><div class="n">' + note + '</div></div>';
+  }
   function renderOverview() {
-    var st = monthStats(), counts = { new: 0, picked_up: 0, out_for_delivery: 0, delivered: 0, returned: 0 };
+    var st = monthStats(), counts = {};
+    STATUSES.forEach(function (k) { counts[k] = 0; });
     store.shipments.forEach(function (s) { counts[s.status] = (counts[s.status] || 0) + 1; });
+    var total = store.shipments.length;
     var holds = courierHolds(), holdTotal = 0; Object.keys(holds).forEach(function (k) { holdTotal += holds[k].cod; });
     var md = merchantDue(), dueTotal = 0; Object.keys(md).forEach(function (k) { if (md[k].due > 0) dueTotal += md[k].due; });
     var done = st.D + st.R, rate = done ? Math.round(st.D / done * 100) : 0;
     var u = unitEconomics(st.avgCod || cfg.avgCod);
     var h = '<div class="tiles">' +
-      '<div class="tile"><span class="k">شحنات الشهر</span><span class="v">' + st.created + '</span><span class="n">اتسلّم ' + st.D + ' · رجع ' + st.R + '</span></div>' +
-      '<div class="tile"><span class="k">نسبة التسليم</span><span class="v">' + rate + '<small>%</small></span><span class="n">من الشحنات اللي اتقفلت</span></div>' +
-      '<div class="tile"><span class="k">فلوس عند المناديب</span><span class="v">' + money(holdTotal) + '</span><span class="n">اتحصّلت ولسه متسلمتش</span></div>' +
-      '<div class="tile"><span class="k">مستحق للتجار</span><span class="v">' + money(dueTotal) + '</span><span class="n">صافي بعد الأجرة والعمولة</span></div>' +
-      '<div class="tile ' + (st.profit >= 0 ? 'good' : 'bad') + '"><span class="k">ربح الشهر</span><span class="v">' + money(st.profit) + '</span><span class="n">بعد المصاريف الثابتة (' + fmt(cfg.fixed) + ')</span></div>' +
-      '</div>';
-    h += '<div class="panel"><h2>الشحنات حسب الحالة</h2><div class="row">' +
-      ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'].map(function (k) { return '<span class="pill ' + k + '">' + STATUS[k] + ' ' + (counts[k] || 0) + '</span>'; }).join('') + '</div>' +
-      '<p class="note" style="margin:0">' + (counts.new ? 'فيه ' + counts.new + ' شحنة جديدة محتاجة مندوب. ' : '') + (counts.out_for_delivery ? 'فيه ' + counts.out_for_delivery + ' شحنة لسه مع المناديب.' : '') + '</p></div>';
-    h += '<div class="panel"><h2>نقطة التعادل</h2>' + (u.be ?
-      '<p style="margin:0">بالافتراضات الحالية، كل شحنة بتسيب <b>' + fmt1(u.margin) + ' جنيه</b> قبل المصاريف الثابتة. محتاج حوالي <b>' + fmt(u.be) + ' شحنة في الشهر</b> عشان تغطي ' + fmt(cfg.fixed) + ' جنيه مصاريف ثابتة.</p>' :
-      '<p style="margin:0">بالافتراضات الحالية الشحنة الواحدة بتخسر. راجع الأجرة وأجر المندوب في تاب «التكلفة».</p>') + '</div>';
+      tile('box', '', t('k_month'), st.created, t('n_month', { d: st.D, r: st.R })) +
+      tile('check', '', t('k_rate'), rate + '<small>%</small>', t('n_rate')) +
+      tile('wallet', '', t('k_hold'), money(holdTotal), t('n_hold')) +
+      tile('store', '', t('k_due'), money(dueTotal), t('n_due')) +
+      tile('trend', st.profit >= 0 ? 'pos' : 'neg', t('k_profit'), money(st.profit), t('n_profit', { n: fmt(cfg.fixed) })) + '</div>';
+    h += '<div class="card"><h2>' + t('h_status') + '</h2><div class="pipe">' + STATUSES.map(function (k) {
+      return counts[k] ? '<i class="f-' + k + '" style="width:' + (counts[k] / total * 100) + '%"></i>' : '';
+    }).join('') + '</div><div class="legend">' + STATUSES.map(function (k) {
+      return '<span class="dot c-' + k + '">' + t('st_' + k) + ' <b>' + (counts[k] || 0) + '</b></span>';
+    }).join('') + '</div>' +
+      ((counts.new || counts.out_for_delivery) ? '<p class="note">' + (counts.new ? t('msg_new', { n: counts.new }) + ' ' : '') + (counts.out_for_delivery ? t('msg_out', { n: counts.out_for_delivery }) : '') + '</p>' : '') + '</div>';
+    if (u.be) {
+      var pct = Math.min(100, Math.round(st.created / u.be * 100));
+      h += '<div class="card"><h2>' + t('h_be') + '</h2><p>' + t('be_text', { m: fmt1(u.margin) + ' ' + t('cur'), n: fmt(u.be), f: fmt(cfg.fixed) + ' ' + t('cur') }) + '</p>' +
+        '<div class="progress" role="img" aria-label="' + pct + '%"><i style="width:' + pct + '%"></i></div><p class="note">' + t('be_prog', { a: st.created, b: fmt(u.be) }) + '</p></div>';
+    } else {
+      h += '<div class="card"><h2>' + t('h_be') + '</h2><p>' + t('be_loss') + '</p></div>';
+    }
     el('p-ov').innerHTML = h;
   }
 
@@ -383,65 +623,64 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
     var q = query.trim().toLowerCase();
     var list = store.shipments.slice().sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).filter(function (s) {
       if (filter !== 'all' && s.status !== filter) return false;
-      if (!q) return true;
-      return (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
+      if (!inRange(s)) return false;
+      return !q || (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
     });
     var copts = function (sel) {
-      return '<option value="">بدون مندوب</option>' + store.couriers.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('');
+      return '<option value="">' + t('no_courier') + '</option>' + store.couriers.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('');
     };
-    var h = list.map(function (s) {
-      var id = esc(s.id);
-      var sopts = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'].map(function (k) { return '<option value="' + k + '"' + (k === s.status ? ' selected' : '') + '>' + STATUS[k] + '</option>'; }).join('');
-      return '<tr><td class="code">' + esc(s.code) + '</td><td>' + esc(s.merchant) + '</td><td>' + esc(s.customer) + ((s.phone || s.address) ? '<small>' + esc([s.phone, s.address].filter(Boolean).join(' · ')) + '</small>' : '') + '</td>' +
+    el('sh-rows').innerHTML = list.map(function (s) {
+      var id = esc(s.id), dis = canWrite ? '' : ' disabled';
+      var sopts = STATUSES.map(function (k) { return '<option value="' + k + '"' + (k === s.status ? ' selected' : '') + '>' + t('st_' + k) + '</option>'; }).join('');
+      return '<tr><td class="code">' + esc(s.code) + '</td><td class="m">' + esc(s.merchant) + '</td><td>' + esc(s.customer) +
+        ((s.phone || s.address) ? '<small>' + esc([s.phone, s.address].filter(Boolean).join(' · ')) + '</small>' : '') + '</td>' +
         '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td>' +
-        '<td><select class="mini" data-courier="' + id + '" aria-label="المندوب"' + (canWrite ? '' : ' disabled') + '>' + copts(s.courierId) + '</select></td>' +
-        '<td><select class="mini" data-status="' + id + '" aria-label="الحالة"' + (canWrite ? '' : ' disabled') + '>' + sopts + '</select></td>' +
-        '<td>' + (canWrite ? '<button class="btn danger sm" type="button" data-del="' + id + '">حذف</button>' : '') + '</td></tr>';
+        '<td><select class="mini" data-courier="' + id + '" aria-label="' + t('th_courier') + '"' + dis + '>' + copts(s.courierId) + '</select></td>' +
+        '<td><select class="mini st-' + s.status + '" data-status="' + id + '" aria-label="' + t('th_status') + '"' + dis + '>' + sopts + '</select></td>' +
+        '<td><button class="icon-del" type="button" data-print="' + id + '" aria-label="' + t('print_ship') + '"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M6 14h12v7H6z"/></svg></button>' + (canWrite ? '<button class="icon-del" type="button" data-del="' + id + '" aria-label="' + t('del') + '">' + ic('trash') + '</button>' : '') + '</td></tr>';
     }).join('');
-    el('sh-rows').innerHTML = h;
     var em = el('sh-empty');
     if (!list.length) {
       em.hidden = false;
-      em.innerHTML = !loaded.shipments ? '<b>جاري تحميل الشحنات</b>' : !store.shipments.length ? '<b>لسه مفيش شحنات</b>ضيف أول شحنة من «إضافة شحنة» فوق.' : '<b>مفيش نتايج</b>غيّر الفلتر أو البحث.';
+      em.innerHTML = !loaded.shipments ? '<b>' + t('e_loading') + '</b>' : !store.shipments.length ? '<b>' + t('e_ship') + '</b>' + t('e_ship_h') : '<b>' + t('e_none') + '</b>' + t('e_none_h');
     } else em.hidden = true;
     var ml = {}; store.shipments.forEach(function (s) { if (s.merchant) ml[s.merchant] = 1; });
     el('merchants').innerHTML = Object.keys(ml).map(function (m) { return '<option value="' + esc(m) + '">'; }).join('');
+    document.querySelectorAll('#sh-filters .chip').forEach(function (b) { b.textContent = t(FILTER_KEYS[b.getAttribute('data-f')]); });
   }
 
+  function initial(name) { return esc(String(name || '?').trim().charAt(0).toUpperCase()); }
   function renderCouriers() {
     var holds = courierHolds();
-    if (!store.couriers.length) {
-      el('co-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>لسه مفيش مناديب</b>ضيف أول مندوب من «إضافة مندوب» فوق.</div>'; return;
-    }
+    if (!store.couriers.length) { el('co-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + t('e_courier') + '</b>' + t('e_courier_h') + '</div>'; return; }
     el('co-list').innerHTML = store.couriers.map(function (c) {
       var mine = store.shipments.filter(function (s) { return s.courierId === c.id; });
       var out = mine.filter(function (s) { return s.status === 'out_for_delivery'; }).length;
       var dl = mine.filter(function (s) { return s.status === 'delivered'; }).length;
       var rt = mine.filter(function (s) { return s.status === 'returned'; }).length;
       var hd = holds[c.id] || { cod: 0, n: 0 };
-      var rate = dl + rt ? Math.round(dl / (dl + rt) * 100) : 0;
-      return '<div class="card"><span class="nm">' + esc(c.name) + '</span>' + (c.phone ? '<span class="note">' + esc(c.phone) + '</span>' : '') +
-        '<div class="kv"><span>معاه دلوقتي</span><b>' + out + ' شحنة</b></div>' +
-        '<div class="kv"><span>اتسلّم / رجع</span><b>' + dl + ' / ' + rt + (dl + rt ? ' (' + rate + '%)' : '') + '</b></div>' +
-        '<div class="kv"><span>فلوس عليه ليك</span><span class="due">' + money(hd.cod) + '</span></div>' +
-        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>استلمت منه الفلوس</button>' +
-          '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">حذف</button></div>' : '') + '</div>';
+      return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
+        '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
+        '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
+        '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' +
+        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
+          '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button></div>' : '') + '</div>';
     }).join('');
   }
 
   function renderMerchants() {
     var md = merchantDue(), keys = Object.keys(md).filter(function (k) { return k !== '-'; });
-    if (!keys.length) { el('me-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>لسه مفيش تجار</b>التجار بيظهروا هنا لما تضيف شحنات باسمهم.</div>'; return; }
+    if (!keys.length) { el('me-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + t('e_merchant') + '</b>' + t('e_merchant_h') + '</div>'; return; }
     keys.sort(function (a, b) { return md[b].due - md[a].due; });
     el('me-list').innerHTML = keys.map(function (k) {
       var m = md[k];
-      return '<div class="card"><span class="nm">' + esc(k) + '</span>' +
-        '<div class="kv"><span>شحنات اتسلمت / رجعت</span><b>' + m.delivered + ' / ' + m.returned + '</b></div>' +
-        '<div class="kv"><span>COD اتحصّل</span><b>' + fmt(m.cod) + '</b></div>' +
-        '<div class="kv"><span>أجرة وعمولة ورسوم</span><b>' + fmt(m.fees) + '</b></div>' +
-        (m.open ? '<div class="kv"><span>لسه شغالة</span><b>' + m.open + '</b></div>' : '') +
-        '<div class="kv"><span>' + (m.due >= 0 ? 'مستحق له' : 'مستحق عليه') + '</span><span class="due">' + money(Math.abs(m.due)) + '</span></div>' +
-        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>سجّل إني سوّيت معاه</button></div>' : '') + '</div>';
+      return '<div class="card"><div class="person"><span class="avatar">' + initial(k) + '</span><div><b>' + esc(k) + '</b></div></div>' +
+        '<div class="kv"><span>' + t('m_dr') + '</span><b>' + m.delivered + ' / ' + m.returned + '</b></div>' +
+        '<div class="kv"><span>' + t('m_cod') + '</span><b>' + fmt(m.cod) + '</b></div>' +
+        '<div class="kv"><span>' + t('m_fees') + '</span><b>' + fmt(m.fees) + '</b></div>' +
+        (m.open ? '<div class="kv"><span>' + t('m_open') + '</span><b>' + m.open + '</b></div>' : '') + '<div class="sep"></div>' +
+        '<div class="kv"><span>' + (m.due >= 0 ? t('m_to') : t('m_from')) + '</span><span class="due">' + money(Math.abs(m.due)) + '</span></div>' +
+        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button></div>' : '') + '</div>';
     }).join('');
   }
 
@@ -449,32 +688,138 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
     var st = monthStats(), avg = st.D >= 5 ? st.avgCod : cfg.avgCod;
     var u = unitEconomics(avg), top = Math.max(u.rev, 1);
     function bar(label, val, cls) { return '<div class="bar ' + cls + '"><span>' + label + '</span><span class="track"><i style="width:' + Math.max(0, Math.min(100, val / top * 100)) + '%"></i></span><span class="num">' + fmt1(val) + '</span></div>'; }
-    el('unit').innerHTML = '<div class="bars">' +
-      bar('إيراد الشحنة', u.rev, 'rev') + bar('أجر المندوب', u.courier, 'cost') + bar('بنزين وتغليف', u.other, 'cost') + bar('الباقي للشحنة', u.margin, 'gain') + '</div>' +
-      '<p class="note" style="margin:10px 0 0">محسوبة على نسبة تسليم ' + cfg.rate + '% ومتوسط COD ' + fmt(avg) + ' جنيه' + (st.D >= 5 ? ' (من شحناتك الفعلية)' : ' (تقدير)') + '. الأرقام بالجنيه لكل شحنة.</p>';
+    el('unit').innerHTML = '<div class="bars">' + bar(t('b_rev'), u.rev, 'rev') + bar(t('b_courier'), u.courier, 'cost') + bar(t('b_fuel'), u.other, 'cost') + bar(t('b_left'), u.margin, 'gain') + '</div>' +
+      '<p class="note" style="margin-top:12px">' + t('unit_note', { r: cfg.rate, a: fmt(avg), s: st.D >= 5 ? t('src_real') : t('src_est') }) + '</p>';
     var vol = cfg.volume, profit = u.margin * vol - cfg.fixed;
     el('whatif').innerHTML = '<div class="result">' +
-      '<div class="tile"><span class="k">إيراد الشهر</span><span class="v">' + money(u.rev * vol) + '</span></div>' +
-      '<div class="tile"><span class="k">تكلفة متغيرة</span><span class="v">' + money((u.courier + u.other) * vol) + '</span></div>' +
-      '<div class="tile"><span class="k">مصاريف ثابتة</span><span class="v">' + money(cfg.fixed) + '</span></div>' +
-      '<div class="tile ' + (profit >= 0 ? 'good' : 'bad') + '"><span class="k">الربح لـ ' + fmt(vol) + ' شحنة</span><span class="v">' + money(profit) + '</span></div>' +
-      '<div class="tile"><span class="k">نقطة التعادل</span><span class="v">' + (u.be ? fmt(u.be) + ' <small>شحنة/شهر</small>' : '-') + '</span></div></div>';
+      tile('wallet', '', t('w_rev'), money(u.rev * vol), '') + tile('box', '', t('w_var'), money((u.courier + u.other) * vol), '') + tile('store', '', t('w_fixed'), money(cfg.fixed), '') +
+      tile('trend', profit >= 0 ? 'pos' : 'neg', t('w_profit', { n: fmt(vol) }), money(profit), '') +
+      tile('check', '', t('w_be'), u.be ? fmt(u.be) + ' <small>' + t('w_be_u') + '</small>' : '-', '') + '</div>';
   }
 
+  function buildCfgGrid() {
+    el('cfg-grid').innerHTML = CFG_FIELDS.map(function (f) {
+      return '<div class="field"><label for="cfg-' + f[0] + '">' + t('cfg_' + f[0]) + '</label><input id="cfg-' + f[0] + '" type="number" min="0" step="any" inputmode="decimal"><span class="hint">' + t(f[1]) + '</span></div>';
+    }).join('');
+    CFG_FIELDS.forEach(function (f) { var i = el('cfg-' + f[0]); i.value = cfg[f[0]]; i.disabled = !canWrite; });
+  }
+
+  /* ---------- reports ---------- */
+  var rpRange = 'm';
+  function renderReports() {
+    var nowMs = Date.now();
+    var inR = function (iso) {
+      if (!iso) return false; if (rpRange === 'all') return true;
+      if (rpRange === 'm') return monthKey(iso) === NOW_MONTH;
+      var d = new Date(iso).getTime(); return !isNaN(d) && nowMs - d <= 90 * 864e5;
+    };
+    var D = 0, R = 0, created = 0, rev = 0, cod = 0, co = {}, me = {};
+    store.shipments.forEach(function (s) {
+      var m = s.merchant || '-'; me[m] = me[m] || { n: 0, D: 0, R: 0, cod: 0, rev: 0 };
+      if (inR(s.createdAt)) { created++; me[m].n++; }
+      if (!inR(s.doneAt)) return;
+      var r = 0;
+      if (s.status === 'delivered') { r = (+s.fee || 0) + commission(s); D++; cod += +s.cod || 0; me[m].D++; me[m].cod += +s.cod || 0; }
+      else if (s.status === 'returned') { r = cfg.returnFee; R++; me[m].R++; }
+      else return;
+      rev += r; me[m].rev += r;
+      if (s.courierId) {
+        var c = co[s.courierId] = co[s.courierId] || { D: 0, R: 0, cod: 0, h: 0, hn: 0 };
+        if (s.status === 'delivered') {
+          c.D++; c.cod += +s.cod || 0;
+          var h = (new Date(s.doneAt) - new Date(s.createdAt)) / 36e5; if (isFinite(h) && h >= 0) { c.h += h; c.hn++; }
+        } else c.R++;
+      }
+    });
+    var pct = function (a, b) { return b ? Math.round(a / b * 100) + '%' : '-'; };
+    var pic = function (n) { return ICON[n] ? n : Object.keys(ICON)[0]; };
+    el('rp-tiles').innerHTML = tile(pic('box'), '', t('rp_created'), fmt(created), '') + tile(pic('check'), 'pos', t('rp_deliv'), fmt(D), '') +
+      tile(pic('return'), R ? 'neg' : '', t('rp_ret'), fmt(R), '') + tile(pic('check'), '', t('rp_rate'), pct(D, D + R), '') +
+      tile(pic('money'), 'pos', t('rp_rev'), money(rev), '') + tile(pic('money'), '', t('rp_cod'), money(cod), '');
+    // last 6 months revenue
+    var y = +NOW_MONTH.slice(0, 4), mo = +NOW_MONTH.slice(5, 7), months = [], mrev = {};
+    for (var i = 5; i >= 0; i--) { var d = new Date(y, mo - 1 - i, 1); var k = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2); months.push(k); mrev[k] = 0; }
+    store.shipments.forEach(function (s) {
+      var k = monthKey(s.doneAt); if (!(k in mrev)) return;
+      if (s.status === 'delivered') mrev[k] += (+s.fee || 0) + commission(s); else if (s.status === 'returned') mrev[k] += cfg.returnFee;
+    });
+    var top = Math.max.apply(null, months.map(function (k) { return mrev[k]; })) || 1;
+    el('rp-trend').innerHTML = months.map(function (k) {
+      return '<div class="bar rev"><span dir="ltr">' + k + '</span><span class="track"><i style="width:' + (mrev[k] / top * 100) + '%"></i></span><span class="num">' + fmt(mrev[k]) + '</span></div>';
+    }).join('');
+    var empty = '<div class="empty"><b>' + t('rp_empty') + '</b></div>';
+    var cname = {}; store.couriers.forEach(function (c) { cname[c.id] = c.name; });
+    var crow = Object.keys(co).sort(function (a, b) { return co[b].D - co[a].D; }).map(function (k) {
+      var c = co[k];
+      return '<tr><td>' + esc(cname[k] || '-') + '</td><td>' + fmt(c.D) + '</td><td>' + fmt(c.R) + '</td><td>' + pct(c.D, c.D + c.R) + '</td><td>' + fmt(c.cod) + '</td><td>' + (c.hn ? fmt1(c.h / c.hn) : '-') + '</td></tr>';
+    }).join('');
+    el('rp-co').innerHTML = crow ? '<table><thead><tr><th>' + t('th_courier') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_hours') + '</th></tr></thead><tbody>' + crow + '</tbody></table>' : empty;
+    var mrow = Object.keys(me).filter(function (k) { return me[k].n + me[k].D + me[k].R > 0; }).sort(function (a, b) { return (me[b].D + me[b].R + me[b].n) - (me[a].D + me[a].R + me[a].n); }).slice(0, 10).map(function (k) {
+      var x = me[k];
+      return '<tr><td>' + esc(k) + '</td><td>' + fmt(x.n) + '</td><td>' + fmt(x.D) + '</td><td>' + fmt(x.R) + '</td><td>' + pct(x.D, x.D + x.R) + '</td><td>' + fmt(x.cod) + '</td><td>' + fmt(x.rev) + '</td></tr>';
+    }).join('');
+    el('rp-me').innerHTML = mrow ? '<table><thead><tr><th>' + t('f_merchant') + '</th><th>' + t('th_n') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_rev') + '</th></tr></thead><tbody>' + mrow + '</tbody></table>' : empty;
+    var lbl = { m: 'rp_m', '90': 'rp_90', all: 'rp_all' };
+    document.querySelectorAll('#rp-range .chip').forEach(function (b) { b.textContent = t(lbl[b.getAttribute('data-r')]); });
+  }
+  el('rp-range').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-r]'); if (!b) return;
+    rpRange = b.getAttribute('data-r');
+    document.querySelectorAll('#rp-range .chip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
+    renderReports();
+  });
+
   function renderAll() {
-    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderCosts();
+    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts();
     var fee = el('s-fee'); if (!fee.value && document.activeElement !== fee) fee.value = cfg.fee;
     document.querySelectorAll('#add-sh, #add-co').forEach(function (d) { d.hidden = !canWrite; });
-    CFG_FIELDS.forEach(function (f) { var i = el('cfg-' + f[0]); if (i && document.activeElement !== i) i.value = cfg[f[0]]; if (i) i.disabled = !canWrite; });
+    CFG_FIELDS.forEach(function (f) { var i = el('cfg-' + f[0]); if (i) { if (document.activeElement !== i) i.value = cfg[f[0]]; i.disabled = !canWrite; } });
+    if (bannerKey) banner(bannerKey);
+  }
+
+  /* ---------- language + theme + shell ---------- */
+  function applyStatic() {
+    document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.title = 'بريد · Bareed';
+    document.querySelectorAll('[data-i18n]').forEach(function (n) { n.textContent = t(n.getAttribute('data-i18n')); });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function (n) { n.placeholder = t(n.getAttribute('data-i18n-ph')); });
+    document.querySelectorAll('[data-logo]').forEach(function (n) { if (!n.firstChild) n.innerHTML = logo(+n.getAttribute('data-logo')); });
+    document.querySelectorAll('.js-lang').forEach(function (b) { b.textContent = lang === 'ar' ? 'EN' : 'عربي'; b.setAttribute('aria-label', lang === 'ar' ? 'English' : 'العربية'); });
+    el('page-title').textContent = t('pg_' + tab);
+    updateThemeIcon();
+  }
+  function setLang(l) {
+    lang = l; try { localStorage.setItem('bareed.lang', l); } catch (e) {}
+    applyStatic(); buildCfgGrid(); renderAll();
+    var am = el('auth-msg'); if (am.getAttribute('data-k')) am.textContent = t(am.getAttribute('data-k'));
+  }
+  function effectiveTheme() {
+    var d = document.documentElement.getAttribute('data-theme');
+    return d || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+  function updateThemeIcon() { document.querySelectorAll('.js-theme').forEach(function (b) { b.innerHTML = ic(effectiveTheme() === 'dark' ? 'sun' : 'moon'); }); }
+  function setTheme(v) { document.documentElement.setAttribute('data-theme', v); try { localStorage.setItem('bareed.theme', v); } catch (e) {} updateThemeIcon(); }
+  try { var st0 = localStorage.getItem('bareed.theme'); if (st0 === 'light' || st0 === 'dark') document.documentElement.setAttribute('data-theme', st0); } catch (e) {}
+
+  function banner(k) { bannerKey = k; var b = el('banner'); b.textContent = k ? t(k) : ''; b.hidden = !k; }
+  function setTab(k) {
+    tab = k;
+    document.querySelectorAll('#tabs .nav-item').forEach(function (x) { if (x.getAttribute('data-tab') === k) x.setAttribute('aria-current', 'page'); else x.removeAttribute('aria-current'); });
+    PAGES.forEach(function (p) { el('p-' + p).hidden = p !== k; });
+    el('page-title').textContent = t('pg_' + k);
+    window.scrollTo(0, 0);
+  }
+  function showApp(on) {
+    signedIn = on;
+    el('view-auth').hidden = on; el('view-app').hidden = !on;
+    el('logout').hidden = !on || local;
+    PAGES.forEach(function (p) { el('p-' + p).hidden = p !== tab; });
   }
 
   /* ---------- events ---------- */
-  el('tabs').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-tab]'); if (!b) return;
-    tab = b.getAttribute('data-tab');
-    document.querySelectorAll('#tabs .tab').forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); });
-    ['ov', 'sh', 'co', 'me', 'ct'].forEach(function (k) { el('p-' + k).hidden = k !== tab; });
-  });
+  document.querySelectorAll('.js-lang').forEach(function (b) { b.addEventListener('click', function () { setLang(lang === 'ar' ? 'en' : 'ar'); }); });
+  document.querySelectorAll('.js-theme').forEach(function (b) { b.addEventListener('click', function () { setTheme(effectiveTheme() === 'dark' ? 'light' : 'dark'); }); });
+  el('tabs').addEventListener('click', function (e) { var b = e.target.closest('[data-tab]'); if (b) setTab(b.getAttribute('data-tab')); });
   el('sh-filters').addEventListener('click', function (e) {
     var b = e.target.closest('[data-f]'); if (!b) return;
     filter = b.getAttribute('data-f');
@@ -482,23 +827,61 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
     renderShipments();
   });
   el('sh-q').addEventListener('input', function (e) { query = e.target.value; renderShipments(); });
+  el('sh-csv').addEventListener('click', function () {
+    var q = query.trim().toLowerCase();
+    var list = store.shipments.slice().sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).filter(function (s) {
+      if (filter !== 'all' && s.status !== filter) return false;
+      if (!inRange(s)) return false;
+      return !q || (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
+    });
+    if (!list.length) { toast(t('csv_none')); return; }
+    var cname = {}; store.couriers.forEach(function (c) { cname[c.id] = c.name; });
+    var cell = function (v) {
+      var x = String(v == null ? '' : v);
+      if (/^[=@\t\r]/.test(x) || (/^[+\-]/.test(x) && !/^[\d\s+\-()]+$/.test(x))) x = "'" + x;
+      return '"' + x.replace(/"/g, '""') + '"';
+    };
+    var rows = [[t('th_code'), t('f_merchant'), t('f_customer'), t('f_phone'), t('f_address'), t('th_cod'), t('th_fee'), t('th_courier'), t('th_status'), 'Date']];
+    list.forEach(function (s) { rows.push([s.code, s.merchant, s.customer, s.phone, s.address, s.cod, s.fee, cname[s.courierId] || '', t('st_' + s.status), String(s.createdAt || '').slice(0, 10)]); });
+    var csv = '\ufeff' + rows.map(function (r) { return r.map(cell).join(','); }).join('\r\n');
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'bareed-shipments-' + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+  });
 
   el('form-sh').addEventListener('submit', function (e) {
     e.preventDefault();
-    var id = newId('s');
     var data = {
       code: 'B' + Date.now().toString(36).slice(-5).toUpperCase(), merchant: el('s-merchant').value.trim(), customer: el('s-customer').value.trim(),
       phone: el('s-phone').value.trim(), address: el('s-address').value.trim(), cod: num(el('s-cod').value), fee: num(el('s-fee').value),
       status: 'new', courierId: '', settled: false, paidMerchant: false, createdAt: new Date().toISOString()
     };
-    safe(async function () { await put('shipments', id, data); el('form-sh').reset(); el('s-cod').value = 0; el('s-fee').value = cfg.fee; toast('تمت إضافة الشحنة'); });
+    safe(async function () { await put('shipments', newId('s'), data); el('form-sh').reset(); el('s-cod').value = 0; el('s-fee').value = cfg.fee; toast(t('t_ship_ok')); });
+  });
+  el('sh-from').addEventListener('change', function (e) { dFrom = e.target.value; renderShipments(); });
+  el('sh-to').addEventListener('change', function (e) { dTo = e.target.value; renderShipments(); });
+  el('sh-rows').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-print]'); if (!b) return;
+    var s = store.shipments.filter(function (x) { return x.id === b.getAttribute('data-print'); })[0]; if (!s) return;
+    var w = window.open('', '_blank'); if (!w) { toast('Allow pop-ups to print'); return; }
+    var row = function (k, v) { return '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'; };
+    w.document.write('<!doctype html><html lang="' + lang + '" dir="' + (lang === 'ar' ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><title>' + esc(s.code) + '</title><style>' +
+      'body{font-family:system-ui,sans-serif;margin:0;padding:24px}.w{max-width:420px;margin:0 auto;border:2px solid #000;border-radius:8px;padding:18px}' +
+      'h1{font-size:18px;margin:0 0 4px}.c{font-size:30px;font-weight:700;letter-spacing:2px;margin:8px 0 14px;direction:ltr;text-align:center}' +
+      'table{width:100%;border-collapse:collapse}th,td{padding:7px 4px;border-top:1px solid #bbb;text-align:start;vertical-align:top}th{width:32%;font-weight:600;color:#444}' +
+      '.cod{font-size:20px;font-weight:700}</style></head><body><div class="w"><h1>' + esc(t('waybill')) + ' · Bareed بريد</h1><div class="c">' + esc(s.code) + '</div><table>' +
+      row(t('f_merchant'), s.merchant) + row(t('f_customer'), s.customer) + row(t('f_phone'), s.phone) + row(t('f_address'), s.address) +
+      '<tr><th>' + esc(t('th_cod')) + '</th><td class="cod">' + esc(fmt(s.cod)) + ' ' + esc(t('cur')) + '</td></tr>' +
+      row(t('created'), String(s.createdAt || '').slice(0, 10)) + '</table></div></body></html>');
+    w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 300);
   });
   el('form-co').addEventListener('submit', function (e) {
     e.preventDefault();
     var data = { name: el('c-name').value.trim(), phone: el('c-phone').value.trim() };
-    safe(async function () { await put('couriers', newId('c'), data); el('form-co').reset(); toast('تمت إضافة المندوب'); });
+    safe(async function () { await put('couriers', newId('c'), data); el('form-co').reset(); toast(t('t_courier_ok')); });
   });
-
   el('sh-rows').addEventListener('change', function (e) {
     var cs = e.target.getAttribute('data-courier'), ss = e.target.getAttribute('data-status');
     var id = cs || ss; if (!id) return;
@@ -510,53 +893,48 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
       if (!next.courierId && next.status === 'out_for_delivery') next.status = 'picked_up';
     } else {
       next.status = e.target.value;
-      if ((next.status === 'out_for_delivery' || next.status === 'delivered' || next.status === 'returned') && !next.courierId) { toast('اختار المندوب الأول.'); renderShipments(); return; }
+      if ((next.status === 'out_for_delivery' || next.status === 'delivered' || next.status === 'returned') && !next.courierId) { toast(t('t_pick')); renderShipments(); return; }
       if (next.status === 'new') next.courierId = '';
     }
-    if (next.status === 'delivered' || next.status === 'returned') { if (!next.doneAt) next.doneAt = new Date().toISOString(); }
-    else next.doneAt = null;
+    if (next.status === 'delivered' || next.status === 'returned') { if (!next.doneAt) next.doneAt = new Date().toISOString(); } else next.doneAt = null;
     if (next.status !== 'delivered') next.settled = false;
     safe(function () { return put('shipments', id, next); });
   });
-  el('sh-rows').addEventListener('click', function (e) {
-    var d = e.target.closest('[data-del]'); if (d) safe(function () { return del('shipments', d.getAttribute('data-del')); });
-  });
+  el('sh-rows').addEventListener('click', function (e) { var d = e.target.closest('[data-del]'); if (d && confirm(t('c_del_ship'))) safe(function () { return del('shipments', d.getAttribute('data-del')); }); });
   el('co-list').addEventListener('click', function (e) {
     var s = e.target.closest('[data-settle]'), d = e.target.closest('[data-delc]');
     if (s) {
       var cid = s.getAttribute('data-settle');
+      if (!confirm(t('c_settle_c'))) return;
       safe(async function () {
         var rows = store.shipments.filter(function (x) { return x.courierId === cid && x.status === 'delivered' && !x.settled; });
         for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.settled = true; await put('shipments', rows[i].id, n); }
-        toast('اتسجّل استلام الفلوس من المندوب.');
+        toast(t('t_settled_c'));
       });
     } else if (d) {
       var did = d.getAttribute('data-delc');
-      if (store.shipments.some(function (x) { return x.courierId === did && x.status === 'out_for_delivery'; })) { toast('المندوب ده معاه شحنات لسه. سلّمها أو غيّر مندوبها الأول.'); return; }
+      if (store.shipments.some(function (x) { return x.courierId === did && x.status === 'out_for_delivery'; })) { toast(t('t_busy')); return; }
+      if (!confirm(t('c_del_courier'))) return;
       safe(function () { return del('couriers', did); });
     }
   });
   el('me-list').addEventListener('click', function (e) {
     var p = e.target.closest('[data-pay]'); if (!p) return;
     var m = p.getAttribute('data-pay');
+    if (!confirm(t('c_settle_m', { m: m }))) return;
     safe(async function () {
       var rows = store.shipments.filter(function (x) { return x.merchant === m && !x.paidMerchant && (x.status === 'delivered' || x.status === 'returned'); });
       for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.paidMerchant = true; await put('shipments', rows[i].id, n); }
-      toast('اتسجّلت التسوية مع ' + m);
+      toast(t('t_settled_m', { m: m }));
     });
   });
-
-  // cost settings grid
-  el('cfg-grid').innerHTML = CFG_FIELDS.map(function (f) {
-    return '<div class="field"><label for="cfg-' + f[0] + '">' + f[1] + '</label><input id="cfg-' + f[0] + '" type="number" min="0" step="any" inputmode="decimal"><span class="hint">' + f[2] + '</span></div>';
-  }).join('');
   el('cfg-grid').addEventListener('change', function (e) {
     var k = e.target.id.replace('cfg-', ''); if (!(k in CFG0)) return;
     var v = num(e.target.value); if (k === 'rate') v = Math.min(100, v);
     cfg[k] = v; renderAll(); safe(saveCfg);
   });
 
-  renderAll();
+  applyStatic(); buildCfgGrid(); renderAll();
 
   /* ---------- storage: Supabase ---------- */
   var SUPABASE_URL = 'https://ybkkdjpgkkdnijafsuai.supabase.co';
@@ -564,11 +942,6 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU';
   var sb = null, channel = null, started = false, syncTimer = null;
 
-  function banner(t) { var b = el('banner'); b.textContent = t || ''; b.hidden = !t; }
-  function showApp(on) {
-    el('auth').hidden = on; el('tabs').hidden = !on; el('logout').hidden = !on || local;
-    ['ov', 'sh', 'co', 'me', 'ct'].forEach(function (k) { el('p-' + k).hidden = !on || k !== tab; });
-  }
   async function merchantIdFor(name) {
     var n = String(name || '').trim().toLowerCase();
     var m = store.merchants.filter(function (x) { return String(x.name).trim().toLowerCase() === n; })[0];
@@ -584,7 +957,7 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
       if (rs.error) throw rs.error;
       var re = await sb.from('shipment_events').select('shipment_id,status,created_at').in('status', ['delivered', 'returned']).order('created_at', { ascending: true }).limit(5000);
       var done = {};
-      (re.data || []).forEach(function (e) { done[e.shipment_id + '|' + e.status] = e.created_at; });
+      (re.data || []).forEach(function (ev) { done[ev.shipment_id + '|' + ev.status] = ev.created_at; });
       store.shipments = rs.data.map(function (r) {
         return { id: r.id, code: r.code, merchant: r.merchants ? r.merchants.name : '', merchantId: r.merchant_id, customer: r.customer_name, phone: r.customer_phone,
           address: r.address, cod: +r.cod, fee: +r.fee, courierId: r.courier_id || '', status: r.status, settled: r.courier_settled, paidMerchant: r.merchant_settled,
@@ -606,13 +979,10 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
     if (!r.error && r.data) cfg = Object.assign({}, CFG0, r.data.data);
     renderAll();
   }
-  function syncAll() {
-    return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg()]);
-  }
+  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg()]); }
   async function startData() {
     if (started) return; started = true;
-    try { await syncAll(); banner(''); }
-    catch (e) { banner('مش قادر أقرا البيانات من Supabase. اتأكد إن حسابك أدمن وإن الجداول موجودة.'); }
+    try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
     channel = sb.channel('bareed').on('postgres_changes', { event: '*', schema: 'public' }, function () {
       clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncAll().catch(function () {}); }, 400);
     }).subscribe();
@@ -622,29 +992,23 @@ details.add form { margin-top: 12px; display: flex; flex-direction: column; gap:
     if (channel) { sb.removeChannel(channel); channel = null; }
     renderAll();
   }
+  function authMsg(k) { var m = el('auth-msg'); m.setAttribute('data-k', k || ''); m.textContent = k ? t(k) : ''; }
   async function enter() {
     var r = await sb.from('admins').select('user_id').maybeSingle();
-    if (r.error || !r.data) {
-      el('auth-msg').textContent = 'الحساب ده مش متسجل كأدمن في بريد.';
-      await sb.auth.signOut(); showApp(false); return;
-    }
+    if (r.error || !r.data) { authMsg('err_admin'); await sb.auth.signOut(); showApp(false); return; }
     showApp(true); startData();
   }
 
   (function boot() {
-    if (!window.supabase) {
-      local = true; loaded.shipments = loaded.couriers = true;
-      banner('مقدرتش أحمّل مكتبة Supabase. البيانات هنا مؤقتة ومش هتتحفظ. اتأكد من النت وافتح الصفحة تاني.');
-      showApp(true); renderAll(); return;
-    }
+    if (!window.supabase) { local = true; loaded.shipments = loaded.couriers = true; banner('bn_local'); showApp(true); renderAll(); return; }
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     sb.auth.getSession().then(function (r) { if (r.data && r.data.session) enter(); else showApp(false); });
     sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_OUT') { stopData(); showApp(false); } });
     el('form-auth').addEventListener('submit', async function (e) {
       e.preventDefault();
       var r = await sb.auth.signInWithPassword({ email: el('a-email').value.trim(), password: el('a-pass').value });
-      if (r.error) { el('auth-msg').textContent = 'الإيميل أو الباسورد غلط.'; return; }
-      el('auth-msg').textContent = ''; el('a-pass').value = ''; enter();
+      if (r.error) { authMsg('err_login'); return; }
+      authMsg(''); el('a-pass').value = ''; enter();
     });
     el('logout').addEventListener('click', function () { sb.auth.signOut(); });
   })();
