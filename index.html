@@ -399,6 +399,13 @@ select.search { appearance: auto; cursor: pointer; }
 
 .dt { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
 .dt .search { flex: none; min-width: 0; width: 140px; }
+
+/* mobile bottom bar: 7 tabs, labels wrap instead of truncating */
+@media (max-width: 860px) {
+  .nav-item { padding: 7px 2px; font-size: 10px; line-height: 1.25; }
+  .nav-item span { white-space: normal; overflow: visible; text-overflow: clip; text-align: center; overflow-wrap: anywhere; }
+  .nav-item svg { width: 18px; height: 18px; }
+}
 </style>
 </head>
 <body>
@@ -594,7 +601,7 @@ select.search { appearance: auto; cursor: pointer; }
       cur: 'جنيه',
       nav_tr: 'تتبع', pg_tr: 'تتبع شحنة',
       tr_title: 'تتبع شحنة', tr_hint: 'اكتب كود الشحنة اللي وصلك على واتساب أو من التاجر.', tr_ph: 'B7X3K', tr_btn: 'تتبع',
-      tr_none: 'مفيش شحنة بالرقم ده — اتأكد من الكود.', tr_err: 'التتبع العام محتاج تفعيل صلاحية قراءة من قاعدة البيانات (policy).', tr_close: 'قفل',
+      tr_none: 'مفيش شحنة بالرقم ده — اتأكد من الكود.', tr_err: 'تعذّر التتبع دلوقتي، جرّب تاني.', tr_close: 'قفل',
       s_zone: 'المنطقة', no_zone: 'بدون منطقة',
       h_zones: 'مناطق التوصيل والتسعير', zones_note: 'كل منطقة ليها أجرة شحن وأجر مندوب — بتتحدد تلقائي لما تختار المنطقة في شحنة جديدة.',
       z_name: 'اسم المنطقة', z_fee: 'الأجرة', z_courier: 'أجر المندوب', z_add: 'ضيف منطقة', z_ok: 'تم حفظ المناطق',
@@ -647,7 +654,7 @@ select.search { appearance: auto; cursor: pointer; }
       cur: 'EGP',
       nav_tr: 'Track', pg_tr: 'Track shipment',
       tr_title: 'Track a shipment', tr_hint: 'Enter the code you received on WhatsApp or from the merchant.', tr_ph: 'B7X3K', tr_btn: 'Track',
-      tr_none: 'No shipment with this code — check it and try again.', tr_err: 'Public tracking needs a database read policy enabled.', tr_close: 'Close',
+      tr_none: 'No shipment with this code — check it and try again.', tr_err: 'Tracking is unavailable right now. Try again.', tr_close: 'Close',
       s_zone: 'Zone', no_zone: 'No zone',
       h_zones: 'Delivery zones & pricing', zones_note: 'Each zone has a shipping fee and courier pay — applied automatically when you pick the zone on a new shipment.',
       z_name: 'Zone name', z_fee: 'Fee', z_courier: 'Courier pay', z_add: 'Add zone', z_ok: 'Zones saved',
@@ -1212,10 +1219,10 @@ select.search { appearance: auto; cursor: pointer; }
     code = String(code || '').trim().toUpperCase(); if (!code) return null;
     if (sbPub) {
       try {
-        var r = await sbPub.from('shipments').select('id,code,status,customer_name,created_at').eq('code', code).maybeSingle();
+        var r = await sbPub.rpc('track_shipment', { p_code: code });
         if (!r.error && r.data) {
-          var ev = await sbPub.from('shipment_events').select('status,created_at').eq('shipment_id', r.data.id).order('created_at', { ascending: true });
-          return { code: r.data.code, status: r.data.status, createdAt: r.data.created_at, events: ((ev.data) || []).map(function (e) { return { status: e.status, at: e.created_at }; }) };
+          var d = r.data;
+          return { code: d.code, status: d.status, createdAt: d.created_at, events: (d.events || []).map(function (e) { return { status: e.status, at: e.created_at }; }) };
         }
       } catch (e) {}
     }
