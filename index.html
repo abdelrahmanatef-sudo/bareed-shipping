@@ -215,9 +215,128 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
   .auth-mobile-brand { display: flex; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
-.dt { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
-.dt .search { flex: none; min-width: 0; width: 140px; }
+
+/* ===================== MODERN / 3D UPGRADE ===================== */
+:root {
+  --radius-lg: 20px; --radius-md: 14px;
+  --shadow-soft: 0 1px 2px rgba(15,27,26,.04), 0 8px 24px rgba(15,27,26,.06);
+  --shadow-lift: 0 2px 4px rgba(15,27,26,.05), 0 16px 40px rgba(11,127,112,.14);
+  --shadow-btn: 0 2px 6px rgba(11,127,112,.30), 0 8px 20px rgba(11,127,112,.22);
+  --brand-2: #10a894;
+  --grad-brand: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand-2: #1fd8bd; --grad-brand: linear-gradient(135deg, #0fa08e 0%, #1fd8bd 100%);
+    --shadow-soft: 0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.30);
+    --shadow-lift: 0 2px 4px rgba(0,0,0,.3), 0 16px 40px rgba(47,196,174,.16);
+    --shadow-btn: 0 2px 6px rgba(0,0,0,.35), 0 10px 22px rgba(47,196,174,.25);
+  }
+}
+:root[data-theme="dark"] {
+  --brand-2: #1fd8bd; --grad-brand: linear-gradient(135deg, #0fa08e 0%, #1fd8bd 100%);
+  --shadow-soft: 0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.30);
+  --shadow-lift: 0 2px 4px rgba(0,0,0,.3), 0 16px 40px rgba(47,196,174,.16);
+  --shadow-btn: 0 2px 6px rgba(0,0,0,.35), 0 10px 22px rgba(47,196,174,.25);
+}
+
+/* ---------- shell / sidebar: gradient + glow ---------- */
+.side { overflow: hidden; background: linear-gradient(165deg, #123831 0%, var(--side-bg) 45%, #06100f 100%); padding: 24px 16px; }
+.side::before, .side::after { content: ""; position: absolute; border-radius: 50%; filter: blur(48px); pointer-events: none; z-index: 0; }
+.side::before { width: 260px; height: 260px; top: -90px; inset-inline-start: -80px; background: radial-gradient(circle, rgba(245,183,0,.22), transparent 65%); }
+.side::after { width: 240px; height: 240px; bottom: -80px; inset-inline-end: -70px; background: radial-gradient(circle, rgba(47,196,174,.28), transparent 65%); }
+.side > * { position: relative; z-index: 1; }
+.brand b { background: linear-gradient(120deg, #fff 30%, #cfe9e4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.nav { gap: 6px; }
+.nav-item { border-radius: 12px; padding: 11px 14px; transition: transform .18s ease, background .18s ease, color .18s ease; }
+.nav-item:hover { transform: translateX(-3px); }
+[dir="ltr"] .nav-item:hover { transform: translateX(3px); }
+.nav-item:active { transform: scale(.97); }
+.nav-item[aria-current="page"] { background: linear-gradient(135deg, rgba(245,183,0,.20), rgba(245,183,0,.08)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 4px 14px rgba(0,0,0,.18); }
+.nav-item[aria-current="page"] svg { filter: drop-shadow(0 2px 6px rgba(245,183,0,.45)); }
+
+/* ---------- topbar: deeper glass ---------- */
+.topbar { background: color-mix(in srgb, var(--bg) 72%, transparent); backdrop-filter: blur(14px) saturate(1.3); }
+.icon-btn { transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.icon-btn:hover { border-color: var(--brand); transform: translateY(-1px); box-shadow: var(--shadow-soft); }
+.icon-btn:active { transform: scale(.95); }
+
+/* ---------- cards & tiles: soft 3D depth ---------- */
+.card, .tile, details.add { border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); transition: transform .22s cubic-bezier(.2,.7,.3,1.2), box-shadow .22s ease; }
+.card:hover, .tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+.card { position: relative; overflow: hidden; }
+.card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: linear-gradient(90deg, var(--brand), var(--brand-2), var(--accent)); opacity: .55; border-radius: var(--radius-lg) var(--radius-lg) 0 0; }
+.card > * { position: relative; }
+.tile .ic { background: var(--grad-brand); color: #fff; box-shadow: 0 4px 10px rgba(11,127,112,.35), inset 0 1px 0 rgba(255,255,255,.25); }
+.tile.pos .ic { background: linear-gradient(135deg, var(--s-delivered), #3aa77a); box-shadow: 0 4px 10px rgba(23,120,74,.35), inset 0 1px 0 rgba(255,255,255,.25); }
+.tile.neg .ic { background: linear-gradient(135deg, var(--s-returned), #d4605b); box-shadow: 0 4px 10px rgba(180,51,46,.35), inset 0 1px 0 rgba(255,255,255,.25); }
+.tile .v { text-shadow: 0 1px 0 rgba(255,255,255,.5); }
+.avatar { background: var(--grad-brand); color: #fff; box-shadow: 0 4px 10px rgba(11,127,112,.30), inset 0 1px 0 rgba(255,255,255,.25); }
+
+/* ---------- buttons ---------- */
+.btn { background: var(--grad-brand); box-shadow: var(--shadow-btn), inset 0 1px 0 rgba(255,255,255,.25); border-radius: 12px; transition: transform .15s ease, box-shadow .15s ease, filter .15s ease; }
+.btn:hover { filter: none; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(11,127,112,.35), 0 14px 30px rgba(11,127,112,.28), inset 0 1px 0 rgba(255,255,255,.25); }
+.btn:active { transform: translateY(1px) scale(.98); box-shadow: 0 1px 3px rgba(11,127,112,.30), inset 0 2px 4px rgba(0,0,0,.12); }
+.btn[disabled] { box-shadow: none; }
+.btn.ghost, .btn.danger { box-shadow: none; transition: transform .15s ease, box-shadow .15s ease; }
+.btn.ghost:hover, .btn.danger:hover { transform: translateY(-1px); box-shadow: var(--shadow-soft); }
+
+/* ---------- chips / selects ---------- */
+.chip { border-radius: 99px; transition: transform .15s ease, box-shadow .15s ease; }
+.chip:hover { transform: translateY(-1px); }
+.chip[aria-pressed="true"] { background: var(--grad-brand); box-shadow: var(--shadow-btn); }
+select.mini, .search, .field input { border-radius: 12px; transition: border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+select.mini:hover:not(:disabled) { border-color: var(--brand); }
+.field input:focus, .search:focus { box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand) 18%, transparent); }
+.chip:focus-visible, .icon-btn:focus-visible, .btn:focus-visible { outline-offset: 3px; }
+
+/* ---------- status colors: gradient bars ---------- */
+.pipe { box-shadow: inset 0 1px 3px rgba(0,0,0,.08); }
+.pipe i { background-image: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0)); }
+.progress { box-shadow: inset 0 1px 3px rgba(0,0,0,.08); }
+.progress i { background: var(--grad-brand); box-shadow: 0 0 12px color-mix(in srgb, var(--brand) 55%, transparent); }
+.bar .track { box-shadow: inset 0 1px 3px rgba(0,0,0,.08); }
+.bar .track i { box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.dot { box-shadow: inset 0 1px 0 rgba(255,255,255,.35); }
+.sep { background: linear-gradient(90deg, transparent, var(--line), transparent); }
+
+/* ---------- table rows ---------- */
+tbody tr { transition: background .15s ease; }
+tbody tr:hover { background: color-mix(in srgb, var(--brand-soft) 45%, transparent); }
+td { border-top: 1px solid color-mix(in srgb, var(--line) 75%, transparent); }
+.icon-del { transition: transform .15s ease, background .15s ease, color .15s ease; }
+.icon-del:hover { transform: scale(1.08) rotate(-4deg); }
+
+/* ---------- auth hero: modern gradient ---------- */
+.auth-hero { background: linear-gradient(160deg, #16453c 0%, var(--side-bg) 50%, #050e0d 100%); position: relative; overflow: hidden; }
+.auth-hero::before, .auth-hero::after { content: ""; position: absolute; border-radius: 50%; filter: blur(60px); }
+.auth-hero::before { width: 380px; height: 380px; top: -120px; inset-inline-start: -100px; background: radial-gradient(circle, rgba(245,183,0,.25), transparent 65%); }
+.auth-hero::after { width: 340px; height: 340px; bottom: -110px; inset-inline-end: -90px; background: radial-gradient(circle, rgba(47,196,174,.32), transparent 65%); }
+.auth-hero > * { position: relative; z-index: 1; }
+.auth-hero h2 { text-shadow: 0 2px 20px rgba(0,0,0,.25); }
+
+/* ---------- details add ---------- */
+details.add summary { border-radius: 14px; transition: background .15s ease; }
+details.add summary:hover { background: var(--brand-soft); }
+details.add[open] { box-shadow: var(--shadow-lift); }
+
+/* ---------- toast / banner ---------- */
+.toast { box-shadow: var(--shadow-lift); border: 1px solid color-mix(in srgb, var(--brand) 25%, transparent); }
+.banner { border: 1px solid color-mix(in srgb, var(--s-out) 25%, transparent); }
+
+/* ---------- entrance animation ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .content > * { animation: rise .45s cubic-bezier(.2,.7,.3,1) both; }
+  .content > *:nth-child(2) { animation-delay: .05s; } .content > *:nth-child(3) { animation-delay: .1s; }
+  .content > *:nth-child(4) { animation-delay: .15s; } .content > *:nth-child(5) { animation-delay: .2s; }
+  .tiles .tile:nth-child(2) { animation-delay: .06s; } .tiles .tile:nth-child(3) { animation-delay: .12s; }
+  .tiles .tile:nth-child(4) { animation-delay: .18s; } .tiles .tile:nth-child(5) { animation-delay: .24s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .bar .track i, .progress i { transition: width .6s cubic-bezier(.2,.7,.3,1); }
+}
+
 </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -253,7 +372,6 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
       <button class="nav-item" data-tab="sh"><svg class="i" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg><span data-i18n="nav_sh"></span></button>
       <button class="nav-item" data-tab="co"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span data-i18n="nav_co"></span></button>
       <button class="nav-item" data-tab="me"><svg class="i" viewBox="0 0 24 24"><path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/></svg><span data-i18n="nav_me"></span></button>
-      <button class="nav-item" data-tab="rp"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span data-i18n="nav_rp"></span></button>
       <button class="nav-item" data-tab="ct"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg><span data-i18n="nav_ct"></span></button>
     </nav>
     <div class="side-foot" data-i18n="brand_sub"></div>
@@ -302,9 +420,6 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
               <button class="chip" type="button" data-f="returned" aria-pressed="false"></button>
             </div>
             <input class="search" id="sh-q" type="search" data-i18n-ph="search_ph">
-            <label class="dt"><span data-i18n="date_from"></span><input class="search" type="date" id="sh-from"></label>
-            <label class="dt"><span data-i18n="date_to"></span><input class="search" type="date" id="sh-to"></label>
-            <button class="btn ghost sm" type="button" id="sh-csv" data-i18n="export_csv"></button>
           </div>
           <div class="tablewrap">
             <table>
@@ -335,15 +450,6 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
         <div id="me-list" class="cards"></div>
       </section>
 
-      <section id="p-rp" class="stack" hidden>
-        <div class="card"><div class="toolbar"><div id="rp-range" class="chips" role="group">
-          <button class="chip" type="button" data-r="m" aria-pressed="true"></button><button class="chip" type="button" data-r="90" aria-pressed="false"></button><button class="chip" type="button" data-r="all" aria-pressed="false"></button>
-        </div></div></div>
-        <div id="rp-tiles" class="tiles"></div>
-        <div class="card"><h2 data-i18n="rp_trend"></h2><div id="rp-trend" style="display:flex;flex-direction:column;gap:10px"></div></div>
-        <div class="card"><h2 data-i18n="rp_couriers"></h2><div class="tablewrap" id="rp-co"></div></div>
-        <div class="card"><h2 data-i18n="rp_merchants"></h2><div class="tablewrap" id="rp-me"></div></div>
-      </section>
       <section id="p-ct" class="stack" hidden>
         <div class="card">
           <h2 data-i18n="h_assume"></h2>
@@ -362,10 +468,7 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
   /* ---------- translations ---------- */
   var I18N = {
     ar: {
-      nav_rp: 'التقارير', pg_rp: 'التقارير', rp_m: 'الشهر ده', rp_90: 'آخر 90 يوم', rp_all: 'الكل', rp_created: 'شحنات جديدة', rp_deliv: 'تم تسليمها', rp_ret: 'مرتجع', rp_rate: 'نسبة النجاح', rp_rev: 'الإيراد', rp_cod: 'COD محصّل', rp_trend: 'الإيراد آخر 6 شهور', rp_couriers: 'أداء المناديب', rp_merchants: 'أكبر التجار', rp_empty: 'مفيش بيانات في الفترة دي', th_hours: 'متوسط التسليم (ساعة)', th_n: 'الشحنات', th_rate: 'النجاح', th_rev: 'الإيراد',
-      date_from: 'من', date_to: 'إلى', print_ship: 'طباعة بوليصة', waybill: 'بوليصة شحن', created: 'التاريخ',
-      c_del_ship: 'تمسح الشحنة دي نهائياً؟', c_del_courier: 'تمسح المندوب ده؟', c_settle_c: 'تأكيد تسوية كل شحنات المندوب المسلّمة؟', c_settle_m: 'تأكيد تحويل مستحقات {m}؟', export_csv: 'تصدير Excel', csv_none: 'مفيش شحنات للتصدير',
-      brand: 'بريد', brand_sub: 'للشحن · حوامدية', logout: 'خروج',
+      brand: 'بريد', brand_sub: 'للشحن السريع', logout: 'خروج',
       nav_ov: 'نظرة عامة', nav_sh: 'الشحنات', nav_co: 'المناديب', nav_me: 'التجار', nav_ct: 'التكلفة',
       pg_ov: 'نظرة عامة', pg_sh: 'الشحنات', pg_co: 'المناديب', pg_me: 'التجار والتسوية', pg_ct: 'التكلفة والربح',
       hero_h: 'كل شحناتك وفلوسك في مكان واحد', hero_p: 'تابع الشحنات والمناديب وتسوية الـ COD وربح كل شحنة.',
@@ -391,7 +494,7 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
       me_note: 'المستحق للتاجر = الـ COD اللي اتحصّل، ناقص أجرة الشحن وعمولة الـ COD، وناقص رسوم المرتجع. التسوية بتتسجل لما تدفع للتاجر فعلاً.',
       m_dr: 'اتسلمت / رجعت', m_cod: 'COD اتحصّل', m_fees: 'أجرة وعمولة ورسوم', m_open: 'لسه شغالة', m_to: 'مستحق له', m_from: 'مستحق عليه', m_settle: 'سجّل إني سوّيت معاه',
       e_merchant: 'لسه مفيش تجار', e_merchant_h: 'التجار بيظهروا هنا لما تضيف شحنات باسمهم.',
-      h_assume: 'افتراضات التكلفة', assume_note: 'الأرقام دي تقديرية. غيّرها لأرقام حوامدية الحقيقية، والحساب كله بيتحدّث.',
+      h_assume: 'افتراضات التكلفة', assume_note: 'الأرقام دي تقديرية. غيّرها لأرقام شركتك الحقيقية، والحساب كله بيتحدّث.',
       cfg_fee: 'أجرة الشحن الافتراضية على التاجر', cfg_returnFee: 'رسوم المرتجع على التاجر', cfg_commissionPct: 'عمولة تحصيل الـ COD',
       cfg_courierDelivered: 'أجر المندوب للشحنة المسلّمة', cfg_courierReturned: 'أجر المندوب للشحنة المرتجعة', cfg_other: 'بنزين وتغليف وأدوات للشحنة',
       cfg_fixed: 'مصاريف ثابتة شهرية (إيجار، تليفونات، إنترنت)', cfg_rate: 'نسبة التسليم المتوقعة', cfg_avgCod: 'متوسط قيمة الـ COD المتوقع', cfg_volume: 'عدد الشحنات المتوقع في الشهر',
@@ -405,10 +508,7 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
       bn_read: 'مش قادر أقرا البيانات من Supabase. اتأكد إن حسابك أدمن وإن الجداول موجودة.'
     },
     en: {
-      nav_rp: 'Reports', pg_rp: 'Reports', rp_m: 'This month', rp_90: 'Last 90 days', rp_all: 'All time', rp_created: 'New shipments', rp_deliv: 'Delivered', rp_ret: 'Returned', rp_rate: 'Success rate', rp_rev: 'Revenue', rp_cod: 'COD collected', rp_trend: 'Revenue, last 6 months', rp_couriers: 'Courier performance', rp_merchants: 'Top merchants', rp_empty: 'No data in this period', th_hours: 'Avg delivery (h)', th_n: 'Shipments', th_rate: 'Success', th_rev: 'Revenue',
-      date_from: 'From', date_to: 'To', print_ship: 'Print waybill', waybill: 'Waybill', created: 'Date',
-      c_del_ship: 'Delete this shipment permanently?', c_del_courier: 'Delete this courier?', c_settle_c: 'Confirm settling all of this courier\'s delivered shipments?', c_settle_m: 'Confirm paying out {m}?', export_csv: 'Export CSV', csv_none: 'No shipments to export',
-      brand: 'Bareed', brand_sub: 'Delivery · Hawamdiya', logout: 'Sign out',
+      brand: 'Bareed', brand_sub: 'Fast Delivery', logout: 'Sign out',
       nav_ov: 'Overview', nav_sh: 'Shipments', nav_co: 'Couriers', nav_me: 'Merchants', nav_ct: 'Costs',
       pg_ov: 'Overview', pg_sh: 'Shipments', pg_co: 'Couriers', pg_me: 'Merchants & settlement', pg_ct: 'Costs & profit',
       hero_h: 'All your deliveries and cash in one place', hero_p: 'Track shipments, couriers, COD settlement and the profit on every shipment.',
@@ -434,7 +534,7 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
       me_note: 'Amount owed to a merchant = COD collected, minus shipping fees, COD commission and return fees. Settlement is recorded when you actually pay the merchant.',
       m_dr: 'Delivered / returned', m_cod: 'COD collected', m_fees: 'Fees and commission', m_open: 'In progress', m_to: 'You owe', m_from: 'Owes you', m_settle: 'Record settlement',
       e_merchant: 'No merchants yet', e_merchant_h: 'Merchants appear here once you add shipments for them.',
-      h_assume: 'Cost assumptions', assume_note: 'These numbers are estimates. Change them to real Hawamdiya figures and everything recalculates.',
+      h_assume: 'Cost assumptions', assume_note: 'These numbers are estimates. Change them to your real figures and everything recalculates.',
       cfg_fee: 'Default shipping fee to merchant', cfg_returnFee: 'Return fee to merchant', cfg_commissionPct: 'COD collection commission',
       cfg_courierDelivered: 'Courier pay per delivered shipment', cfg_courierReturned: 'Courier pay per returned shipment', cfg_other: 'Fuel, packaging and supplies per shipment',
       cfg_fixed: 'Monthly fixed costs (rent, phones, internet)', cfg_rate: 'Expected delivery rate', cfg_avgCod: 'Expected average COD', cfg_volume: 'Expected shipments per month',
@@ -462,19 +562,13 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
     ['other', 'u_egp'], ['fixed', 'u_month'], ['rate', 'u_pct'], ['avgCod', 'u_egp'], ['volume', 'u_ship']];
   var STATUSES = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'];
   var FILTER_KEYS = { all: 'fl_all', new: 'fl_new', picked_up: 'fl_picked', out_for_delivery: 'fl_out', delivered: 'fl_del', returned: 'fl_ret' };
-  var PAGES = ['ov', 'sh', 'co', 'me', 'rp', 'ct'];
+  var PAGES = ['ov', 'sh', 'co', 'me', 'ct'];
 
   var store = { shipments: [], couriers: [], merchants: [] };
   var cfg = Object.assign({}, CFG0);
   var local = false, canWrite = true, loaded = { shipments: false, couriers: false };
   var tab = 'ov', filter = 'all', query = '', signedIn = false;
-  var bannerKey = null, dFrom = '', dTo = '';
-  function inRange(s) {
-    if (!dFrom && !dTo) return true;
-    var d = new Date(s.createdAt); if (isNaN(d)) return false;
-    var k = d.toLocaleDateString('en-CA');
-    return !(dFrom && k < dFrom) && !(dTo && k > dTo);
-  }
+  var bannerKey = null;
 
   function el(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
@@ -623,7 +717,6 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
     var q = query.trim().toLowerCase();
     var list = store.shipments.slice().sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).filter(function (s) {
       if (filter !== 'all' && s.status !== filter) return false;
-      if (!inRange(s)) return false;
       return !q || (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
     });
     var copts = function (sel) {
@@ -637,7 +730,7 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
         '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td>' +
         '<td><select class="mini" data-courier="' + id + '" aria-label="' + t('th_courier') + '"' + dis + '>' + copts(s.courierId) + '</select></td>' +
         '<td><select class="mini st-' + s.status + '" data-status="' + id + '" aria-label="' + t('th_status') + '"' + dis + '>' + sopts + '</select></td>' +
-        '<td><button class="icon-del" type="button" data-print="' + id + '" aria-label="' + t('print_ship') + '"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4v-7h16v7h-2M6 14h12v7H6z"/></svg></button>' + (canWrite ? '<button class="icon-del" type="button" data-del="' + id + '" aria-label="' + t('del') + '">' + ic('trash') + '</button>' : '') + '</td></tr>';
+        '<td>' + (canWrite ? '<button class="icon-del" type="button" data-del="' + id + '" aria-label="' + t('del') + '">' + ic('trash') + '</button>' : '') + '</td></tr>';
     }).join('');
     var em = el('sh-empty');
     if (!list.length) {
@@ -704,73 +797,8 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
     CFG_FIELDS.forEach(function (f) { var i = el('cfg-' + f[0]); i.value = cfg[f[0]]; i.disabled = !canWrite; });
   }
 
-  /* ---------- reports ---------- */
-  var rpRange = 'm';
-  function renderReports() {
-    var nowMs = Date.now();
-    var inR = function (iso) {
-      if (!iso) return false; if (rpRange === 'all') return true;
-      if (rpRange === 'm') return monthKey(iso) === NOW_MONTH;
-      var d = new Date(iso).getTime(); return !isNaN(d) && nowMs - d <= 90 * 864e5;
-    };
-    var D = 0, R = 0, created = 0, rev = 0, cod = 0, co = {}, me = {};
-    store.shipments.forEach(function (s) {
-      var m = s.merchant || '-'; me[m] = me[m] || { n: 0, D: 0, R: 0, cod: 0, rev: 0 };
-      if (inR(s.createdAt)) { created++; me[m].n++; }
-      if (!inR(s.doneAt)) return;
-      var r = 0;
-      if (s.status === 'delivered') { r = (+s.fee || 0) + commission(s); D++; cod += +s.cod || 0; me[m].D++; me[m].cod += +s.cod || 0; }
-      else if (s.status === 'returned') { r = cfg.returnFee; R++; me[m].R++; }
-      else return;
-      rev += r; me[m].rev += r;
-      if (s.courierId) {
-        var c = co[s.courierId] = co[s.courierId] || { D: 0, R: 0, cod: 0, h: 0, hn: 0 };
-        if (s.status === 'delivered') {
-          c.D++; c.cod += +s.cod || 0;
-          var h = (new Date(s.doneAt) - new Date(s.createdAt)) / 36e5; if (isFinite(h) && h >= 0) { c.h += h; c.hn++; }
-        } else c.R++;
-      }
-    });
-    var pct = function (a, b) { return b ? Math.round(a / b * 100) + '%' : '-'; };
-    var pic = function (n) { return ICON[n] ? n : Object.keys(ICON)[0]; };
-    el('rp-tiles').innerHTML = tile(pic('box'), '', t('rp_created'), fmt(created), '') + tile(pic('check'), 'pos', t('rp_deliv'), fmt(D), '') +
-      tile(pic('return'), R ? 'neg' : '', t('rp_ret'), fmt(R), '') + tile(pic('check'), '', t('rp_rate'), pct(D, D + R), '') +
-      tile(pic('money'), 'pos', t('rp_rev'), money(rev), '') + tile(pic('money'), '', t('rp_cod'), money(cod), '');
-    // last 6 months revenue
-    var y = +NOW_MONTH.slice(0, 4), mo = +NOW_MONTH.slice(5, 7), months = [], mrev = {};
-    for (var i = 5; i >= 0; i--) { var d = new Date(y, mo - 1 - i, 1); var k = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2); months.push(k); mrev[k] = 0; }
-    store.shipments.forEach(function (s) {
-      var k = monthKey(s.doneAt); if (!(k in mrev)) return;
-      if (s.status === 'delivered') mrev[k] += (+s.fee || 0) + commission(s); else if (s.status === 'returned') mrev[k] += cfg.returnFee;
-    });
-    var top = Math.max.apply(null, months.map(function (k) { return mrev[k]; })) || 1;
-    el('rp-trend').innerHTML = months.map(function (k) {
-      return '<div class="bar rev"><span dir="ltr">' + k + '</span><span class="track"><i style="width:' + (mrev[k] / top * 100) + '%"></i></span><span class="num">' + fmt(mrev[k]) + '</span></div>';
-    }).join('');
-    var empty = '<div class="empty"><b>' + t('rp_empty') + '</b></div>';
-    var cname = {}; store.couriers.forEach(function (c) { cname[c.id] = c.name; });
-    var crow = Object.keys(co).sort(function (a, b) { return co[b].D - co[a].D; }).map(function (k) {
-      var c = co[k];
-      return '<tr><td>' + esc(cname[k] || '-') + '</td><td>' + fmt(c.D) + '</td><td>' + fmt(c.R) + '</td><td>' + pct(c.D, c.D + c.R) + '</td><td>' + fmt(c.cod) + '</td><td>' + (c.hn ? fmt1(c.h / c.hn) : '-') + '</td></tr>';
-    }).join('');
-    el('rp-co').innerHTML = crow ? '<table><thead><tr><th>' + t('th_courier') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_hours') + '</th></tr></thead><tbody>' + crow + '</tbody></table>' : empty;
-    var mrow = Object.keys(me).filter(function (k) { return me[k].n + me[k].D + me[k].R > 0; }).sort(function (a, b) { return (me[b].D + me[b].R + me[b].n) - (me[a].D + me[a].R + me[a].n); }).slice(0, 10).map(function (k) {
-      var x = me[k];
-      return '<tr><td>' + esc(k) + '</td><td>' + fmt(x.n) + '</td><td>' + fmt(x.D) + '</td><td>' + fmt(x.R) + '</td><td>' + pct(x.D, x.D + x.R) + '</td><td>' + fmt(x.cod) + '</td><td>' + fmt(x.rev) + '</td></tr>';
-    }).join('');
-    el('rp-me').innerHTML = mrow ? '<table><thead><tr><th>' + t('f_merchant') + '</th><th>' + t('th_n') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_rev') + '</th></tr></thead><tbody>' + mrow + '</tbody></table>' : empty;
-    var lbl = { m: 'rp_m', '90': 'rp_90', all: 'rp_all' };
-    document.querySelectorAll('#rp-range .chip').forEach(function (b) { b.textContent = t(lbl[b.getAttribute('data-r')]); });
-  }
-  el('rp-range').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-r]'); if (!b) return;
-    rpRange = b.getAttribute('data-r');
-    document.querySelectorAll('#rp-range .chip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
-    renderReports();
-  });
-
   function renderAll() {
-    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts();
+    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderCosts();
     var fee = el('s-fee'); if (!fee.value && document.activeElement !== fee) fee.value = cfg.fee;
     document.querySelectorAll('#add-sh, #add-co').forEach(function (d) { d.hidden = !canWrite; });
     CFG_FIELDS.forEach(function (f) { var i = el('cfg-' + f[0]); if (i) { if (document.activeElement !== i) i.value = cfg[f[0]]; i.disabled = !canWrite; } });
@@ -827,29 +855,6 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
     renderShipments();
   });
   el('sh-q').addEventListener('input', function (e) { query = e.target.value; renderShipments(); });
-  el('sh-csv').addEventListener('click', function () {
-    var q = query.trim().toLowerCase();
-    var list = store.shipments.slice().sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).filter(function (s) {
-      if (filter !== 'all' && s.status !== filter) return false;
-      if (!inRange(s)) return false;
-      return !q || (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
-    });
-    if (!list.length) { toast(t('csv_none')); return; }
-    var cname = {}; store.couriers.forEach(function (c) { cname[c.id] = c.name; });
-    var cell = function (v) {
-      var x = String(v == null ? '' : v);
-      if (/^[=@\t\r]/.test(x) || (/^[+\-]/.test(x) && !/^[\d\s+\-()]+$/.test(x))) x = "'" + x;
-      return '"' + x.replace(/"/g, '""') + '"';
-    };
-    var rows = [[t('th_code'), t('f_merchant'), t('f_customer'), t('f_phone'), t('f_address'), t('th_cod'), t('th_fee'), t('th_courier'), t('th_status'), 'Date']];
-    list.forEach(function (s) { rows.push([s.code, s.merchant, s.customer, s.phone, s.address, s.cod, s.fee, cname[s.courierId] || '', t('st_' + s.status), String(s.createdAt || '').slice(0, 10)]); });
-    var csv = '\ufeff' + rows.map(function (r) { return r.map(cell).join(','); }).join('\r\n');
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    a.download = 'bareed-shipments-' + new Date().toISOString().slice(0, 10) + '.csv';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
-  });
 
   el('form-sh').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -859,23 +864,6 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
       status: 'new', courierId: '', settled: false, paidMerchant: false, createdAt: new Date().toISOString()
     };
     safe(async function () { await put('shipments', newId('s'), data); el('form-sh').reset(); el('s-cod').value = 0; el('s-fee').value = cfg.fee; toast(t('t_ship_ok')); });
-  });
-  el('sh-from').addEventListener('change', function (e) { dFrom = e.target.value; renderShipments(); });
-  el('sh-to').addEventListener('change', function (e) { dTo = e.target.value; renderShipments(); });
-  el('sh-rows').addEventListener('click', function (e) {
-    var b = e.target.closest('[data-print]'); if (!b) return;
-    var s = store.shipments.filter(function (x) { return x.id === b.getAttribute('data-print'); })[0]; if (!s) return;
-    var w = window.open('', '_blank'); if (!w) { toast('Allow pop-ups to print'); return; }
-    var row = function (k, v) { return '<tr><th>' + esc(k) + '</th><td>' + esc(v) + '</td></tr>'; };
-    w.document.write('<!doctype html><html lang="' + lang + '" dir="' + (lang === 'ar' ? 'rtl' : 'ltr') + '"><head><meta charset="utf-8"><title>' + esc(s.code) + '</title><style>' +
-      'body{font-family:system-ui,sans-serif;margin:0;padding:24px}.w{max-width:420px;margin:0 auto;border:2px solid #000;border-radius:8px;padding:18px}' +
-      'h1{font-size:18px;margin:0 0 4px}.c{font-size:30px;font-weight:700;letter-spacing:2px;margin:8px 0 14px;direction:ltr;text-align:center}' +
-      'table{width:100%;border-collapse:collapse}th,td{padding:7px 4px;border-top:1px solid #bbb;text-align:start;vertical-align:top}th{width:32%;font-weight:600;color:#444}' +
-      '.cod{font-size:20px;font-weight:700}</style></head><body><div class="w"><h1>' + esc(t('waybill')) + ' · Bareed بريد</h1><div class="c">' + esc(s.code) + '</div><table>' +
-      row(t('f_merchant'), s.merchant) + row(t('f_customer'), s.customer) + row(t('f_phone'), s.phone) + row(t('f_address'), s.address) +
-      '<tr><th>' + esc(t('th_cod')) + '</th><td class="cod">' + esc(fmt(s.cod)) + ' ' + esc(t('cur')) + '</td></tr>' +
-      row(t('created'), String(s.createdAt || '').slice(0, 10)) + '</table></div></body></html>');
-    w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 300);
   });
   el('form-co').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -900,12 +888,11 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
     if (next.status !== 'delivered') next.settled = false;
     safe(function () { return put('shipments', id, next); });
   });
-  el('sh-rows').addEventListener('click', function (e) { var d = e.target.closest('[data-del]'); if (d && confirm(t('c_del_ship'))) safe(function () { return del('shipments', d.getAttribute('data-del')); }); });
+  el('sh-rows').addEventListener('click', function (e) { var d = e.target.closest('[data-del]'); if (d) safe(function () { return del('shipments', d.getAttribute('data-del')); }); });
   el('co-list').addEventListener('click', function (e) {
     var s = e.target.closest('[data-settle]'), d = e.target.closest('[data-delc]');
     if (s) {
       var cid = s.getAttribute('data-settle');
-      if (!confirm(t('c_settle_c'))) return;
       safe(async function () {
         var rows = store.shipments.filter(function (x) { return x.courierId === cid && x.status === 'delivered' && !x.settled; });
         for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.settled = true; await put('shipments', rows[i].id, n); }
@@ -914,14 +901,12 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
     } else if (d) {
       var did = d.getAttribute('data-delc');
       if (store.shipments.some(function (x) { return x.courierId === did && x.status === 'out_for_delivery'; })) { toast(t('t_busy')); return; }
-      if (!confirm(t('c_del_courier'))) return;
       safe(function () { return del('couriers', did); });
     }
   });
   el('me-list').addEventListener('click', function (e) {
     var p = e.target.closest('[data-pay]'); if (!p) return;
     var m = p.getAttribute('data-pay');
-    if (!confirm(t('c_settle_m', { m: m }))) return;
     safe(async function () {
       var rows = store.shipments.filter(function (x) { return x.merchant === m && !x.paidMerchant && (x.status === 'delivered' || x.status === 'returned'); });
       for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.paidMerchant = true; await put('shipments', rows[i].id, n); }
