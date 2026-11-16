@@ -165,6 +165,34 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   .route-card { transform: none !important; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .rv { opacity: 1; transform: none; } }
+
+/* soft (neumorphic) sign-in */
+:root { --nm-bg: #E7ECF3; --nm-hi: #FFFFFF; --nm-lo: #C5CEDB; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --nm-bg: #14211F; --nm-hi: #1D2E2B; --nm-lo: #0B1413; } }
+:root[data-theme="dark"] { --nm-bg: #14211F; --nm-hi: #1D2E2B; --nm-lo: #0B1413; }
+.modal.nm { background: var(--nm-bg); backdrop-filter: none; overflow: auto; }
+.nm-circle { position: absolute; border-radius: 50%; background: var(--nm-bg); box-shadow: 14px 14px 30px var(--nm-lo), -14px -14px 30px var(--nm-hi); pointer-events: none; animation: float 12s ease-in-out infinite; }
+.nm-circle.c1 { width: 240px; height: 240px; top: 6%; inset-inline-start: 6%; }
+.nm-circle.c2 { width: 110px; height: 110px; top: 22%; inset-inline-end: 22%; animation-delay: -4s; }
+.nm-circle.c3 { width: 200px; height: 200px; bottom: 6%; inset-inline-end: 8%; animation-delay: -8s; }
+.modal.nm .dialog { position: relative; background: var(--nm-bg); border-radius: 32px; padding: 36px 32px 28px; gap: 20px; width: min(420px, 100%); box-shadow: 16px 16px 36px var(--nm-lo), -16px -16px 36px var(--nm-hi); }
+.nm-lock { width: 76px; height: 76px; margin: -62px auto 0; border-radius: 50%; display: grid; place-items: center; background: var(--nm-bg); color: var(--accent); box-shadow: 8px 8px 18px var(--nm-lo), -8px -8px 18px var(--nm-hi); }
+.nm-lock svg { width: 30px; height: 30px; }
+.modal.nm h2 { font-size: 28px; } .nm-sub { color: var(--muted); font-size: 14px; margin-top: 2px; }
+.modal.nm .field label { font-size: 12px; color: var(--muted); padding-inline: 6px; }
+.modal.nm .field input { background: var(--nm-bg); border: 0; border-radius: 16px; padding: 14px 16px; box-shadow: inset 6px 6px 12px var(--nm-lo), inset -6px -6px 12px var(--nm-hi); }
+.modal.nm .field input:focus { box-shadow: inset 6px 6px 12px var(--nm-lo), inset -6px -6px 12px var(--nm-hi), 0 0 0 2px var(--brand); }
+.modal.nm .btn { background: var(--nm-bg); color: var(--brand); border-radius: 16px; padding: 14px; box-shadow: 8px 8px 18px var(--nm-lo), -8px -8px 18px var(--nm-hi); }
+.modal.nm .btn:hover { transform: none; box-shadow: 5px 5px 12px var(--nm-lo), -5px -5px 12px var(--nm-hi); }
+.modal.nm .btn:active { box-shadow: inset 5px 5px 10px var(--nm-lo), inset -5px -5px 10px var(--nm-hi); }
+.nm-check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.nm-check input { appearance: none; width: 22px; height: 22px; border-radius: 7px; background: var(--nm-bg); box-shadow: inset 3px 3px 6px var(--nm-lo), inset -3px -3px 6px var(--nm-hi); display: grid; place-items: center; cursor: pointer; margin: 0; }
+.nm-check input:checked::after { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--brand); }
+.nm-switch { display: flex; align-items: center; justify-content: center; gap: 12px; color: var(--muted); font-size: 14px; }
+.nm-plus, .nm-x { border: 0; cursor: pointer; display: grid; place-items: center; border-radius: 50%; background: var(--nm-bg); color: var(--accent); box-shadow: 5px 5px 11px var(--nm-lo), -5px -5px 11px var(--nm-hi); }
+.nm-plus { width: 44px; height: 44px; } .nm-plus:active, .nm-x:active { box-shadow: inset 4px 4px 8px var(--nm-lo), inset -4px -4px 8px var(--nm-hi); }
+.nm-x { position: absolute; top: 14px; inset-inline-end: 14px; width: 36px; height: 36px; color: var(--muted); }
+@media (max-width: 480px) { .modal.nm .dialog { padding-inline: 22px; } .nm-circle.c1 { width: 150px; height: 150px; } }
 </style></head>
 <body>
 
@@ -245,19 +273,22 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 <footer><div class="wrap"><span><span data-i18n="brand"></span> · <span data-i18n="foot"></span></span><span data-i18n="foot2"></span></div></footer>
 
-<div class="modal" id="modal" hidden>
+<div class="modal nm" id="modal" hidden>
+  <i class="nm-circle c1"></i><i class="nm-circle c2"></i><i class="nm-circle c3"></i>
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-t">
-    <button class="icon-btn x" id="m-close" type="button" aria-label="Close" style="border-color:var(--line)"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    <div class="tabs" role="tablist"><button type="button" role="tab" id="tab-login" aria-selected="true" data-i18n="login"></button><button type="button" role="tab" id="tab-signup" aria-selected="false" data-i18n="signup"></button></div>
-    <h2 id="dlg-t" style="font-size:24px"></h2>
-    <form id="auth-form" style="display:grid;gap:14px">
+    <button class="nm-x" id="m-close" type="button" aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="nm-lock"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+    <div style="text-align:center"><h2 id="dlg-t"></h2><p class="nm-sub" id="dlg-s"></p></div>
+    <form id="auth-form" style="display:grid;gap:16px">
       <div class="field" data-su><label for="a-name" data-i18n="a_name"></label><input id="a-name" maxlength="80" autocomplete="organization"></div>
       <div class="field" data-su><label for="a-phone" data-i18n="a_phone"></label><input id="a-phone" inputmode="tel" maxlength="30" dir="ltr" autocomplete="tel"></div>
       <div class="field"><label for="a-email" data-i18n="a_email"></label><input id="a-email" type="email" required dir="ltr" autocomplete="username"></div>
       <div class="field"><label for="a-pass" data-i18n="a_pass"></label><input id="a-pass" type="password" required minlength="8" dir="ltr" autocomplete="current-password"></div>
+      <label class="nm-check" data-li><input type="checkbox" id="a-remember"><span data-i18n="a_remember"></span></label>
       <button class="btn" type="submit" id="a-submit"></button>
       <p class="msg" id="a-msg" role="status"></p>
     </form>
+    <div class="nm-switch"><span id="sw-t"></span><button type="button" id="sw-b" class="nm-plus" aria-label="switch"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button></div>
   </div>
 </div>
 
@@ -286,7 +317,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       cta_h: 'جاهز تبدأ توصّل مع بريد؟', cta_p: 'التسجيل مجاني. بنراجع حسابك ونفعّله بسرعة.',
       foot: 'شحن وتوصيل داخل مصر', foot2: 'بنبدأ من الجيزة',
       a_name: 'اسم المتجر', a_phone: 'رقم التليفون', a_email: 'الإيميل', a_pass: 'الباسورد (8 حروف على الأقل)',
-      t_login: 'تسجيل الدخول', t_signup: 'إنشاء حساب تاجر', go_login: 'دخول', go_signup: 'إنشاء الحساب',
+      t_login: 'أهلاً بيك', t_signup: 'إنشاء حساب تاجر', s_login: 'سجّل دخول عشان تكمّل شغلك', s_signup: 'سجّل بيانات متجرك وإحنا نفعّل الحساب', a_remember: 'افتكر الإيميل', sw_to_signup: 'مش عندك حساب؟', sw_to_login: 'عندك حساب؟', go_login: 'دخول', go_signup: 'إنشاء الحساب',
       e_login: 'الإيميل أو الباسورد غلط.', e_fail: 'حصلت مشكلة، جرّب تاني.', e_name: 'اكتب اسم المتجر ورقم التليفون.',
       ok_signup: 'تم إنشاء الحساب. لو وصلك إيميل تأكيد افتحه الأول، وبعدها سجّل دخول.', no_lib: 'الخدمة مش متاحة دلوقتي. اتأكد من النت وحدّث الصفحة.',
       st_new: 'جديدة', st_picked_up: 'اتستلمت من التاجر', st_out_for_delivery: 'مع المندوب', st_delivered: 'اتسلمت', st_returned: 'مرتجعة'
@@ -313,7 +344,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       cta_h: 'Ready to ship with Bareed?', cta_p: 'Signing up is free. We review and activate your account quickly.',
       foot: 'Delivery across Egypt', foot2: 'Starting in Giza',
       a_name: 'Store name', a_phone: 'Phone number', a_email: 'Email', a_pass: 'Password (at least 8 characters)',
-      t_login: 'Sign in', t_signup: 'Create a merchant account', go_login: 'Sign in', go_signup: 'Create account',
+      t_login: 'Welcome', t_signup: 'Create a merchant account', s_login: 'Sign in to continue your journey', s_signup: 'Enter your store details and we will activate the account', a_remember: 'Remember my email', sw_to_signup: 'Don’t have an account?', sw_to_login: 'Already have an account?', go_login: 'Sign in', go_signup: 'Create account',
       e_login: 'Wrong email or password.', e_fail: 'Something went wrong. Try again.', e_name: 'Enter your store name and phone number.',
       ok_signup: 'Account created. If you received a confirmation email, open it first, then sign in.', no_lib: 'The service is unavailable right now. Check your connection and reload.',
       st_new: 'New', st_picked_up: 'Picked up from merchant', st_out_for_delivery: 'Out for delivery', st_delivered: 'Delivered', st_returned: 'Returned'
@@ -463,12 +494,15 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   /* ---------- auth ---------- */
   function renderAuthTexts() {
     el('dlg-t').textContent = t(mode === 'login' ? 't_login' : 't_signup');
+    el('dlg-s').textContent = t(mode === 'login' ? 's_login' : 's_signup');
     el('a-submit').textContent = t(mode === 'login' ? 'go_login' : 'go_signup');
+    el('sw-t').textContent = t(mode === 'login' ? 'sw_to_signup' : 'sw_to_login');
     document.querySelectorAll('[data-su]').forEach(function (n) { n.hidden = mode === 'login'; });
+    document.querySelectorAll('[data-li]').forEach(function (n) { n.hidden = mode !== 'login'; });
     el('a-pass').setAttribute('autocomplete', mode === 'login' ? 'current-password' : 'new-password');
   }
-  function setMode(m) { mode = m; el('tab-login').setAttribute('aria-selected', String(m === 'login')); el('tab-signup').setAttribute('aria-selected', String(m === 'signup')); el('a-msg').textContent = ''; renderAuthTexts(); }
-  function openModal(m) { if (signedIn && m === 'login') { go(); return; } setMode(m); el('modal').hidden = false; setTimeout(function () { el(m === 'signup' ? 'a-name' : 'a-email').focus(); }, 30); }
+  function setMode(m) { mode = m; el('a-msg').textContent = ''; renderAuthTexts(); }
+  function openModal(m) { if (signedIn && m === 'login') { go(); return; } setMode(m); try { var re = localStorage.getItem('bareed.email'); if (re) { el('a-email').value = re; el('a-remember').checked = true; } } catch (e) {} el('modal').hidden = false; setTimeout(function () { el(m === 'signup' ? 'a-name' : 'a-email').focus(); }, 30); }
   function closeModal() { el('modal').hidden = true; }
   function msg(k, ok) { var m = el('a-msg'); m.textContent = k ? t(k) : ''; m.className = 'msg ' + (ok ? 'ok' : 'err'); }
   async function go() {
@@ -481,8 +515,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   el('m-close').addEventListener('click', closeModal);
   el('modal').addEventListener('click', function (e) { if (e.target === el('modal')) closeModal(); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
-  el('tab-login').addEventListener('click', function () { setMode('login'); });
-  el('tab-signup').addEventListener('click', function () { setMode('signup'); });
+  el('sw-b').addEventListener('click', function () { setMode(mode === 'login' ? 'signup' : 'login'); });
   el('auth-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     if (!sb) { msg('no_lib'); return; }
@@ -491,6 +524,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       if (mode === 'login') {
         var r = await sb.auth.signInWithPassword({ email: email, password: pass });
         if (r.error) { msg('e_login'); return; }
+        try { if (el('a-remember').checked) localStorage.setItem('bareed.email', email); else localStorage.removeItem('bareed.email'); } catch (e) {}
         await go();
       } else {
         var name = el('a-name').value.trim(), phone = el('a-phone').value.trim();
