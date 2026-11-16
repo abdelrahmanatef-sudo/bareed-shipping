@@ -406,6 +406,28 @@ select.search { appearance: auto; cursor: pointer; }
   .nav-item span { white-space: normal; overflow: visible; text-overflow: clip; text-align: center; overflow-wrap: anywhere; }
   .nav-item svg { width: 18px; height: 18px; }
 }
+
+/* soft (neumorphic) sign-in */
+:root { --nm-bg: #E7ECF3; --nm-hi: #FFFFFF; --nm-lo: #C5CEDB; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --nm-bg: #14211F; --nm-hi: #1D2E2B; --nm-lo: #0B1413; } }
+:root[data-theme="dark"] { --nm-bg: #14211F; --nm-hi: #1D2E2B; --nm-lo: #0B1413; }
+.auth { display: block; background: var(--nm-bg); position: relative; overflow: hidden; }
+.auth::before, .auth::after { content: ""; position: absolute; border-radius: 50%; background: var(--nm-bg); box-shadow: 14px 14px 30px var(--nm-lo), -14px -14px 30px var(--nm-hi); pointer-events: none; }
+.auth::before { width: 240px; height: 240px; top: 7%; inset-inline-start: 7%; }
+.auth::after { width: 200px; height: 200px; bottom: 7%; inset-inline-end: 8%; }
+.auth-hero { display: none; }
+.auth-pane { position: relative; z-index: 1; min-height: 100vh; }
+.auth-pane .icon-btn { background: var(--nm-bg); border: 0; color: var(--ink); box-shadow: 5px 5px 11px var(--nm-lo), -5px -5px 11px var(--nm-hi); }
+.auth-form { background: var(--nm-bg); border-radius: 32px; padding: 40px 32px 32px; width: min(400px, 100%); gap: 18px; box-shadow: 16px 16px 36px var(--nm-lo), -16px -16px 36px var(--nm-hi); }
+.auth-mobile-brand { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; text-align: center; }
+.auth-mobile-brand > span { width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; background: var(--nm-bg); box-shadow: 8px 8px 18px var(--nm-lo), -8px -8px 18px var(--nm-hi); }
+.auth-form > div:nth-child(2) { text-align: center; }
+.auth-form .field label { font-size: 12px; color: var(--muted); padding-inline: 6px; }
+.auth-form .field input { background: var(--nm-bg); border: 0; border-radius: 16px; padding: 14px 16px; box-shadow: inset 6px 6px 12px var(--nm-lo), inset -6px -6px 12px var(--nm-hi); }
+.auth-form .field input:focus { box-shadow: inset 6px 6px 12px var(--nm-lo), inset -6px -6px 12px var(--nm-hi), 0 0 0 2px var(--brand); }
+.auth-form .btn { background: var(--nm-bg); color: var(--brand); border-radius: 16px; padding: 14px; box-shadow: 8px 8px 18px var(--nm-lo), -8px -8px 18px var(--nm-hi); }
+.auth-form .btn:hover { filter: none; box-shadow: 5px 5px 12px var(--nm-lo), -5px -5px 12px var(--nm-hi); }
+.auth-form .btn:active { box-shadow: inset 5px 5px 10px var(--nm-lo), inset -5px -5px 10px var(--nm-hi); }
 </style>
 </head>
 <body>
