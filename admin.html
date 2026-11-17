@@ -541,6 +541,7 @@ select.search { appearance: auto; cursor: pointer; }
             <div class="row"><button class="btn" type="submit" data-i18n="save_courier"></button></div>
           </form>
         </details>
+        <div id="co-stmt"></div>
         <div id="co-list" class="cards"></div>
       </section>
 
@@ -978,7 +979,7 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
-        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
+        '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button></div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
           '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button></div>' : '') + '</div>';
     }).join('');
   }
@@ -1194,7 +1195,7 @@ select.search { appearance: auto; cursor: pointer; }
       safe(async function () {
         var rows = store.shipments.filter(function (x) { return x.courierId === cid && x.status === 'delivered' && !x.settled; });
         for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.settled = true; await put('shipments', rows[i].id, n); }
-        toast(t('t_settled_c'));
+        toast(t('t_settled_c')); if (el('co-stmt')) el('co-stmt').innerHTML = '';
       });
     } else if (d) {
       var did = d.getAttribute('data-delc');
@@ -1479,6 +1480,32 @@ select.search { appearance: auto; cursor: pointer; }
       } finally { btn.disabled = false; }
     });
   });
+
+  Object.assign(I18N.ar, { cs_btn: 'كشف الحساب', cs_h: 'كشف حساب المندوب', cs_cash: 'فلوس معاه لازم يسلمها', cs_cnt: 'شحنات مسلّمة لسه متحاسبش عليها', cs_comm: 'مستحقات المندوب (عمولة)', cs_net: 'الصافي اللي يسلّمه لك', cs_open: 'شحنات معاه دلوقتي', cs_open_cod: 'COD متوقع تحصيله', cs_none: 'مفيش شحنات غير محاسبة', cs_close: 'إغلاق', cs_print: 'طباعة', cs_code: 'الكود', cs_cust: 'العميل', cs_cod: 'COD', cs_ret: 'مرتجعات' });
+  Object.assign(I18N.en, { cs_btn: 'Statement', cs_h: 'Courier statement', cs_cash: 'Cash he must hand over', cs_cnt: 'Delivered, not yet settled', cs_comm: 'Courier earnings (commission)', cs_net: 'Net he hands to you', cs_open: 'Currently carrying', cs_open_cod: 'COD expected', cs_none: 'No unsettled shipments', cs_close: 'Close', cs_print: 'Print', cs_code: 'Code', cs_cust: 'Customer', cs_cod: 'COD', cs_ret: 'Returns' });
+  function showCourierStmt(cid) {
+    var c = store.couriers.filter(function (x) { return x.id === cid; })[0]; if (!c) return;
+    var mine = store.shipments.filter(function (x) { return x.courierId === cid; });
+    var dl = mine.filter(function (x) { return x.status === 'delivered' && !x.settled; });
+    var rt = mine.filter(function (x) { return x.status === 'returned' && !x.settled; });
+    var op = mine.filter(function (x) { return x.status === 'out_for_delivery'; });
+    var sum = function (a) { return a.reduce(function (n, x) { return n + (+x.cod || 0); }, 0); };
+    var cash = sum(dl), comm = dl.length * (cfg.courierDelivered || 0) + rt.length * (cfg.courierReturned || 0), net = cash - comm;
+    var rows = dl.map(function (x) { return '<tr><td>' + esc(x.code) + '</td><td>' + esc(x.customer) + '</td><td>' + fmt(x.cod) + '</td></tr>'; }).join('');
+    el('co-stmt').innerHTML = '<div class="card" id="co-stmt-card"><h2>' + t('cs_h') + ': ' + esc(c.name) + '</h2>' +
+      '<div class="kv"><span>' + t('cs_cnt') + '</span><b>' + dl.length + '</b></div>' +
+      '<div class="kv"><span>' + t('cs_cash') + '</span><b>' + money(cash) + '</b></div>' +
+      '<div class="kv"><span>' + t('cs_comm') + '</span><b>' + money(comm) + '</b></div>' +
+      '<div class="kv"><span>' + t('cs_ret') + '</span><b>' + rt.length + '</b></div><div class="sep"></div>' +
+      '<div class="kv"><span>' + t('cs_net') + '</span><span class="due">' + money(net) + '</span></div>' +
+      '<div class="kv"><span>' + t('cs_open') + '</span><b>' + op.length + ' · ' + t('cs_open_cod') + ' ' + money(sum(op)) + '</b></div>' +
+      (rows ? '<div class="tablewrap"><table><thead><tr><th>' + t('cs_code') + '</th><th>' + t('cs_cust') + '</th><th>' + t('cs_cod') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="note">' + t('cs_none') + '</p>') +
+      '<div class="row">' + (canWrite && dl.length ? '<button class="btn sm" type="button" data-settle="' + esc(cid) + '">' + t('c_settle') + '</button>' : '') +
+      '<button class="btn ghost sm" type="button" onclick="window.print()">' + t('cs_print') + '</button><button class="btn ghost sm" type="button" id="cs-close">' + t('cs_close') + '</button></div></div>';
+    el('co-stmt').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el('cs-close').addEventListener('click', function () { el('co-stmt').innerHTML = ''; });
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-cstmt]'); if (b) showCourierStmt(b.getAttribute('data-cstmt')); });
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin()]); }
   async function startData() {
     if (started) return; started = true;
