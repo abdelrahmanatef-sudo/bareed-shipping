@@ -119,7 +119,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
 (function () {
   var D = {
     ar: { brand: 'بريد', portal: 'بوابة التاجر', logout: 'خروج', hello: 'أهلاً {n}', sub: 'تابع شحناتك ومستحقاتك وضيف شحنات جديدة.',
-      pending: 'حسابك قيد المراجعة. هنفعّله قريباً وتقدر تضيف شحنات بعدها.', suspended: 'حسابك موقوف. تواصل مع بريد.', nomerchant: 'مفيش حساب تاجر مرتبط بالإيميل ده.',
+      isadmin: 'إنت داخل بحساب الأدمن، والصفحة دي للتجار بس. افتح لوحة الأدمن من /admin، أو اضغط خروج وادخل بحساب التاجر.', pending: 'حسابك قيد المراجعة. هنفعّله قريباً وتقدر تضيف شحنات بعدها.', suspended: 'حسابك موقوف. تواصل مع بريد.', nomerchant: 'مفيش حساب تاجر مرتبط بالإيميل ده.',
       k_all: 'كل الشحنات', k_open: 'شحنات شغّالة', k_del: 'اتسلّمت', k_ret: 'مرتجعة', k_cod: 'COD اتحصّل', k_due: 'مستحقاتك عند بريد', cur: 'جنيه',
       h_status: 'شحناتك حسب الحالة', h_new: 'شحنة جديدة', h_ships: 'شحناتك', f_customer: 'اسم العميل', f_phone: 'تليفون العميل', f_gov: 'المحافظة', f_city: 'المدينة', f_addr: 'العنوان بالتفصيل', f_cod: 'قيمة الـ COD (جنيه)', f_save: 'سجّل الشحنة',
       f_note: 'المدن اللي مكتوب جنبها «قريباً» لسه مش مفتوحة للتوصيل.', soon: 'قريباً', pick: 'اختار المدينة', quote: 'أجرة الشحن لـ {c}: {f} جنيه',
@@ -128,7 +128,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
       st_new: 'جديدة', st_picked_up: 'اتستلمت من التاجر', st_out_for_delivery: 'مع المندوب', st_delivered: 'اتسلمت', st_returned: 'مرتجعة',
       e_none: 'لسه مفيش شحنات', e_none_h: 'سجّل أول شحنة من النموذج فوق.', e_res: 'مفيش نتايج', ok: 'تم تسجيل الشحنة. هتلاقيها في الجدول تحت.', e_save: 'تعذّر التسجيل. تأكد من البيانات وجرّب تاني.', e_area: 'المنطقة دي مش مفتوحة للتوصيل لسه.', e_inactive: 'حسابك لسه مش مفعّل.', e_load: 'تعذّر تحميل البيانات.' },
     en: { brand: 'Bareed', portal: 'Merchant portal', logout: 'Sign out', hello: 'Welcome, {n}', sub: 'Follow your shipments and balance, and add new shipments.',
-      pending: 'Your account is under review. We will activate it soon, then you can add shipments.', suspended: 'Your account is suspended. Please contact Bareed.', nomerchant: 'No merchant account is linked to this email.',
+      isadmin: 'You are signed in as admin, and this page is for merchants only. Open the admin dashboard at /admin, or sign out and sign in with a merchant account.', pending: 'Your account is under review. We will activate it soon, then you can add shipments.', suspended: 'Your account is suspended. Please contact Bareed.', nomerchant: 'No merchant account is linked to this email.',
       k_all: 'All shipments', k_open: 'In progress', k_del: 'Delivered', k_ret: 'Returned', k_cod: 'COD collected', k_due: 'Balance owed to you', cur: 'EGP',
       h_status: 'Your shipments by status', h_new: 'New shipment', h_ships: 'Your shipments', f_customer: 'Customer name', f_phone: 'Customer phone', f_gov: 'Governorate', f_city: 'City', f_addr: 'Full address', f_cod: 'COD amount (EGP)', f_save: 'Create shipment',
       f_note: 'Cities marked “Soon” are not open for delivery yet.', soon: 'Soon', pick: 'Choose a city', quote: 'Shipping fee to {c}: {f} EGP',
@@ -221,7 +221,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     var s = await sb.auth.getSession();
     if (!s.data.session) { location.href = './'; return; }
     var a = await sb.from('admins').select('user_id').maybeSingle();
-    if (a.data) { location.href = 'admin'; return; }
+    if (a.data) { me = { name: '', status: 'admin' }; el('load').hidden = true; el('app').hidden = false; renderStatic(); el('dash').hidden = true; banner('wait', 'isadmin'); return; }
     var m = await sb.from('merchants').select('id,name,status').maybeSingle();
     el('load').hidden = true; el('app').hidden = false;
     if (m.error || !m.data) { me = { name: '', status: 'none' }; renderStatic(); el('dash').hidden = true; banner('bad', 'nomerchant'); return; }
