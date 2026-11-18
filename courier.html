@@ -1,23 +1,23 @@
 <!doctype html>
 <html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>تطبيق المندوب · بريد</title>
-<meta name="theme-color" content="#081F1E">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%235B8DEF'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#071B33">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%231A9CF0'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Rubik:wght@400;500;600&display=swap">
 <style>
-:root{--bg:#F5F8F8;--surface:#fff;--surface-2:#EDF3F2;--ink:#0B1B1A;--muted:#546967;--line:#DCE6E5;--brand:#0AA79A;--brand-2:#2ED3C4;--on:#fff;--head-a:#081F1E;--head-b:#0E3F3A;--good:#17784A;--good-bg:#DCF2E5;--warn:#A86400;--warn-bg:#FCEBCB;--bad:#B4332E;--bad-bg:#FADEDC;--info:#2F63C9;--info-bg:#E3EBFA;--shadow:0 1px 2px rgba(11,27,26,.05),0 10px 30px rgba(11,27,26,.06)}
-@media(prefers-color-scheme:dark){:root{--bg:#07100F;--surface:#0F1E1D;--surface-2:#152928;--ink:#E6F1EF;--muted:#92A9A5;--line:#223634;--brand:#2ED3C4;--on:#03211E;--good:#5FD494;--good-bg:#123422;--warn:#F2B558;--warn-bg:#3A2A10;--bad:#F08A85;--bad-bg:#3F1B19;--info:#8EB1F2;--info-bg:#182847;color-scheme:dark}}
+:root{--bg:#F5F9FD;--surface:#fff;--surface-2:#EBF3FB;--ink:#0B1B2E;--muted:#536A82;--line:#DAE6F3;--brand:#0A8BE0;--brand-2:#38BDF8;--on:#fff;--head-a:#071B33;--head-b:#0D3B6B;--good:#17784A;--good-bg:#DCF2E5;--warn:#A86400;--warn-bg:#FCEBCB;--bad:#B4332E;--bad-bg:#FADEDC;--info:#2F63C9;--info-bg:#E3EBFA;--shadow:0 1px 2px rgba(11,27,46,.05),0 10px 30px rgba(11,27,46,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#060F1C;--surface:#0D1B2E;--surface-2:#14263D;--ink:#E6F0FB;--muted:#94AAC4;--line:#203650;--brand:#38BDF8;--on:#03182B;--good:#5FD494;--good-bg:#123422;--warn:#F2B558;--warn-bg:#3A2A10;--bad:#F08A85;--bad-bg:#3F1B19;--info:#8EB1F2;--info-bg:#182847;color-scheme:dark}}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,Alexandria,system-ui,sans-serif;font-size:15px;line-height:1.6}
 h1,h2,h3,p{margin:0}h1,h2,h3,.v{font-family:Alexandria,Rubik,sans-serif}
 button,input{font:inherit;color:inherit}a{color:inherit;text-decoration:none}
-.head{background:linear-gradient(160deg,var(--head-b),var(--head-a));color:#E9F6F4;padding:14px 16px 64px;position:relative;overflow:hidden}
-.head::before{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(46,211,196,.35),transparent 65%);top:-140px;inset-inline-end:-60px}
+.head{background:linear-gradient(160deg,var(--head-b),var(--head-a));color:#EAF4FF;padding:14px 16px 64px;position:relative;overflow:hidden}
+.head::before{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.35),transparent 65%);top:-140px;inset-inline-end:-60px}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative}
-.brand{font-family:Alexandria;font-weight:700;font-size:19px}.brand small{display:block;font:400 12px Rubik;color:#93B8B3}
+.brand{font-family:Alexandria;font-weight:700;font-size:19px}.brand small{display:block;font:400 12px Rubik;color:#9DB9D8}
 .ib{height:36px;min-width:36px;padding:0 12px;border-radius:11px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer}
-.hi{margin-top:14px;position:relative}.hi h1{font-size:22px}.hi p{color:#93B8B3;font-size:13px}
+.hi{margin-top:14px;position:relative}.hi h1{font-size:22px}.hi p{color:#9DB9D8;font-size:13px}
 main{max-width:720px;margin:-46px auto 0;padding:0 14px 90px;display:grid;gap:14px;position:relative}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .tile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:var(--shadow)}
