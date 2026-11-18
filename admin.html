@@ -1247,7 +1247,8 @@ select.search { appearance: auto; cursor: pointer; }
       var did = d.getAttribute('data-delc');
       if (store.shipments.some(function (x) { return x.courierId === did && x.status === 'out_for_delivery'; })) { toast(t('t_busy')); return; }
       if (!confirm(t('c_arch_courier'))) return;
-      safe(async function () { var r = await sb.from('couriers').update({ status: 'archived' }).eq('id', did); if (r.error) throw r.error; await refresh('couriers'); renderAll(); loadCourierLog(); });
+      var cr2 = store.couriers.filter(function (x) { return x.id === did; })[0], cp2 = cr2 && cr2.status; if (cr2) { cr2.status = 'archived'; renderAll(); }
+      safe(async function () { var r = await sb.from('couriers').update({ status: 'archived' }).eq('id', did); if (r.error) { if (cr2) { cr2.status = cp2; renderAll(); } throw r.error; } refresh('couriers'); loadCourierLog(); });
     }
   });
   el('me-list').addEventListener('click', function (e) {
@@ -1498,11 +1499,14 @@ select.search { appearance: auto; cursor: pointer; }
   }
   document.addEventListener('click', function (e) {
     var cb = e.target.closest && e.target.closest('[data-cst]');
-    if (cb) { var q = cb.getAttribute('data-cst').split('|'); safe(async function () { var r = await sb.from('couriers').update({ status: q[1] }).eq('id', q[0]); if (r.error) throw r.error; await refresh('couriers'); renderAll(); }); return; }
+    if (cb) { var q = cb.getAttribute('data-cst').split('|'); var cr = store.couriers.filter(function (x) { return x.id === q[0]; })[0], cprev = cr && cr.status; if (cr) { cr.status = q[1]; renderAll(); }
+      safe(async function () { var r = await sb.from('couriers').update({ status: q[1] }).eq('id', q[0]); if (r.error) { if (cr) { cr.status = cprev; renderAll(); } throw r.error; } refresh('couriers'); }); return; }
     var b = e.target.closest && e.target.closest('[data-ms]'); if (!b) return;
     var p = b.getAttribute('data-ms').split('|');
     if (p[1] === 'archived' && !confirm(t('c_arch_merchant'))) return;
-    safe(async function () { var r = await sb.from('merchants').update({ status: p[1] }).eq('id', p[0]); if (r.error) throw r.error; await loadMerchantReqs(); });
+    var row = (mreqRows || []).filter(function (m) { return m.id === p[0]; })[0], prev = row && row.status;
+    if (row) { row.status = p[1]; renderMreq(); }
+    safe(async function () { var r = await sb.from('merchants').update({ status: p[1] }).eq('id', p[0]); if (r.error) { if (row) { row.status = prev; renderMreq(); } throw r.error; } toast(t('ok_done')); loadMerchantReqs(); });
   });
 
   Object.assign(I18N.ar, { nm_h: 'إنشاء حساب تاجر', nm_note: 'اعمل حساب لتاجر جديد بإيميل وباسورد، يدخل بيهم فوراً على لوحة التاجر.', nm_name: 'اسم التاجر / المتجر', nm_phone: 'الموبايل', nm_email: 'الإيميل', nm_pass: 'باسورد (8+ حروف)', nm_gen: 'باسورد عشوائي', nm_go: 'إنشاء الحساب',
@@ -1644,8 +1648,8 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.ar, { ql_h: 'روابط سريعة', ql_m: 'لوحة التاجر', ql_c: 'تطبيق المندوب', ql_s: 'الموقع العام', ql_open: 'فتح', ql_copy: 'نسخ الرابط' });
   Object.assign(I18N.en, { ql_h: 'Quick links', ql_m: 'Merchant dashboard', ql_c: 'Courier app', ql_s: 'Public site', ql_open: 'Open', ql_copy: 'Copy link' });
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-qcopy]'); if (b) { try { navigator.clipboard.writeText(b.getAttribute('data-qcopy')); toast(t('nm_copied')); } catch (x) {} } });
-  Object.assign(I18N.ar, { mr_archived: 'محذوف (مؤرشف)', mr_restore: 'استرجاع', f_arch: 'المحذوفين', c_arch_merchant: 'هتحذف التاجر ده من القايمة؟ حسابه هيتقفل، وكل شحناته وحسابه وتاريخه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".', c_arch_courier: 'هتحذف المندوب ده من القايمة؟ دخوله هيتقفل، وكل شحناته وسجل حركاته وحسابه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".' });
-  Object.assign(I18N.en, { mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this courier from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
+  Object.assign(I18N.ar, { ok_done: 'تم', mr_archived: 'محذوف (مؤرشف)', mr_restore: 'استرجاع', f_arch: 'المحذوفين', c_arch_merchant: 'هتحذف التاجر ده من القايمة؟ حسابه هيتقفل، وكل شحناته وحسابه وتاريخه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".', c_arch_courier: 'هتحذف المندوب ده من القايمة؟ دخوله هيتقفل، وكل شحناته وسجل حركاته وحسابه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".' });
+  Object.assign(I18N.en, { ok_done: 'Done', mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this courier from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
