@@ -961,7 +961,7 @@ select.search { appearance: auto; cursor: pointer; }
       return !q || (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
     });
     var copts = function (sel) {
-      return '<option value="">' + t('no_courier') + '</option>' + store.couriers.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.name) + '</option>'; }).join('');
+      return '<option value="">' + t('no_courier') + '</option>' + store.couriers.filter(function (c) { return c.status === 'active' || c.id === sel; }).map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.name) + (c.status !== 'active' ? ' (' + t('mr_' + c.status) + ')' : '') + '</option>'; }).join('');
     };
     el('sh-rows').innerHTML = list.map(function (s) {
       var id = esc(s.id), dis = canWrite ? '' : ' disabled';
@@ -992,6 +992,9 @@ select.search { appearance: auto; cursor: pointer; }
       if (fq && (c.name + ' ' + c.phone + ' ' + c.email).toLowerCase().indexOf(fq) < 0) return false;
       var hd0 = holds[c.id] || { cod: 0, n: 0 };
       var out0 = store.shipments.filter(function (s) { return s.courierId === c.id && s.status === 'out_for_delivery' && inR(s, FLT.co); }).length;
+      if (fm === 'archived') return c.status === 'archived';
+      if (c.status === 'archived') return false;
+      if (fm === 'susp') return c.status === 'suspended';
       if (fm === 'cash') return hd0.cod > 0;
       if (fm === 'carry') return out0 > 0;
       if (fm === 'clear') return hd0.cod <= 0 && !out0;
@@ -1006,12 +1009,13 @@ select.search { appearance: auto; cursor: pointer; }
       var dl = mine.filter(function (s) { return s.status === 'delivered'; }).length;
       var rt = mine.filter(function (s) { return s.status === 'returned'; }).length;
       var hd = holds[c.id] || { cod: 0, n: 0 };
-      return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
+      return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.status !== 'active' ? ' <span class="dot c-returned">' + t('mr_' + c.status) + '</span>' : '') + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
         '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
-          '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button></div>' : '') + '</div>';
+          (c.status === 'active' ? '<button class="btn ghost sm" type="button" data-cst="' + esc(c.id) + '|suspended">' + t('mr_suspend') + '</button>' : '<button class="btn sm" type="button" data-cst="' + esc(c.id) + '|active">' + t(c.status === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>') +
+          (c.status !== 'archived' ? '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button>' : '') + '</div>' : '') + '</div>';
     }).join('');
   }
 
@@ -1242,8 +1246,8 @@ select.search { appearance: auto; cursor: pointer; }
     } else if (d) {
       var did = d.getAttribute('data-delc');
       if (store.shipments.some(function (x) { return x.courierId === did && x.status === 'out_for_delivery'; })) { toast(t('t_busy')); return; }
-      if (!confirm(t('c_del_courier'))) return;
-      safe(function () { return del('couriers', did); });
+      if (!confirm(t('c_arch_courier'))) return;
+      safe(async function () { var r = await sb.from('couriers').update({ status: 'archived' }).eq('id', did); if (r.error) throw r.error; await refresh('couriers'); renderAll(); loadCourierLog(); });
     }
   });
   el('me-list').addEventListener('click', function (e) {
@@ -1423,9 +1427,9 @@ select.search { appearance: auto; cursor: pointer; }
           createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
       });
     } else if (name === 'couriers') {
-      var rc = await sb.from('couriers').select('id,name,phone,email').order('created_at', { ascending: true });
+      var rc = await sb.from('couriers').select('id,name,phone,email,status').order('created_at', { ascending: true });
       if (rc.error) throw rc.error;
-      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '' }; });
+      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active' }; });
     } else if (name === 'merchants') {
       var rm = await sb.from('merchants').select('id,name');
       if (rm.error) throw rm.error;
@@ -1482,18 +1486,22 @@ select.search { appearance: auto; cursor: pointer; }
     var rows = (mreqRows || []).filter(function (m) { return m.email || m.status !== 'active'; });
     card.hidden = !rows.length;
     var rq = FLT.mr.q.trim().toLowerCase(), rm = FLT.mr.mode;
-    rows = rows.filter(function (m) { return (rm === 'all' || m.status === rm) && (!rq || [m.name, m.email, m.phone].join(' ').toLowerCase().indexOf(rq) >= 0); });
+    rows = rows.filter(function (m) { return (rm === 'all' ? m.status !== 'archived' : m.status === rm) && (!rq || [m.name, m.email, m.phone].join(' ').toLowerCase().indexOf(rq) >= 0); });
     el('mreq').innerHTML = '<div class="tablewrap"><table><tbody>' + rows.map(function (m) {
       var st = m.status, id = esc(m.id);
       var btns = st === 'pending' ? '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t('mr_approve') + '</button> <button class="btn ghost sm" type="button" data-ms="' + id + '|suspended">' + t('mr_suspend') + '</button>'
         : st === 'active' ? '<button class="btn ghost sm" type="button" data-ms="' + id + '|suspended">' + t('mr_suspend') + '</button>'
-        : '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t('mr_reactivate') + '</button>';
+        : '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t(st === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>';
+      if (st !== 'archived') btns += ' <button class="btn danger sm" type="button" data-ms="' + id + '|archived">' + t('del') + '</button>';
       return '<tr><td class="m">' + esc(m.name) + '<small>' + esc([m.email, m.phone].filter(Boolean).join(' · ')) + '</small></td><td><span class="dot c-' + (st === 'active' ? 'delivered' : st === 'pending' ? 'out_for_delivery' : 'returned') + '">' + t('mr_' + st) + '</span></td><td>' + (canWrite ? btns : '') + '</td></tr>';
     }).join('') + '</tbody></table></div>';
   }
   document.addEventListener('click', function (e) {
+    var cb = e.target.closest && e.target.closest('[data-cst]');
+    if (cb) { var q = cb.getAttribute('data-cst').split('|'); safe(async function () { var r = await sb.from('couriers').update({ status: q[1] }).eq('id', q[0]); if (r.error) throw r.error; await refresh('couriers'); renderAll(); }); return; }
     var b = e.target.closest && e.target.closest('[data-ms]'); if (!b) return;
     var p = b.getAttribute('data-ms').split('|');
+    if (p[1] === 'archived' && !confirm(t('c_arch_merchant'))) return;
     safe(async function () { var r = await sb.from('merchants').update({ status: p[1] }).eq('id', p[0]); if (r.error) throw r.error; await loadMerchantReqs(); });
   });
 
@@ -1602,9 +1610,9 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.ar, { f_all: 'الكل', f_cash: 'معاه فلوس', f_carry: 'معاه شحنات دلوقتي', f_clear: 'مفيش عليه حاجة', f_login: 'عنده دخول', f_nologin: 'من غير دخول', f_owed: 'ليه فلوس', f_owes: 'عليه فلوس', f_open: 'شحناته مفتوحة', f_pend: 'واقف على التفعيل', f_act: 'مفعّل', f_sus: 'موقوف', f_q: 'ابحث بالاسم...', f_from: 'من', f_to: 'إلى', f_today: 'النهارده', f_7: '7 أيام', f_month: 'الشهر ده', f_empty: 'مفيش نتائج بالفلتر ده', f_reset: 'مسح الفلتر' });
   Object.assign(I18N.en, { f_all: 'All', f_cash: 'Holds cash', f_carry: 'Carrying now', f_clear: 'Nothing due', f_login: 'Has login', f_nologin: 'No login', f_owed: 'Owed money', f_owes: 'Owes money', f_open: 'Open shipments', f_pend: 'Awaiting activation', f_act: 'Active', f_sus: 'Suspended', f_q: 'Search by name...', f_from: 'From', f_to: 'To', f_today: 'Today', f_7: '7 days', f_month: 'This month', f_empty: 'No results for this filter', f_reset: 'Clear filter' });
   var FDEF = {
-    co: { dates: true, modes: [['all', 'f_all'], ['cash', 'f_cash'], ['carry', 'f_carry'], ['clear', 'f_clear'], ['login', 'f_login'], ['nologin', 'f_nologin']], box: 'co-flt', draw: function () { renderCouriers(); } },
+    co: { dates: true, modes: [['all', 'f_all'], ['cash', 'f_cash'], ['carry', 'f_carry'], ['clear', 'f_clear'], ['login', 'f_login'], ['nologin', 'f_nologin'], ['susp', 'f_susp'], ['archived', 'f_arch']], box: 'co-flt', draw: function () { renderCouriers(); } },
     me: { dates: true, modes: [['all', 'f_all'], ['owed', 'f_owed'], ['owes', 'f_owes'], ['open', 'f_open'], ['clear', 'f_clear']], box: 'me-flt', draw: function () { renderMerchants(); } },
-    mr: { dates: false, modes: [['all', 'f_all'], ['pending', 'f_pend'], ['active', 'f_act'], ['suspended', 'f_sus']], box: 'mr-flt', draw: function () { renderMreq(); } }
+    mr: { dates: false, modes: [['all', 'f_all'], ['pending', 'f_pend'], ['active', 'f_act'], ['suspended', 'f_sus'], ['archived', 'f_arch']], box: 'mr-flt', draw: function () { renderMreq(); } }
   };
   function ymd(d) { var z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 10); }
   function buildFilters() {
@@ -1636,6 +1644,8 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.ar, { ql_h: 'روابط سريعة', ql_m: 'لوحة التاجر', ql_c: 'تطبيق المندوب', ql_s: 'الموقع العام', ql_open: 'فتح', ql_copy: 'نسخ الرابط' });
   Object.assign(I18N.en, { ql_h: 'Quick links', ql_m: 'Merchant dashboard', ql_c: 'Courier app', ql_s: 'Public site', ql_open: 'Open', ql_copy: 'Copy link' });
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-qcopy]'); if (b) { try { navigator.clipboard.writeText(b.getAttribute('data-qcopy')); toast(t('nm_copied')); } catch (x) {} } });
+  Object.assign(I18N.ar, { mr_archived: 'محذوف (مؤرشف)', mr_restore: 'استرجاع', f_arch: 'المحذوفين', c_arch_merchant: 'هتحذف التاجر ده من القايمة؟ حسابه هيتقفل، وكل شحناته وحسابه وتاريخه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".', c_arch_courier: 'هتحذف المندوب ده من القايمة؟ دخوله هيتقفل، وكل شحناته وسجل حركاته وحسابه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".' });
+  Object.assign(I18N.en, { mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this courier from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
