@@ -1014,6 +1014,7 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
         '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
+          '<button class="btn ghost sm" type="button" data-rn="couriers|' + esc(c.id) + '">' + t('rn_btn') + '</button>' +
           (c.status === 'active' ? '<button class="btn ghost sm" type="button" data-cst="' + esc(c.id) + '|suspended">' + t('mr_suspend') + '</button>' : '<button class="btn sm" type="button" data-cst="' + esc(c.id) + '|active">' + t(c.status === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>') +
           (c.status !== 'archived' ? '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button>' : '') + '</div>' : '') + '</div>';
     }).join('');
@@ -1493,6 +1494,7 @@ select.search { appearance: auto; cursor: pointer; }
       var btns = st === 'pending' ? '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t('mr_approve') + '</button> <button class="btn ghost sm" type="button" data-ms="' + id + '|suspended">' + t('mr_suspend') + '</button>'
         : st === 'active' ? '<button class="btn ghost sm" type="button" data-ms="' + id + '|suspended">' + t('mr_suspend') + '</button>'
         : '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t(st === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>';
+      btns += ' <button class="btn ghost sm" type="button" data-rn="merchants|' + id + '">' + t('rn_btn') + '</button>';
       if (st !== 'archived') btns += ' <button class="btn danger sm" type="button" data-ms="' + id + '|archived">' + t('del') + '</button>';
       return '<tr><td class="m">' + esc(m.name) + '<small>' + esc([m.email, m.phone].filter(Boolean).join(' · ')) + '</small></td><td><span class="dot c-' + (st === 'active' ? 'delivered' : st === 'pending' ? 'out_for_delivery' : 'returned') + '">' + t('mr_' + st) + '</span></td><td>' + (canWrite ? btns : '') + '</td></tr>';
     }).join('') + '</tbody></table></div>';
@@ -1650,6 +1652,23 @@ select.search { appearance: auto; cursor: pointer; }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-qcopy]'); if (b) { try { navigator.clipboard.writeText(b.getAttribute('data-qcopy')); toast(t('nm_copied')); } catch (x) {} } });
   Object.assign(I18N.ar, { ok_done: 'تم', mr_archived: 'محذوف (مؤرشف)', mr_restore: 'استرجاع', f_arch: 'المحذوفين', c_arch_merchant: 'هتحذف التاجر ده من القايمة؟ حسابه هيتقفل، وكل شحناته وحسابه وتاريخه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".', c_arch_courier: 'هتحذف المندوب ده من القايمة؟ دخوله هيتقفل، وكل شحناته وسجل حركاته وحسابه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".' });
   Object.assign(I18N.en, { ok_done: 'Done', mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this courier from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
+  Object.assign(I18N.ar, { rn_btn: 'تعديل الاسم', rn_ask: 'الاسم الجديد:', rn_short: 'الاسم لازم يكون حرفين على الأقل' });
+  Object.assign(I18N.en, { rn_btn: 'Edit name', rn_ask: 'New name:', rn_short: 'Name must be at least 2 characters' });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-rn]'); if (!b) return;
+    var p = b.getAttribute('data-rn').split('|'), tbl = p[0], id = p[1];
+    var list = tbl === 'couriers' ? store.couriers : (mreqRows || []);
+    var row = list.filter(function (x) { return x.id === id; })[0]; if (!row) return;
+    var nv = prompt(t('rn_ask'), row.name); if (nv === null) return; nv = nv.trim();
+    if (nv.length < 2) { toast(t('rn_short')); return; }
+    if (nv === row.name) return;
+    var prev = row.name; row.name = nv; renderAll(); if (tbl === 'merchants') renderMreq();
+    safe(async function () {
+      var r = await sb.from(tbl).update({ name: nv }).eq('id', id);
+      if (r.error) { row.name = prev; renderAll(); if (tbl === 'merchants') renderMreq(); throw r.error; }
+      toast(t('ok_done')); syncAll().catch(function () {});
+    });
+  });
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
