@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>تطبيق المندوب · بريد</title>
+<meta name="theme-color" content="#081F1E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%235B8DEF'/%3E%3C/svg%3E">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Rubik:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F5F8F8;--surface:#fff;--surface-2:#EDF3F2;--ink:#0B1B1A;--muted:#546967;--line:#DCE6E5;--brand:#0AA79A;--brand-2:#2ED3C4;--on:#fff;--head-a:#081F1E;--head-b:#0E3F3A;--good:#17784A;--good-bg:#DCF2E5;--warn:#A86400;--warn-bg:#FCEBCB;--bad:#B4332E;--bad-bg:#FADEDC;--info:#2F63C9;--info-bg:#E3EBFA;--shadow:0 1px 2px rgba(11,27,26,.05),0 10px 30px rgba(11,27,26,.06)}
+@media(prefers-color-scheme:dark){:root{--bg:#07100F;--surface:#0F1E1D;--surface-2:#152928;--ink:#E6F1EF;--muted:#92A9A5;--line:#223634;--brand:#2ED3C4;--on:#03211E;--good:#5FD494;--good-bg:#123422;--warn:#F2B558;--warn-bg:#3A2A10;--bad:#F08A85;--bad-bg:#3F1B19;--info:#8EB1F2;--info-bg:#182847;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Rubik,Alexandria,system-ui,sans-serif;font-size:15px;line-height:1.6}
+h1,h2,h3,p{margin:0}h1,h2,h3,.v{font-family:Alexandria,Rubik,sans-serif}
+button,input{font:inherit;color:inherit}a{color:inherit;text-decoration:none}
+.head{background:linear-gradient(160deg,var(--head-b),var(--head-a));color:#E9F6F4;padding:14px 16px 64px;position:relative;overflow:hidden}
+.head::before{content:"";position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(46,211,196,.35),transparent 65%);top:-140px;inset-inline-end:-60px}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative}
+.brand{font-family:Alexandria;font-weight:700;font-size:19px}.brand small{display:block;font:400 12px Rubik;color:#93B8B3}
+.ib{height:36px;min-width:36px;padding:0 12px;border-radius:11px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;cursor:pointer}
+.hi{margin-top:14px;position:relative}.hi h1{font-size:22px}.hi p{color:#93B8B3;font-size:13px}
+main{max-width:720px;margin:-46px auto 0;padding:0 14px 90px;display:grid;gap:14px;position:relative}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px;box-shadow:var(--shadow)}
+.tile .l{font-size:12px;color:var(--muted)}.tile .v{font-size:22px;font-weight:600;line-height:1.4}.tile.a{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:var(--on);border:0}.tile.a .l{color:inherit;opacity:.85}
+.tabs{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:5px;box-shadow:var(--shadow)}
+.tabs button{flex:1;border:0;background:transparent;padding:9px;border-radius:10px;cursor:pointer;font-weight:600;color:var(--muted)}.tabs button[aria-selected=true]{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:var(--on)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);display:grid;gap:10px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.code{font-family:Alexandria;font-weight:700}
+.chip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.s-new{background:var(--info-bg);color:var(--info)}.s-picked_up,.s-out_for_delivery{background:var(--warn-bg);color:var(--warn)}.s-delivered{background:var(--good-bg);color:var(--good)}.s-returned{background:var(--bad-bg);color:var(--bad)}
+.m{color:var(--muted);font-size:13px}.cod{font-family:Alexandria;font-weight:700;font-size:20px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:110px;border:0;border-radius:12px;padding:11px 14px;font-weight:600;cursor:pointer;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:var(--on);text-align:center}
+.btn.g{background:var(--surface-2);color:var(--ink)}.btn.r{background:var(--bad-bg);color:var(--bad)}.btn[disabled]{opacity:.5}
+.empty{text-align:center;color:var(--muted);padding:30px 10px}
+.field{display:grid;gap:5px}.field input{width:100%;background:var(--surface-2);border:1px solid transparent;border-radius:12px;padding:12px;direction:ltr;text-align:start}.field input:focus{outline:none;border-color:var(--brand)}
+.login{max-width:420px;margin:12vh auto;padding:0 16px}.login .card{padding:22px}
+.toast{position:fixed;inset-inline:16px;bottom:18px;max-width:420px;margin-inline:auto;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;z-index:9}
+.log{display:grid;gap:0}.log div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}.log div:first-child{border-top:0}.log small{color:var(--muted);display:block;font-size:12px}
+</style></head><body>
+<div id="login" class="login" hidden><div class="card">
+  <h1 id="l-t"></h1><p class="m" id="l-s"></p>
+  <div class="field"><label id="l-e"></label><input id="em" type="email" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+  <div class="field"><label id="l-p"></label><input id="pw" type="password" autocomplete="current-password"></div>
+  <button class="btn" id="go"></button><p class="m" id="err" style="color:var(--bad)"></p>
+  <button class="btn g" id="lg0"></button>
+</div></div>
+<div id="app" hidden>
+  <div class="head"><div class="bar"><div class="brand">بريد<small id="sub"></small></div><div style="display:flex;gap:8px"><button class="ib" id="lg"></button><button class="ib" id="out"></button></div></div>
+    <div class="hi"><h1 id="hello"></h1><p id="today"></p></div></div>
+  <main>
+    <div class="tiles" id="tiles"></div>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <div id="list" style="display:grid;gap:12px"></div>
+  </main>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+(function(){
+var URL0='https://ybkkdjpgkkdnijafsuai.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU';
+var sb=window.supabase.createClient(URL0,KEY);
+var lang=(function(){try{return localStorage.getItem('bl')||'ar'}catch(e){return 'ar'}})();
+var D={ar:{title:'تطبيق المندوب',sub:'سجّل دخولك لشغل اليوم',email:'الإيميل',pass:'كلمة المرور',go:'دخول',bad:'بيانات خاطئة',notc:'الحساب ده مش حساب مندوب',out:'خروج',hello:'أهلاً {n}',now:'معايا',cash:'فلوس معايا',dn:'سلّمت النهارده',t1:'معايا',t2:'خلصت',t3:'سجلي',none:'مفيش شحنات هنا',cust:'العميل',cod:'تحصيل',call:'اتصال',wa:'واتساب',map:'الخريطة',pick:'استلمت من التاجر',outb:'خرجت للتوصيل',deliv:'تم التسليم',ret:'مرتجع',cd:'أكد إن العميل استلم وإنك حصّلت {m} جنيه؟',cr:'سبب الرجوع؟',ok:'تم',err:'حصل خطأ، جرّب تاني',st:{new:'جديدة',picked_up:'اتستلمت',out_for_delivery:'في الطريق',delivered:'اتسلمت',returned:'مرتجعة'},act:{assigned:'اتسندت ليك',unassigned:'اتشالت منك',settled:'اتحاسبت',unsettled:'اتلغت المحاسبة',status:'تغيير حالة'},cur:'ج.م',lang:'EN',set:'محاسَبة'},
+en:{title:'Courier app',sub:'Sign in to start your day',email:'Email',pass:'Password',go:'Sign in',bad:'Wrong email or password',notc:'This is not a courier account',out:'Sign out',hello:'Hi {n}',now:'Carrying',cash:'Cash on me',dn:'Delivered today',t1:'Mine',t2:'Done',t3:'My log',none:'No shipments here',cust:'Customer',cod:'Collect',call:'Call',wa:'WhatsApp',map:'Map',pick:'Picked up',outb:'Out for delivery',deliv:'Delivered',ret:'Returned',cd:'Confirm the customer received it and you collected {m} EGP?',cr:'Reason for return?',ok:'Done',err:'Something went wrong, try again',st:{new:'New',picked_up:'Picked up',out_for_delivery:'On the way',delivered:'Delivered',returned:'Returned'},act:{assigned:'Assigned to you',unassigned:'Removed from you',settled:'Settled',unsettled:'Settlement undone',status:'Status change'},cur:'EGP',lang:'AR',set:'settled'}};
+function t(k){return D[lang][k]}
+function $(i){return document.getElementById(i)}
+function esc(s){var d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML}
+function toast(x){var b=$('toast');b.textContent=x;b.hidden=false;setTimeout(function(){b.hidden=true},3200)}
+var me=null,rows=[],logs=[],tab=1;
+function applyLang(){document.documentElement.lang=lang;document.documentElement.dir=lang==='ar'?'rtl':'ltr';
+ $('l-t').textContent=t('title');$('l-s').textContent=t('sub');$('l-e').textContent=t('email');$('l-p').textContent=t('pass');$('go').textContent=t('go');$('lg0').textContent=t('lang');$('lg').textContent=t('lang');$('out').textContent=t('out');$('sub').textContent=t('title');
+ var d=new Date();$('today').textContent=d.toLocaleDateString(lang==='ar'?'ar-EG':'en-GB',{weekday:'long',day:'numeric',month:'long'});if(me)render()}
+function swap(){lang=lang==='ar'?'en':'ar';try{localStorage.setItem('bl',lang)}catch(e){}applyLang()}
+$('lg').onclick=swap;$('lg0').onclick=swap;
+function money(n){return Math.round(+n||0).toLocaleString('en-US')}
+function render(){
+ $('hello').textContent=t('hello').replace('{n}',me.name);
+ var mine=rows.filter(function(r){return ['new','picked_up','out_for_delivery'].indexOf(r.status)>-1});
+ var cash=rows.filter(function(r){return r.status==='delivered'&&!r.courier_settled}).reduce(function(n,r){return n+(+r.cod||0)},0);
+ var d0=new Date();d0.setHours(0,0,0,0);
+ var dn=rows.filter(function(r){return r.status==='delivered'&&new Date(r.updated_at)>=d0}).length;
+ $('tiles').innerHTML='<div class="tile a"><div class="l">'+t('now')+'</div><div class="v">'+mine.length+'</div></div><div class="tile"><div class="l">'+t('cash')+'</div><div class="v">'+money(cash)+'</div></div><div class="tile"><div class="l">'+t('dn')+'</div><div class="v">'+dn+'</div></div>';
+ $('tabs').innerHTML=[1,2,3].map(function(i){return '<button role="tab" data-t="'+i+'" aria-selected="'+(tab===i)+'">'+t('t'+i)+'</button>'}).join('');
+ var h='';
+ if(tab===3){h=logs.length?'<div class="card"><div class="log">'+logs.map(function(l){var a=t('act')[l.action]||l.action;var s=l.action==='status'?' → '+(t('st')[l.to_status]||l.to_status):'';return '<div><span><b>'+esc(l.shipment_code||'')+'</b> · '+esc(a+s)+(l.note?'<small>'+esc(l.note)+'</small>':'')+'</span><span class="m" style="white-space:nowrap">'+new Date(l.created_at).toLocaleString(lang==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</span></div>'}).join('')+'</div></div>':'<div class="empty">'+t('none')+'</div>'}
+ else{var list=tab===1?mine:rows.filter(function(r){return r.status==='delivered'||r.status==='returned'});
+  h=list.length?list.map(card).join(''):'<div class="empty">'+t('none')+'</div>'}
+ $('list').innerHTML=h}
+function card(r){
+ var ph=String(r.customer_phone||'').replace(/[^0-9+]/g,''),wa=ph.replace(/^\+/,'').replace(/^0/,'20');
+ var b='';
+ if(r.status==='new')b='<button class="btn" data-a="picked_up" data-id="'+esc(r.id)+'">'+t('pick')+'</button><button class="btn g" data-a="out_for_delivery" data-id="'+esc(r.id)+'">'+t('outb')+'</button>';
+ else if(r.status==='picked_up')b='<button class="btn" data-a="out_for_delivery" data-id="'+esc(r.id)+'">'+t('outb')+'</button>';
+ else if(r.status==='out_for_delivery')b='<button class="btn" data-a="delivered" data-id="'+esc(r.id)+'" data-cod="'+esc(r.cod)+'">'+t('deliv')+'</button><button class="btn r" data-a="returned" data-id="'+esc(r.id)+'">'+t('ret')+'</button>';
+ var live=['new','picked_up','out_for_delivery'].indexOf(r.status)>-1;
+ return '<div class="card"><div class="row"><span class="code">'+esc(r.code)+'</span><span class="chip s-'+esc(r.status)+'">'+esc(t('st')[r.status]||r.status)+(r.status==='delivered'&&r.courier_settled?' · '+t('set'):'')+'</span></div>'+
+  '<div><b>'+esc(r.customer_name)+'</b><div class="m">'+esc(r.address)+(r.zone?' · '+esc(r.zone):'')+'</div>'+(r.merchant?'<div class="m">'+esc(r.merchant)+'</div>':'')+'</div>'+
+  '<div class="row"><span class="m">'+t('cod')+'</span><span class="cod">'+money(r.cod)+' <small class="m">'+t('cur')+'</small></span></div>'+
+  (live?'<div class="acts"><a class="btn g" href="tel:'+esc(ph)+'">'+t('call')+'</a><a class="btn g" target="_blank" rel="noopener" href="https://wa.me/'+esc(wa)+'">'+t('wa')+'</a><a class="btn g" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.address+' '+(r.zone||''))+'">'+t('map')+'</a></div>':'')+
+  (b?'<div class="acts">'+b+'</div>':'')+'</div>'}
+function getPos(){return new Promise(function(res){if(!navigator.geolocation)return res({});navigator.geolocation.getCurrentPosition(function(p){res({lat:p.coords.latitude,lng:p.coords.longitude})},function(){res({})},{timeout:3500,maximumAge:60000})})}
+$('list').addEventListener('click',async function(e){
+ var b=e.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a'),id=b.getAttribute('data-id'),note=null;
+ if(a==='delivered'&&!confirm(t('cd').replace('{m}',money(b.getAttribute('data-cod')))))return;
+ if(a==='returned'){note=prompt(t('cr'));if(note===null)return}
+ b.disabled=true;var pos=await getPos();
+ var r=await sb.rpc('courier_update_status',{p_shipment:id,p_status:a,p_note:note,p_lat:pos.lat||null,p_lng:pos.lng||null});
+ if(r.error){toast(t('err'));b.disabled=false}else{toast(t('ok'))}
+ await load()});
+$('tabs').addEventListener('click',function(e){var b=e.target.closest('[data-t]');if(b){tab=+b.getAttribute('data-t');render()}});
+async function load(){
+ var r=await sb.rpc('courier_my_shipments');if(!r.error)rows=r.data||[];
+ var l=await sb.from('courier_log').select('shipment_code,action,to_status,note,created_at').order('created_at',{ascending:false}).limit(200);if(!l.error)logs=l.data||[];
+ render()}
+async function enter(){
+ var c=await sb.from('couriers').select('name,phone').maybeSingle();
+ if(c.error||!c.data){await sb.auth.signOut();$('app').hidden=true;$('login').hidden=false;$('err').textContent=t('notc');return}
+ me=c.data;$('login').hidden=true;$('app').hidden=false;await load();
+ if(!window._poll)window._poll=setInterval(function(){if(document.visibilityState==='visible')load()},30000)}
+$('go').onclick=async function(){
+ $('err').textContent='';var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+ if(r.error){$('err').textContent=t('bad');return}await enter()};
+$('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('go').click()});
+$('out').onclick=async function(){await sb.auth.signOut();location.reload()};
+applyLang();
+sb.auth.getSession().then(function(r){if(r.data&&r.data.session)enter();else $('login').hidden=false});
+})();
+</script></body></html>

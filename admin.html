@@ -543,6 +543,7 @@ select.search { appearance: auto; cursor: pointer; }
         </details>
         <div id="co-stmt"></div>
         <div id="co-list" class="cards"></div>
+        <div id="co-log"></div>
       </section>
 
       <section id="p-me" class="stack" hidden>
@@ -979,7 +980,7 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
-        '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button></div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
+        '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
           '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button></div>' : '') + '</div>';
     }).join('');
   }
@@ -1195,7 +1196,7 @@ select.search { appearance: auto; cursor: pointer; }
       safe(async function () {
         var rows = store.shipments.filter(function (x) { return x.courierId === cid && x.status === 'delivered' && !x.settled; });
         for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.settled = true; await put('shipments', rows[i].id, n); }
-        toast(t('t_settled_c')); if (el('co-stmt')) el('co-stmt').innerHTML = '';
+        toast(t('t_settled_c')); if (el('co-stmt')) el('co-stmt').innerHTML = ''; loadCourierLog();
       });
     } else if (d) {
       var did = d.getAttribute('data-delc');
@@ -1381,9 +1382,9 @@ select.search { appearance: auto; cursor: pointer; }
           createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
       });
     } else if (name === 'couriers') {
-      var rc = await sb.from('couriers').select('id,name,phone').order('created_at', { ascending: true });
+      var rc = await sb.from('couriers').select('id,name,phone,email').order('created_at', { ascending: true });
       if (rc.error) throw rc.error;
-      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '' }; });
+      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '' }; });
     } else if (name === 'merchants') {
       var rm = await sb.from('merchants').select('id,name');
       if (rm.error) throw rm.error;
@@ -1500,13 +1501,61 @@ select.search { appearance: auto; cursor: pointer; }
       '<div class="kv"><span>' + t('cs_net') + '</span><span class="due">' + money(net) + '</span></div>' +
       '<div class="kv"><span>' + t('cs_open') + '</span><b>' + op.length + ' · ' + t('cs_open_cod') + ' ' + money(sum(op)) + '</b></div>' +
       (rows ? '<div class="tablewrap"><table><thead><tr><th>' + t('cs_code') + '</th><th>' + t('cs_cust') + '</th><th>' + t('cs_cod') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="note">' + t('cs_none') + '</p>') +
+      (function () { var hl = clog.filter(function (l) { return l.courier_id === cid; }).slice(0, 40); return hl.length ? '<h3 style="margin-top:6px">' + t('lg_hist') + '</h3><div class="tablewrap"><table><tbody>' + hl.map(function (l) { return logLine(l, false); }).join('') + '</tbody></table></div>' : ''; })() +
       '<div class="row">' + (canWrite && dl.length ? '<button class="btn sm" type="button" data-settle="' + esc(cid) + '">' + t('c_settle') + '</button>' : '') +
       '<button class="btn ghost sm" type="button" onclick="window.print()">' + t('cs_print') + '</button><button class="btn ghost sm" type="button" id="cs-close">' + t('cs_close') + '</button></div></div>';
     el('co-stmt').scrollIntoView({ behavior: 'smooth', block: 'start' });
     el('cs-close').addEventListener('click', function () { el('co-stmt').innerHTML = ''; });
   }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-cstmt]'); if (b) showCourierStmt(b.getAttribute('data-cstmt')); });
-  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin()]); }
+
+  Object.assign(I18N.ar, { ca_btn: 'إنشاء دخول', ca_h: 'حساب دخول للمندوب', ca_email: 'الإيميل', ca_pass: 'باسورد (8+)', ca_go: 'إنشاء', ca_ok: 'تم. ابعت البيانات للمندوب:', ca_app: 'رابط تطبيق المندوب', ca_dup: 'الإيميل ده مستخدم قبل كده', ca_need: 'اكتب إيميل وباسورد 8 حروف على الأقل', ca_fail: 'تعذّر إنشاء الحساب', lg_h: 'سجل حركات المناديب', lg_none: 'مفيش حركات لسه', lg_assigned: 'اتسندت له', lg_unassigned: 'اتشالت منه', lg_settled: 'اتحاسب عليها', lg_unsettled: 'اتلغت المحاسبة', lg_status: 'غيّر الحالة', lg_by: 'بواسطة', lg_admin: 'الأدمن', lg_courier: 'المندوب', lg_system: 'النظام', lg_loc: 'الموقع', lg_hist: 'آخر حركاته' });
+  Object.assign(I18N.en, { ca_btn: 'Create login', ca_h: 'Courier login', ca_email: 'Email', ca_pass: 'Password (8+)', ca_go: 'Create', ca_ok: 'Done. Send these details to the courier:', ca_app: 'Courier app link', ca_dup: 'This email is already in use', ca_need: 'Enter an email and a password of 8+ characters', ca_fail: 'Could not create the account', lg_h: 'Courier activity log', lg_none: 'No activity yet', lg_assigned: 'Assigned', lg_unassigned: 'Unassigned', lg_settled: 'Settled', lg_unsettled: 'Settlement undone', lg_status: 'Status change', lg_by: 'by', lg_admin: 'Admin', lg_courier: 'Courier', lg_system: 'System', lg_loc: 'Location', lg_hist: 'Recent activity' });
+  var clog = [];
+  async function loadCourierLog() {
+    if (local || !sb) return;
+    var r = await sb.from('courier_log').select('*').order('created_at', { ascending: false }).limit(500);
+    if (r.error) return; clog = r.data || []; renderCourierLog();
+  }
+  function logLine(l, withName) {
+    var c = store.couriers.filter(function (x) { return x.id === l.courier_id; })[0];
+    var what = l.action === 'status' ? t('lg_status') + ': ' + t('st_' + l.from_status) + ' ← ' + t('st_' + l.to_status).replace(/^/, '') : t('lg_' + l.action);
+    if (l.action === 'status') what = t('lg_status') + ': ' + t('st_' + (l.from_status || 'new')) + ' → ' + t('st_' + l.to_status);
+    var loc = (l.lat && l.lng) ? ' · <a href="https://www.google.com/maps?q=' + l.lat + ',' + l.lng + '" target="_blank" rel="noopener">' + t('lg_loc') + '</a>' : '';
+    return '<tr><td class="m">' + (withName ? esc(c ? c.name : '-') + '<small>' + esc(l.shipment_code || '') + '</small>' : esc(l.shipment_code || '')) + '</td><td>' + esc(what) + (l.note ? '<small>' + esc(l.note) + '</small>' : '') + '</td><td><small>' + t('lg_by') + ' ' + t('lg_' + (l.actor_role || 'system')) + loc + '</small></td><td dir="ltr"><small>' + esc(new Date(l.created_at).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) + '</small></td></tr>';
+  }
+  function renderCourierLog() {
+    var box = el('co-log'); if (!box) return;
+    var rows = clog.slice(0, 80);
+    box.innerHTML = '<div class="card"><h2>' + t('lg_h') + '</h2>' + (rows.length ? '<div class="tablewrap"><table><tbody>' + rows.map(function (l) { return logLine(l, true); }).join('') + '</tbody></table></div>' : '<p class="note">' + t('lg_none') + '</p>') + '</div>';
+  }
+  document.addEventListener('click', function (e) {
+    var tb = e.target.closest && e.target.closest('[data-tab="co"]'); if (tb) loadCourierLog();
+    var b = e.target.closest && e.target.closest('[data-cacc]'); if (!b) return;
+    var cid = b.getAttribute('data-cacc');
+    el('co-stmt').innerHTML = '<div class="card"><h2>' + t('ca_h') + '</h2><div class="row" style="flex-wrap:wrap;gap:8px"><input class="search" id="ca-email" type="email" placeholder="' + t('ca_email') + '" style="max-width:240px" autocomplete="off" autocapitalize="none"><input class="search" id="ca-pass" placeholder="' + t('ca_pass') + '" style="max-width:170px" autocomplete="off" autocapitalize="none" spellcheck="false"><button class="btn ghost sm" type="button" id="ca-gen">' + t('nm_gen') + '</button><button class="btn sm" type="button" id="ca-go">' + t('ca_go') + '</button></div><div id="ca-out"></div></div>';
+    el('co-stmt').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el('ca-gen').addEventListener('click', function () { el('ca-pass').value = genPass(); });
+    el('ca-go').addEventListener('click', function () {
+      var email = el('ca-email').value.trim(), pass = el('ca-pass').value;
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || pass.length < 8) { toast(t('ca_need')); return; }
+      var btn = el('ca-go'); btn.disabled = true;
+      safe(async function () {
+        try {
+          var ses = await sb.auth.getSession(); var tok = ses.data && ses.data.session && ses.data.session.access_token;
+          var res = await fetch(SUPABASE_URL + '/functions/v1/admin-create-courier', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok, 'apikey': SUPABASE_ANON_KEY }, body: JSON.stringify({ courier_id: cid, email: email, password: pass }) });
+          var j = await res.json().catch(function () { return {}; });
+          if (!res.ok) { toast(j.error === 'email_exists' ? t('ca_dup') : t('ca_fail')); return; }
+          var txt = t('ca_app') + ': ' + location.origin + '/courier\n' + t('ca_email') + ': ' + email + '\n' + t('nm_pass').replace(/ \(.*\)/, '') + ': ' + pass;
+          el('ca-out').innerHTML = '<p style="margin-top:10px"><b>' + t('ca_ok') + '</b></p><pre style="white-space:pre-wrap;direction:ltr;text-align:start;margin:8px 0" id="ca-txt"></pre><button class="btn sm" type="button" id="ca-copy">' + t('nm_copy') + '</button>';
+          el('ca-txt').textContent = txt;
+          el('ca-copy').addEventListener('click', function () { try { navigator.clipboard.writeText(txt); toast(t('nm_copied')); } catch (x) {} });
+          await refresh('couriers'); renderAll();
+        } finally { btn.disabled = false; }
+      });
+    });
+  });
+  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
     if (started) return; started = true;
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
