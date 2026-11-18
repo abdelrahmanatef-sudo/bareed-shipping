@@ -60,8 +60,8 @@ svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-widt
 .nav-r { display: flex; gap: 8px; align-items: center; }
 .hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 48px; align-items: center; padding-block: 56px 96px; }
 .eyebrow { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 99px; padding: 6px 14px; font-size: 13px; color: var(--hero-muted); }
-.eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 0 rgba(74,222,128,.6); animation: pulse 2s infinite; }
-@keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
+.eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: #38BDF8; box-shadow: 0 0 0 0 rgba(56,189,248,.6); animation: pulse 2s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 10px rgba(56,189,248,0); } 100% { box-shadow: 0 0 0 0 rgba(56,189,248,0); } }
 .hero h1 { font-size: clamp(34px, 5vw, 58px); font-weight: 700; margin-top: 18px; }
 .hero h1 em { font-style: normal; background: linear-gradient(120deg, #38BDF8, #5CC0FA); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .hero .lead { color: var(--hero-muted); font-size: 18px; max-width: 46ch; margin-top: 16px; }
@@ -93,7 +93,7 @@ svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-widt
 .stop .pin svg { width: 15px; height: 15px; }
 .stop b { font-family: var(--font-display); font-weight: 600; font-size: 17px; }
 .stop span.t { font-size: 12px; color: var(--hero-muted); }
-.truck { position: absolute; inset-inline-start: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #0a6e64; display: grid; place-items: center; z-index: 2; box-shadow: 0 6px 16px rgba(0,0,0,.3); animation: drive 7s ease-in-out infinite; }
+.truck { position: absolute; inset-inline-start: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: #fff; color: #0A6FC4; display: grid; place-items: center; z-index: 2; box-shadow: 0 6px 16px rgba(0,0,0,.3); animation: drive 7s ease-in-out infinite; }
 .truck svg { width: 16px; height: 16px; }
 @keyframes drive { 0% { transform: translateY(0); } 50% { transform: translateY(var(--travel, 220px)); } 100% { transform: translateY(0); } }
 
@@ -125,7 +125,7 @@ section { padding-block: 84px; }
 .chip:hover { transform: translateY(-2px); border-color: var(--brand); }
 .chip.on { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: var(--on-brand); border-color: transparent; font-weight: 600; }
 .chip.open { border-color: var(--brand); }
-.chip.open::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.chip.open::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #38BDF8; }
 .chip.soon { color: var(--muted); cursor: default; } .chip.soon:hover { transform: none; border-color: var(--line); }
 .chip.city.open { background: var(--good-bg); color: var(--good); border-color: transparent; font-weight: 600; }
 .sel { display: grid; gap: 12px; margin-top: 8px; }

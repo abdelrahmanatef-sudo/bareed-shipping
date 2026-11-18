@@ -9,18 +9,18 @@
 :root {
   --bg: #F4F6F6;
   --surface: #FFFFFF;
-  --surface-2: #EEF2F1;
-  --ink: #0F1B1A;
+  --surface-2: #EEF3FA;
+  --ink: #0E1A2B;
   --muted: #5B6967;
   --line: #E1E7E6;
-  --brand: #0B7F70;
-  --brand-soft: #DAF2EC;
+  --brand: #0A6FC4;
+  --brand-soft: #DCEEFB;
   --on-brand: #FFFFFF;
   --accent: #F5B700;
   --logo-fg: #FFFFFF;
-  --side-bg: #0C2421;
+  --side-bg: #0C2038;
   --side-ink: #E6F0FB;
-  --side-muted: #86A8A2;
+  --side-muted: #8DA8C6;
   --side-hover: rgba(255, 255, 255, .07);
   --side-active: rgba(245, 183, 0, .16);
   --s-new: #2F63C9;      --s-new-bg: #E3EBFA;
@@ -28,7 +28,7 @@
   --s-out: #A86400;      --s-out-bg: #FCEBCB;
   --s-delivered: #17784A; --s-delivered-bg: #DCF2E5;
   --s-returned: #B4332E; --s-returned-bg: #FADEDC;
-  --shadow: 0 1px 2px rgba(15, 27, 26, .05), 0 4px 14px rgba(15, 27, 26, .04);
+  --shadow: 0 1px 2px rgba(14,26,43, .05), 0 4px 14px rgba(14,26,43, .04);
   --font-display: "Alexandria", "Rubik", system-ui, sans-serif;
   --font-body: "Rubik", "Alexandria", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -219,10 +219,10 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
 /* ===================== MODERN / 3D UPGRADE ===================== */
 :root {
   --radius-lg: 20px; --radius-md: 14px;
-  --shadow-soft: 0 1px 2px rgba(15,27,26,.04), 0 8px 24px rgba(15,27,26,.06);
-  --shadow-lift: 0 2px 4px rgba(15,27,26,.05), 0 16px 40px rgba(10,110,190,.14);
+  --shadow-soft: 0 1px 2px rgba(14,26,43,.04), 0 8px 24px rgba(14,26,43,.06);
+  --shadow-lift: 0 2px 4px rgba(14,26,43,.05), 0 16px 40px rgba(10,110,190,.14);
   --shadow-btn: 0 2px 6px rgba(10,110,190,.30), 0 8px 20px rgba(10,110,190,.22);
-  --brand-2: #10a894;
+  --brand-2: #1A9CF0;
   --grad-brand: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
 }
 @media (prefers-color-scheme: dark) {
@@ -241,12 +241,12 @@ select.st-returned { background: var(--s-returned-bg); color: var(--s-returned);
 }
 
 /* ---------- shell / sidebar: gradient + glow ---------- */
-.side { overflow: hidden; background: linear-gradient(165deg, #123831 0%, var(--side-bg) 45%, #06100f 100%); padding: 24px 16px; }
+.side { overflow: hidden; background: linear-gradient(165deg, #12355A 0%, var(--side-bg) 45%, #060F1B 100%); padding: 24px 16px; }
 .side::before, .side::after { content: ""; position: absolute; border-radius: 50%; filter: blur(48px); pointer-events: none; z-index: 0; }
 .side::before { width: 260px; height: 260px; top: -90px; inset-inline-start: -80px; background: radial-gradient(circle, rgba(245,183,0,.22), transparent 65%); }
 .side::after { width: 240px; height: 240px; bottom: -80px; inset-inline-end: -70px; background: radial-gradient(circle, rgba(42,169,240,.28), transparent 65%); }
 .side > * { position: relative; z-index: 1; }
-.brand b { background: linear-gradient(120deg, #fff 30%, #cfe9e4); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.brand b { background: linear-gradient(120deg, #fff 30%, #D2E6F8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .nav { gap: 6px; }
 .nav-item { border-radius: 12px; padding: 11px 14px; transition: transform .18s ease, background .18s ease, color .18s ease; }
 .nav-item:hover { transform: translateX(-3px); }
@@ -308,7 +308,7 @@ td { border-top: 1px solid color-mix(in srgb, var(--line) 75%, transparent); }
 .icon-del:hover { transform: scale(1.08) rotate(-4deg); }
 
 /* ---------- auth hero: modern gradient ---------- */
-.auth-hero { background: linear-gradient(160deg, #16453c 0%, var(--side-bg) 50%, #050e0d 100%); position: relative; overflow: hidden; }
+.auth-hero { background: linear-gradient(160deg, #123F70 0%, var(--side-bg) 50%, #050D1A 100%); position: relative; overflow: hidden; }
 .auth-hero::before, .auth-hero::after { content: ""; position: absolute; border-radius: 50%; filter: blur(60px); }
 .auth-hero::before { width: 380px; height: 380px; top: -120px; inset-inline-start: -100px; background: radial-gradient(circle, rgba(245,183,0,.25), transparent 65%); }
 .auth-hero::after { width: 340px; height: 340px; bottom: -110px; inset-inline-end: -90px; background: radial-gradient(circle, rgba(42,169,240,.32), transparent 65%); }
@@ -363,7 +363,7 @@ details.add[open] { box-shadow: var(--shadow-lift); }
 .auth-hero::after { background: radial-gradient(circle, rgba(56,189,248,.26), transparent 65%); }
 .nav-item[aria-current="page"] { background: linear-gradient(135deg, rgba(91,141,239,.22), rgba(91,141,239,.08)); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 4px 14px rgba(0,0,0,.18); }
 .nav-item[aria-current="page"] svg { filter: drop-shadow(0 2px 6px rgba(91,141,239,.5)); }
-.auth-hero { background: linear-gradient(160deg, #0E3A37 0%, #071B33 50%, #040D0C 100%); }
+.auth-hero { background: linear-gradient(160deg, #0E2D4F 0%, #071B33 50%, #040A16 100%); }
 .btn { box-shadow: var(--shadow-btn), inset 0 1px 0 rgba(255,255,255,.25); }
 
 /* ===================== FEATURES: tracking / zones / label ===================== */
