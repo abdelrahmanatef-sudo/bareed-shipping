@@ -428,8 +428,14 @@ select.search { appearance: auto; cursor: pointer; }
 .auth-form .btn { background: var(--nm-bg); color: var(--brand); border-radius: 16px; padding: 14px; box-shadow: 8px 8px 18px var(--nm-lo), -8px -8px 18px var(--nm-hi); }
 .auth-form .btn:hover { filter: none; box-shadow: 5px 5px 12px var(--nm-lo), -5px -5px 12px var(--nm-hi); }
 .auth-form .btn:active { box-shadow: inset 5px 5px 10px var(--nm-lo), inset -5px -5px 10px var(--nm-hi); }
+
+/* quick links */
+.side-links { margin-top: auto; display: grid; gap: 2px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.1); }
+.side-links + .side-foot { margin-top: 10px; }
+.side-links .nav-item { text-decoration: none; font-size: 14px; }
+.tb-links { display: none; gap: 6px; }
+@media (max-width: 860px) { .side-links { display: none; } .tb-links { display: inline-flex; } }
 </style>
-</head>
 <body>
 
 <!-- ======== sign in ======== -->
@@ -468,6 +474,7 @@ select.search { appearance: auto; cursor: pointer; }
       <button class="nav-item" data-tab="rp"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span data-i18n="nav_rp"></span></button>
       <button class="nav-item" data-tab="ct"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg><span data-i18n="nav_ct"></span></button>
     </nav>
+    <div class="side-links"><a class="nav-item" href="/merchant" target="_blank" rel="noopener" title="" data-i18n-title="ql_m"><svg class="i" viewBox="0 0 24 24"><path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/></svg><span data-i18n="ql_m"></span></a><a class="nav-item" href="/courier" target="_blank" rel="noopener" title="" data-i18n-title="ql_c"><svg class="i" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg><span data-i18n="ql_c"></span></a><a class="nav-item" href="/" target="_blank" rel="noopener" title="" data-i18n-title="ql_s"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span data-i18n="ql_s"></span></a></div>
     <div class="side-foot" data-i18n="brand_sub"></div>
   </aside>
 
@@ -476,6 +483,7 @@ select.search { appearance: auto; cursor: pointer; }
       <div class="mini-brand"><span data-logo="32"></span><span data-i18n="brand"></span></div>
       <h1 id="page-title"></h1>
       <div class="tb-actions">
+        <span class="tb-links"><a class="icon-btn" href="/merchant" target="_blank" rel="noopener" aria-label="Merchant"><svg class="i" viewBox="0 0 24 24"><path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/></svg></a><a class="icon-btn" href="/courier" target="_blank" rel="noopener" aria-label="Courier"><svg class="i" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg></a><a class="icon-btn" href="/" target="_blank" rel="noopener" aria-label="Site"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></a></span>
         <button class="icon-btn js-lang" type="button"></button>
         <button class="icon-btn js-theme" type="button" aria-label="Theme"></button>
         <button class="icon-btn" id="logout" type="button" hidden><svg class="i" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span data-i18n="logout"></span></button>
