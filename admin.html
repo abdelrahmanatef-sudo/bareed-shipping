@@ -937,6 +937,11 @@ select.search { appearance: auto; cursor: pointer; }
     } else {
       h += '<div class="card"><h2>' + t('h_be') + '</h2><p>' + t('be_loss') + '</p></div>';
     }
+    var QL = [['store', 'ql_m', '/merchant'], ['truck', 'ql_c', '/courier'], ['pin', 'ql_s', '/']];
+    h = '<div class="card"><h2>' + t('ql_h') + '</h2><div class="tiles">' + QL.map(function (q) {
+      var u = location.origin + q[2];
+      return '<div class="tile"><div class="top"><span class="ic">' + ic(q[0]) + '</span>' + t(q[1]) + '</div><div class="row" style="margin-top:10px"><a class="btn sm" target="_blank" rel="noopener" href="' + q[2] + '">' + t('ql_open') + '</a><button class="btn ghost sm" type="button" data-qcopy="' + esc(u) + '">' + t('ql_copy') + '</button></div></div>';
+    }).join('') + '</div></div>' + h;
     el('p-ov').innerHTML = h;
   }
 
@@ -1620,6 +1625,9 @@ select.search { appearance: auto; cursor: pointer; }
     } else if ((v = b.getAttribute('data-freset'))) { var o = FLT[v]; o.q = ''; o.mode = 'all'; if ('from' in o) { o.from = ''; o.to = ''; } buildFilters(); FDEF[v].draw(); }
   });
   buildFilters();
+  Object.assign(I18N.ar, { ql_h: 'روابط سريعة', ql_m: 'لوحة التاجر', ql_c: 'تطبيق المندوب', ql_s: 'الموقع العام', ql_open: 'فتح', ql_copy: 'نسخ الرابط' });
+  Object.assign(I18N.en, { ql_h: 'Quick links', ql_m: 'Merchant dashboard', ql_c: 'Courier app', ql_s: 'Public site', ql_open: 'Open', ql_copy: 'Copy link' });
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-qcopy]'); if (b) { try { navigator.clipboard.writeText(b.getAttribute('data-qcopy')); toast(t('nm_copied')); } catch (x) {} } });
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
