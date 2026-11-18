@@ -698,14 +698,14 @@ select.search { appearance: auto; cursor: pointer; }
       bn_read: 'مش قادر أقرا البيانات من Supabase. اتأكد إن حسابك أدمن وإن الجداول موجودة.'
     },
     en: {
-      nav_rp: 'Reports', pg_rp: 'Reports', rp_m: 'This month', rp_90: 'Last 90 days', rp_all: 'All time', rp_created: 'New shipments', rp_deliv: 'Delivered', rp_ret: 'Returned', rp_rate: 'Success rate', rp_rev: 'Revenue', rp_cod: 'COD collected', rp_trend: 'Revenue, last 6 months', rp_couriers: 'Courier performance', rp_merchants: 'Top merchants', rp_empty: 'No data in this period', th_hours: 'Avg delivery (h)', th_n: 'Shipments', th_rate: 'Success', th_rev: 'Revenue',
-      c_del_ship: 'Delete this shipment permanently?', c_del_courier: 'Delete this courier?', c_settle_c: 'Confirm settling all of this courier\'s delivered shipments?', c_settle_m: 'Confirm paying out {m}?', date_from: 'From', date_to: 'To',
+      nav_rp: 'Reports', pg_rp: 'Reports', rp_m: 'This month', rp_90: 'Last 90 days', rp_all: 'All time', rp_created: 'New shipments', rp_deliv: 'Delivered', rp_ret: 'Returned', rp_rate: 'Success rate', rp_rev: 'Revenue', rp_cod: 'COD collected', rp_trend: 'Revenue, last 6 months', rp_couriers: 'Delivery Representative performance', rp_merchants: 'Top merchants', rp_empty: 'No data in this period', th_hours: 'Avg delivery (h)', th_n: 'Shipments', th_rate: 'Success', th_rev: 'Revenue',
+      c_del_ship: 'Delete this shipment permanently?', c_del_courier: 'Delete this delivery representative?', c_settle_c: 'Confirm settling all of this delivery representative\'s delivered shipments?', c_settle_m: 'Confirm paying out {m}?', date_from: 'From', date_to: 'To',
       brand: 'Bareed', brand_sub: 'Fast Delivery', logout: 'Sign out',
       h_areas: 'Coverage areas (you decide what opens)', areas_note: 'Only open cities accept merchant shipments, and everyone sees their status on the home page. Change status and fee here.', a_open: 'Open', a_closed: 'Soon', a_city_ar: 'City name (Arabic)', a_city_en: 'City (English)', a_fee: 'Fee', a_add: 'Add city', a_ok: 'Saved',
       h_mreq: 'Merchant accounts & requests', mr_pending: 'Pending review', mr_active: 'Active', mr_suspended: 'Suspended', mr_approve: 'Approve', mr_suspend: 'Suspend', mr_reactivate: 'Reactivate',
-      nav_ov: 'Overview', nav_sh: 'Shipments', nav_co: 'Couriers', nav_me: 'Merchants', nav_ct: 'Costs',
-      pg_ov: 'Overview', pg_sh: 'Shipments', pg_co: 'Couriers', pg_me: 'Merchants & settlement', pg_ct: 'Costs & profit',
-      hero_h: 'All your deliveries and cash in one place', hero_p: 'Track shipments, couriers, COD settlement and the profit on every shipment.',
+      nav_ov: 'Overview', nav_sh: 'Shipments', nav_co: 'Delivery Representatives', nav_me: 'Merchants', nav_ct: 'Costs',
+      pg_ov: 'Overview', pg_sh: 'Shipments', pg_co: 'Delivery Representatives', pg_me: 'Merchants & settlement', pg_ct: 'Costs & profit',
+      hero_h: 'All your deliveries and cash in one place', hero_p: 'Track shipments, delivery representatives, COD settlement and the profit on every shipment.',
       auth_title: 'Sign in', auth_sub: 'For the Bareed team only.', email: 'Email', password: 'Password', enter: 'Sign in',
       err_login: 'Wrong email or password.', err_admin: 'This account is not an admin of Bareed.',
       cur: 'EGP',
@@ -713,42 +713,42 @@ select.search { appearance: auto; cursor: pointer; }
       tr_title: 'Track a shipment', tr_hint: 'Enter the code you received on WhatsApp or from the merchant.', tr_ph: 'B7X3K', tr_btn: 'Track',
       tr_none: 'No shipment with this code — check it and try again.', tr_err: 'Tracking is unavailable right now. Try again.', tr_close: 'Close',
       s_zone: 'Zone', no_zone: 'No zone',
-      h_zones: 'Delivery zones & pricing', zones_note: 'Each zone has a shipping fee and courier pay — applied automatically when you pick the zone on a new shipment.',
-      z_name: 'Zone name', z_fee: 'Fee', z_courier: 'Courier pay', z_add: 'Add zone', z_ok: 'Zones saved',
+      h_zones: 'Delivery zones & pricing', zones_note: 'Each zone has a shipping fee and delivery representative pay — applied automatically when you pick the zone on a new shipment.',
+      z_name: 'Zone name', z_fee: 'Fee', z_courier: 'Delivery Representative pay', z_add: 'Add zone', z_ok: 'Zones saved',
       c_perf: 'Delivery rate', c_days: 'Avg days to deliver',
       export_btn: 'Export Excel', import_lbl: 'Import CSV',
       import_note: 'CSV columns in order: merchant, customer, phone, address, zone, cod, fee — first row may be headers.',
       import_ok: '{n} shipments imported',
       l_print: 'Print label', t_copy: 'Tracking link copied',
       k_month: 'Shipments this month', n_month: 'Delivered {d} · Returned {r}', k_rate: 'Delivery rate', n_rate: 'of closed shipments',
-      k_hold: 'Cash with couriers', n_hold: 'collected, not handed over', k_due: 'Owed to merchants', n_due: 'net of fees and commission',
+      k_hold: 'Cash with delivery representatives', n_hold: 'collected, not handed over', k_due: 'Owed to merchants', n_due: 'net of fees and commission',
       k_profit: 'Profit this month', n_profit: 'after fixed costs ({n})',
-      h_status: 'Shipments by status', msg_new: '{n} new shipments need a courier.', msg_out: '{n} shipments are still with couriers.',
+      h_status: 'Shipments by status', msg_new: '{n} new shipments need a delivery representative.', msg_out: '{n} shipments are still with delivery representatives.',
       h_be: 'Break-even', be_text: 'Each shipment leaves <b>{m}</b> before fixed costs. You need about <b>{n} shipments a month</b> to cover {f} of fixed costs.',
-      be_loss: 'With the current assumptions each shipment loses money. Review the fee and courier pay in the Costs tab.', be_prog: '{a} of {b} shipments this month',
+      be_loss: 'With the current assumptions each shipment loses money. Review the fee and delivery representative pay in the Costs tab.', be_prog: '{a} of {b} shipments this month',
       add_ship: 'Add shipment', f_merchant: 'Merchant', f_customer: 'Customer', f_phone: 'Customer phone', f_address: 'Address',
       f_cod: 'COD amount (EGP)', f_fee: 'Shipping fee charged to merchant (EGP)', save_ship: 'Save shipment',
       fl_all: 'All', fl_new: 'New', fl_picked: 'Picked up', fl_out: 'Out for delivery', fl_del: 'Delivered', fl_ret: 'Returned',
-      search_ph: 'Search merchant, customer or code', th_code: 'Code', th_cod: 'COD', th_fee: 'Fee', th_courier: 'Courier', th_status: 'Status',
-      no_courier: 'No courier', del: 'Delete',
+      search_ph: 'Search merchant, customer or code', th_code: 'Code', th_cod: 'COD', th_fee: 'Fee', th_courier: 'Delivery Representative', th_status: 'Status',
+      no_courier: 'No delivery representative', del: 'Delete',
       st_new: 'New', st_picked_up: 'Picked up from merchant', st_out_for_delivery: 'Out for delivery', st_delivered: 'Delivered', st_returned: 'Returned',
       e_loading: 'Loading shipments', e_ship: 'No shipments yet', e_ship_h: 'Add your first shipment with “Add shipment” above.', e_none: 'No results', e_none_h: 'Change the filter or the search.',
-      add_courier: 'Add courier', c_name: 'Courier name', c_phone: 'Phone number', save_courier: 'Save courier',
+      add_courier: 'Add delivery representative', c_name: 'Delivery Representative name', c_phone: 'Phone number', save_courier: 'Save delivery representative',
       c_now: 'Carrying now', c_ship: '{n} shipments', c_done: 'Delivered / returned', c_owes: 'Cash owed to you', c_settle: 'Mark cash received',
-      e_courier: 'No couriers yet', e_courier_h: 'Add your first courier with “Add courier” above.',
+      e_courier: 'No delivery representatives yet', e_courier_h: 'Add your first delivery representative with “Add delivery representative” above.',
       me_note: 'Amount owed to a merchant = COD collected, minus shipping fees, COD commission and return fees. Settlement is recorded when you actually pay the merchant.',
       m_dr: 'Delivered / returned', m_cod: 'COD collected', m_fees: 'Fees and commission', m_open: 'In progress', m_to: 'You owe', m_from: 'Owes you', m_settle: 'Record settlement',
       e_merchant: 'No merchants yet', e_merchant_h: 'Merchants appear here once you add shipments for them.',
       h_assume: 'Cost assumptions', assume_note: 'These numbers are estimates. Change them to your real figures and everything recalculates.',
       cfg_fee: 'Default shipping fee to merchant', cfg_returnFee: 'Return fee to merchant', cfg_commissionPct: 'COD collection commission',
-      cfg_courierDelivered: 'Courier pay per delivered shipment', cfg_courierReturned: 'Courier pay per returned shipment', cfg_other: 'Fuel, packaging and supplies per shipment',
+      cfg_courierDelivered: 'Delivery Representative pay per delivered shipment', cfg_courierReturned: 'Delivery Representative pay per returned shipment', cfg_other: 'Fuel, packaging and supplies per shipment',
       cfg_fixed: 'Monthly fixed costs (rent, phones, internet)', cfg_rate: 'Expected delivery rate', cfg_avgCod: 'Expected average COD', cfg_volume: 'Expected shipments per month',
       u_egp: 'EGP', u_pctcod: '% of COD value', u_month: 'EGP / month', u_pct: '%', u_ship: 'shipments',
-      h_unit: 'Cost and profit per shipment', b_rev: 'Revenue', b_courier: 'Courier pay', b_fuel: 'Fuel & packaging', b_left: 'Left per shipment',
+      h_unit: 'Cost and profit per shipment', b_rev: 'Revenue', b_courier: 'Delivery Representative pay', b_fuel: 'Fuel & packaging', b_left: 'Left per shipment',
       unit_note: 'Based on a {r}% delivery rate and an average COD of {a} EGP ({s}). Figures are EGP per shipment.', src_real: 'from your real shipments', src_est: 'estimate',
       h_whatif: 'If you run at a given volume', w_rev: 'Monthly revenue', w_var: 'Variable costs', w_fixed: 'Fixed costs', w_profit: 'Profit at {n} shipments', w_be: 'Break-even', w_be_u: 'shipments/mo',
-      t_ship_ok: 'Shipment added', t_courier_ok: 'Courier added', t_pick: 'Pick a courier first.', t_busy: 'This courier still has shipments. Deliver them or reassign first.',
-      t_settled_c: 'Cash received from courier recorded.', t_settled_m: 'Settlement with {m} recorded', t_noperm: 'You do not have permission to edit data.', t_err: 'Could not save. Try again.',
+      t_ship_ok: 'Shipment added', t_courier_ok: 'Delivery Representative added', t_pick: 'Pick a delivery representative first.', t_busy: 'This delivery representative still has shipments. Deliver them or reassign first.',
+      t_settled_c: 'Cash received from delivery representative recorded.', t_settled_m: 'Settlement with {m} recorded', t_noperm: 'You do not have permission to edit data.', t_err: 'Could not save. Try again.',
       bn_local: 'Could not load the Supabase library. Data here is temporary and will not be saved. Check your connection and reload.',
       bn_read: 'Could not read data from Supabase. Make sure your account is an admin and the tables exist.'
     }
@@ -1540,7 +1540,7 @@ select.search { appearance: auto; cursor: pointer; }
   });
 
   Object.assign(I18N.ar, { cs_btn: 'كشف الحساب', cs_h: 'كشف حساب المندوب', cs_cash: 'فلوس معاه لازم يسلمها', cs_cnt: 'شحنات مسلّمة لسه متحاسبش عليها', cs_comm: 'مستحقات المندوب (عمولة)', cs_net: 'الصافي اللي يسلّمه لك', cs_open: 'شحنات معاه دلوقتي', cs_open_cod: 'COD متوقع تحصيله', cs_none: 'مفيش شحنات غير محاسبة', cs_close: 'إغلاق', cs_print: 'طباعة', cs_code: 'الكود', cs_cust: 'العميل', cs_cod: 'COD', cs_ret: 'مرتجعات' });
-  Object.assign(I18N.en, { cs_btn: 'Statement', cs_h: 'Courier statement', cs_cash: 'Cash he must hand over', cs_cnt: 'Delivered, not yet settled', cs_comm: 'Courier earnings (commission)', cs_net: 'Net he hands to you', cs_open: 'Currently carrying', cs_open_cod: 'COD expected', cs_none: 'No unsettled shipments', cs_close: 'Close', cs_print: 'Print', cs_code: 'Code', cs_cust: 'Customer', cs_cod: 'COD', cs_ret: 'Returns' });
+  Object.assign(I18N.en, { cs_btn: 'Statement', cs_h: 'Delivery Representative statement', cs_cash: 'Cash he must hand over', cs_cnt: 'Delivered, not yet settled', cs_comm: 'Delivery Representative earnings (commission)', cs_net: 'Net he hands to you', cs_open: 'Currently carrying', cs_open_cod: 'COD expected', cs_none: 'No unsettled shipments', cs_close: 'Close', cs_print: 'Print', cs_code: 'Code', cs_cust: 'Customer', cs_cod: 'COD', cs_ret: 'Returns' });
   function showCourierStmt(cid) {
     var c = store.couriers.filter(function (x) { return x.id === cid; })[0]; if (!c) return;
     var mine = store.shipments.filter(function (x) { return x.courierId === cid; });
@@ -1567,7 +1567,7 @@ select.search { appearance: auto; cursor: pointer; }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-cstmt]'); if (b) showCourierStmt(b.getAttribute('data-cstmt')); });
 
   Object.assign(I18N.ar, { ca_btn: 'إنشاء دخول', ca_h: 'حساب دخول للمندوب', ca_email: 'الإيميل', ca_pass: 'باسورد (8+)', ca_go: 'إنشاء', ca_ok: 'تم. ابعت البيانات للمندوب:', ca_app: 'رابط تطبيق المندوب', ca_dup: 'الإيميل ده مستخدم قبل كده', ca_need: 'اكتب إيميل وباسورد 8 حروف على الأقل', ca_fail: 'تعذّر إنشاء الحساب', lg_h: 'سجل حركات المناديب', lg_none: 'مفيش حركات لسه', lg_assigned: 'اتسندت له', lg_unassigned: 'اتشالت منه', lg_settled: 'اتحاسب عليها', lg_unsettled: 'اتلغت المحاسبة', lg_status: 'غيّر الحالة', lg_by: 'بواسطة', lg_admin: 'الأدمن', lg_courier: 'المندوب', lg_system: 'النظام', lg_loc: 'الموقع', lg_hist: 'آخر حركاته' });
-  Object.assign(I18N.en, { ca_btn: 'Create login', ca_h: 'Courier login', ca_email: 'Email', ca_pass: 'Password (8+)', ca_go: 'Create', ca_ok: 'Done. Send these details to the courier:', ca_app: 'Courier app link', ca_dup: 'This email is already in use', ca_need: 'Enter an email and a password of 8+ characters', ca_fail: 'Could not create the account', lg_h: 'Courier activity log', lg_none: 'No activity yet', lg_assigned: 'Assigned', lg_unassigned: 'Unassigned', lg_settled: 'Settled', lg_unsettled: 'Settlement undone', lg_status: 'Status change', lg_by: 'by', lg_admin: 'Admin', lg_courier: 'Courier', lg_system: 'System', lg_loc: 'Location', lg_hist: 'Recent activity' });
+  Object.assign(I18N.en, { ca_btn: 'Create login', ca_h: 'Delivery Representative login', ca_email: 'Email', ca_pass: 'Password (8+)', ca_go: 'Create', ca_ok: 'Done. Send these details to the delivery representative:', ca_app: 'Delivery Representative app link', ca_dup: 'This email is already in use', ca_need: 'Enter an email and a password of 8+ characters', ca_fail: 'Could not create the account', lg_h: 'Delivery Representative activity log', lg_none: 'No activity yet', lg_assigned: 'Assigned', lg_unassigned: 'Unassigned', lg_settled: 'Settled', lg_unsettled: 'Settlement undone', lg_status: 'Status change', lg_by: 'by', lg_admin: 'Admin', lg_courier: 'Delivery Representative', lg_system: 'System', lg_loc: 'Location', lg_hist: 'Recent activity' });
   var clog = [];
   async function loadCourierLog() {
     if (local || !sb) return;
@@ -1648,10 +1648,10 @@ select.search { appearance: auto; cursor: pointer; }
   });
   buildFilters();
   Object.assign(I18N.ar, { ql_h: 'روابط سريعة', ql_m: 'لوحة التاجر', ql_c: 'تطبيق المندوب', ql_s: 'الموقع العام', ql_open: 'فتح', ql_copy: 'نسخ الرابط' });
-  Object.assign(I18N.en, { ql_h: 'Quick links', ql_m: 'Merchant dashboard', ql_c: 'Courier app', ql_s: 'Public site', ql_open: 'Open', ql_copy: 'Copy link' });
+  Object.assign(I18N.en, { ql_h: 'Quick links', ql_m: 'Merchant dashboard', ql_c: 'Delivery Representative app', ql_s: 'Public site', ql_open: 'Open', ql_copy: 'Copy link' });
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-qcopy]'); if (b) { try { navigator.clipboard.writeText(b.getAttribute('data-qcopy')); toast(t('nm_copied')); } catch (x) {} } });
   Object.assign(I18N.ar, { ok_done: 'تم', mr_archived: 'محذوف (مؤرشف)', mr_restore: 'استرجاع', f_arch: 'المحذوفين', c_arch_merchant: 'هتحذف التاجر ده من القايمة؟ حسابه هيتقفل، وكل شحناته وحسابه وتاريخه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".', c_arch_courier: 'هتحذف المندوب ده من القايمة؟ دخوله هيتقفل، وكل شحناته وسجل حركاته وحسابه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".' });
-  Object.assign(I18N.en, { ok_done: 'Done', mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this courier from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
+  Object.assign(I18N.en, { ok_done: 'Done', mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this delivery representative from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
   Object.assign(I18N.ar, { rn_btn: 'تعديل الاسم', rn_ask: 'الاسم الجديد:', rn_short: 'الاسم لازم يكون حرفين على الأقل' });
   Object.assign(I18N.en, { rn_btn: 'Edit name', rn_ask: 'New name:', rn_short: 'Name must be at least 2 characters' });
   document.addEventListener('click', function (e) {
