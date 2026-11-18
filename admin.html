@@ -1555,6 +1555,7 @@ select.search { appearance: auto; cursor: pointer; }
       });
     });
   });
+  applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
     if (started) return; started = true;
