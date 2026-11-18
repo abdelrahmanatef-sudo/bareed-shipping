@@ -105,6 +105,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
           <p class="note" data-i18n="f_note"></p>
         </form>
       </div>
+      <div class="card" id="pay-card"><h2 data-i18n="py_h"></h2><div id="pay-out"></div></div>
       <div class="card" id="bulk-card"><h2 data-i18n="bk_h"></h2><p class="note" data-i18n="bk_note"></p>
         <div class="toolbar"><button class="btn ghost sm" id="bk-tpl" type="button" data-i18n="bk_tpl"></button><input id="bk-file" type="file" accept=".csv,.xlsx,.xls" style="max-width:260px"></div>
         <div id="bk-out"></div>
@@ -145,6 +146,8 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
 
   Object.assign(D.ar, { bk_h: 'رفع شحنات من Excel', bk_note: 'حمّل النموذج، املاه بشحناتك (الاسم، الموبايل، المحافظة، المدينة، العنوان، COD)، وارفعه. هنراجع كل صف قبل الإضافة.', bk_tpl: 'تحميل النموذج', bk_ready: 'جاهزة للرفع', bk_bad: 'فيها مشكلة', bk_go: 'رفع {n} شحنة', bk_row: 'صف', bk_done: 'تم رفع {n} شحنة', bk_failed: 'فشل {n}', bk_empty: 'الملف فاضي أو مش بنفس شكل النموذج', bk_many: 'الحد الأقصى 300 شحنة في المرة', bk_e_name: 'الاسم ناقص', bk_e_phone: 'الموبايل غلط', bk_e_addr: 'العنوان ناقص', bk_e_cod: 'COD غلط', bk_e_area: 'المنطقة مش متغطية أو مش مكتوبة صح', bk_prog: 'جاري الرفع... {n}/{m}', bk_read: 'تعذّرت قراءة الملف' });
   Object.assign(D.en, { bk_h: 'Bulk upload from Excel', bk_note: 'Download the template, fill in your shipments (name, phone, governorate, city, address, COD) and upload it. Every row is checked before adding.', bk_tpl: 'Download template', bk_ready: 'Ready', bk_bad: 'Has problems', bk_go: 'Upload {n} shipments', bk_row: 'Row', bk_done: '{n} shipments uploaded', bk_failed: '{n} failed', bk_empty: 'The file is empty or does not match the template', bk_many: 'Maximum 300 shipments at a time', bk_e_name: 'Name missing', bk_e_phone: 'Invalid phone', bk_e_addr: 'Address missing', bk_e_cod: 'Invalid COD', bk_e_area: 'Area not covered or misspelled', bk_prog: 'Uploading... {n}/{m}', bk_read: 'Could not read the file' });
+  Object.assign(D.ar, { py_h: 'تحويلات بريد ليك', py_total: 'إجمالي اللي اتحوّل لك', py_none: 'لسه مفيش تحويلات', py_date: 'التاريخ', py_amt: 'المبلغ', py_n: 'عدد الشحنات', py_note: 'ملاحظة' });
+  Object.assign(D.en, { py_h: 'Payouts from Bareed', py_total: 'Total paid to you', py_none: 'No payouts yet', py_date: 'Date', py_amt: 'Amount', py_n: 'Shipments', py_note: 'Note' });
   function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
   function el(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
@@ -214,7 +217,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     var a = areas.filter(function (x) { return x.id === el('f-city').value; })[0], q = el('quote');
     q.hidden = !a; if (a) q.textContent = t('quote', { c: cname(a), f: fmt(a.fee) });
   }
-  function renderAll() { renderStatic(); if (me && me.status === 'active') { renderTiles(); renderRows(); renderForm(); } }
+  function renderAll() { renderStatic(); if (me && me.status === 'active') { renderTiles(); renderRows(); renderForm(); if (typeof renderPayouts === 'function') renderPayouts(); } }
 
   /* data */
   async function load() {
@@ -235,7 +238,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     me = m.data; renderStatic();
     if (me.status !== 'active') { el('dash').hidden = true; banner(me.status === 'pending' ? 'wait' : 'bad', me.status === 'pending' ? 'pending' : 'suspended'); return; }
     banner('', null);
-    await loadAreas(); renderAll(); await load();
+    await loadAreas(); renderAll(); await load(); loadPayouts();
     sb.channel('m-ships').on('postgres_changes', { event: '*', schema: 'public', table: 'shipments' }, function () { load(); }).subscribe();
   }
 
@@ -249,6 +252,13 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; el('f-cod').value = 0; await load();
   });
 
+  var payouts = [];
+  async function loadPayouts() { var r = await sb.from('merchant_payouts').select('amount,shipments_count,note,created_at').order('created_at', { ascending: false }).limit(200); if (!r.error) { payouts = r.data || []; renderPayouts(); } }
+  function renderPayouts() {
+    var o = el('pay-out'); if (!o) return;
+    var tot = payouts.reduce(function (n, x) { return n + (+x.amount || 0); }, 0);
+    o.innerHTML = '<p><b>' + t('py_total') + ': ' + Math.round(tot).toLocaleString('en-US') + '</b></p>' + (payouts.length ? '<div class="tablewrap" style="max-height:260px;overflow:auto"><table><thead><tr><th>' + t('py_date') + '</th><th>' + t('py_amt') + '</th><th>' + t('py_n') + '</th><th>' + t('py_note') + '</th></tr></thead><tbody>' + payouts.map(function (x) { return '<tr><td dir="ltr">' + esc(new Date(x.created_at).toLocaleDateString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })) + '</td><td>' + Math.round(+x.amount).toLocaleString('en-US') + '</td><td>' + x.shipments_count + '</td><td>' + esc(x.note || '') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="note">' + t('py_none') + '</p>');
+  }
   /* bulk upload */
   function nrm(x) { return String(x == null ? '' : x).toLowerCase().replace(/[ً-ٟـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim(); }
   function parseCSV(txt) {

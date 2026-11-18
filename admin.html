@@ -568,6 +568,7 @@ select.search { appearance: auto; cursor: pointer; }
           <div id="nm-out"></div></div>
         <div class="card" id="mreq-card" hidden><h2 data-i18n="h_mreq"></h2><div id="mr-flt"></div><div id="mreq"></div></div>
         <p class="note" data-i18n="me_note"></p>
+        <div id="me-stmt"></div>
         <div id="me-flt"></div>
         <div id="me-list" class="cards"></div>
       </section>
@@ -1043,7 +1044,7 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="kv"><span>' + t('m_fees') + '</span><b>' + fmt(m.fees) + '</b></div>' +
         (m.open ? '<div class="kv"><span>' + t('m_open') + '</span><b>' + m.open + '</b></div>' : '') + '<div class="sep"></div>' +
         '<div class="kv"><span>' + (m.due >= 0 ? t('m_to') : t('m_from')) + '</span><span class="due">' + money(Math.abs(m.due)) + '</span></div>' +
-        (canWrite ? '<div class="row"><button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button></div>' : '') + '</div>';
+        '<div class="row"><button class="btn ghost sm" type="button" data-mstmt="' + esc(k) + '">' + t('ms_btn') + '</button>' + (canWrite ? '<button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button>' : '') + '</div>' + '</div>';
     }).join('');
   }
 
@@ -1255,11 +1256,16 @@ select.search { appearance: auto; cursor: pointer; }
   el('me-list').addEventListener('click', function (e) {
     var p = e.target.closest('[data-pay]'); if (!p) return;
     var m = p.getAttribute('data-pay');
-    if (!confirm(t('c_settle_m', { m: m }))) return;
+    var due = (merchantDue()[m] || {}).due || 0;
+    if (!confirm(t('c_settle_m', { m: m }) + ' (' + fmt(due) + ')')) return;
+    var note = prompt(t('po_note'), ''); if (note === null) return;
     safe(async function () {
       var rows = store.shipments.filter(function (x) { return x.merchant === m && !x.paidMerchant && (x.status === 'delivered' || x.status === 'returned'); });
+      if (!rows.length) return;
+      var ins = await sb.from('merchant_payouts').insert({ merchant_id: rows[0].merchantId, amount: Math.round(due * 100) / 100, shipments_count: rows.length, note: note.trim() || null });
+      if (ins.error) throw ins.error;
       for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.paidMerchant = true; await put('shipments', rows[i].id, n); }
-      toast(t('t_settled_m', { m: m }));
+      toast(t('t_settled_m', { m: m })); await loadPayouts(); if (el('me-stmt')) el('me-stmt').innerHTML = '';
     });
   });
   el('cfg-grid').addEventListener('change', function (e) {
@@ -1669,6 +1675,42 @@ select.search { appearance: auto; cursor: pointer; }
       toast(t('ok_done')); syncAll().catch(function () {});
     });
   });
+
+  Object.assign(I18N.ar, { ms_btn: 'كشف الحساب', ms_h: 'كشف حساب التاجر', ms_due: 'المستحق له دلوقتي', ms_cnt: 'شحنات لسه ما اتسوّتش', ms_cod: 'إجمالي COD المحصّل', ms_fees: 'رسوم الشحن والعمولة', ms_paid: 'إجمالي اللي اتحوّل له', ms_ret: 'مرتجعات (رسوم)', ms_pays: 'سجل التحويلات', ms_nopay: 'لسه مفيش تحويلات', ms_unp: 'شحنات مستحقة', ms_net: 'الصافي', ms_date: 'التاريخ', ms_amt: 'المبلغ', ms_note: 'ملاحظة', ms_n: 'عدد الشحنات', po_note: 'ملاحظة على التحويل (رقم العملية / طريقة الدفع - اختياري):' });
+  Object.assign(I18N.en, { ms_btn: 'Statement', ms_h: 'Merchant statement', ms_due: 'Due to merchant now', ms_cnt: 'Shipments not yet settled', ms_cod: 'Total COD collected', ms_fees: 'Shipping fees & commission', ms_paid: 'Total paid out', ms_ret: 'Returns (fees)', ms_pays: 'Payout history', ms_nopay: 'No payouts yet', ms_unp: 'Unsettled shipments', ms_net: 'Net', ms_date: 'Date', ms_amt: 'Amount', ms_note: 'Note', ms_n: 'Shipments', po_note: 'Payout note (transfer reference / method - optional):' });
+  var payouts = [];
+  async function loadPayouts() {
+    if (local || !sb) return;
+    var r = await sb.from('merchant_payouts').select('*').order('created_at', { ascending: false }).limit(1000);
+    if (!r.error) payouts = r.data || [];
+  }
+  function showMerchantStmt(name) {
+    var mine = store.shipments.filter(function (x) { return x.merchant === name; });
+    if (!mine.length) return;
+    var mid = mine[0].merchantId;
+    var un = mine.filter(function (x) { return !x.paidMerchant && (x.status === 'delivered' || x.status === 'returned'); });
+    var dl = un.filter(function (x) { return x.status === 'delivered'; }), rt = un.filter(function (x) { return x.status === 'returned'; });
+    var cod = dl.reduce(function (n, x) { return n + (+x.cod || 0); }, 0);
+    var fees = dl.reduce(function (n, x) { return n + (+x.fee || 0) + commission(x); }, 0);
+    var retf = rt.length * cfg.returnFee, due = cod - fees - retf;
+    var pays = payouts.filter(function (x) { return x.merchant_id === mid; });
+    var paid = pays.reduce(function (n, x) { return n + (+x.amount || 0); }, 0);
+    var fd = function (d) { return new Date(d).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }); };
+    var rows = un.map(function (x) { var net = x.status === 'delivered' ? (+x.cod || 0) - (+x.fee || 0) - commission(x) : -cfg.returnFee; return '<tr><td>' + esc(x.code) + '</td><td>' + esc(x.customer) + '<small>' + t('st_' + x.status) + '</small></td><td>' + fmt(x.cod) + '</td><td>' + money(net) + '</td></tr>'; }).join('');
+    el('me-stmt').innerHTML = '<div class="card"><h2>' + t('ms_h') + ': ' + esc(name) + '</h2>' +
+      '<div class="kv"><span>' + t('ms_cnt') + '</span><b>' + un.length + '</b></div>' +
+      '<div class="kv"><span>' + t('ms_cod') + '</span><b>' + money(cod) + '</b></div>' +
+      '<div class="kv"><span>' + t('ms_fees') + '</span><b>' + money(fees) + '</b></div>' +
+      '<div class="kv"><span>' + t('ms_ret') + '</span><b>' + money(retf) + '</b></div><div class="sep"></div>' +
+      '<div class="kv"><span>' + t('ms_due') + '</span><span class="due">' + money(due) + '</span></div>' +
+      '<div class="kv"><span>' + t('ms_paid') + '</span><b>' + money(paid) + '</b></div>' +
+      (rows ? '<h3 style="margin-top:6px">' + t('ms_unp') + '</h3><div class="tablewrap"><table><thead><tr><th>' + t('cs_code') + '</th><th>' + t('cs_cust') + '</th><th>COD</th><th>' + t('ms_net') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
+      '<h3 style="margin-top:6px">' + t('ms_pays') + '</h3>' + (pays.length ? '<div class="tablewrap"><table><thead><tr><th>' + t('ms_date') + '</th><th>' + t('ms_amt') + '</th><th>' + t('ms_n') + '</th><th>' + t('ms_note') + '</th></tr></thead><tbody>' + pays.map(function (x) { return '<tr><td dir="ltr">' + esc(fd(x.created_at)) + '</td><td>' + money(x.amount) + '</td><td>' + x.shipments_count + '</td><td>' + esc(x.note || '') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="note">' + t('ms_nopay') + '</p>') +
+      '<div class="row"><button class="btn ghost sm" type="button" onclick="window.print()">' + t('cs_print') + '</button><button class="btn ghost sm" type="button" id="ms-close">' + t('cs_close') + '</button></div></div>';
+    el('me-stmt').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el('ms-close').addEventListener('click', function () { el('me-stmt').innerHTML = ''; });
+  }
+  document.addEventListener('click', async function (e) { var b = e.target.closest && e.target.closest('[data-mstmt]'); if (!b) return; await loadPayouts(); showMerchantStmt(b.getAttribute('data-mstmt')); });
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
