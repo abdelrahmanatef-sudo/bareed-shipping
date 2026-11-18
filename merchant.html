@@ -105,6 +105,10 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
           <p class="note" data-i18n="f_note"></p>
         </form>
       </div>
+      <div class="card" id="bulk-card"><h2 data-i18n="bk_h"></h2><p class="note" data-i18n="bk_note"></p>
+        <div class="toolbar"><button class="btn ghost sm" id="bk-tpl" type="button" data-i18n="bk_tpl"></button><input id="bk-file" type="file" accept=".csv,.xlsx,.xls" style="max-width:260px"></div>
+        <div id="bk-out"></div>
+      </div>
       <div class="card"><h2 data-i18n="h_ships"></h2>
         <div class="toolbar"><div class="chips" id="filters"></div><input class="search" id="q" type="search" data-i18n-ph="search"><button class="btn ghost sm" id="csv" type="button" data-i18n="export"></button></div>
         <div class="tablewrap"><table><thead><tr><th data-i18n="th_code"></th><th data-i18n="f_customer"></th><th data-i18n="th_area"></th><th data-i18n="th_cod"></th><th data-i18n="th_fee"></th><th data-i18n="th_status"></th><th data-i18n="th_date"></th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
@@ -138,6 +142,9 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
       e_none: 'No shipments yet', e_none_h: 'Create your first shipment with the form above.', e_res: 'No results', ok: 'Shipment created. You will find it in the table below.', e_save: 'Could not create it. Check the details and try again.', e_area: 'This area is not open for delivery yet.', e_inactive: 'Your account is not active yet.', e_load: 'Could not load data.' }
   };
   var lang = 'ar'; try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
+
+  Object.assign(D.ar, { bk_h: 'رفع شحنات من Excel', bk_note: 'حمّل النموذج، املاه بشحناتك (الاسم، الموبايل، المحافظة، المدينة، العنوان، COD)، وارفعه. هنراجع كل صف قبل الإضافة.', bk_tpl: 'تحميل النموذج', bk_ready: 'جاهزة للرفع', bk_bad: 'فيها مشكلة', bk_go: 'رفع {n} شحنة', bk_row: 'صف', bk_done: 'تم رفع {n} شحنة', bk_failed: 'فشل {n}', bk_empty: 'الملف فاضي أو مش بنفس شكل النموذج', bk_many: 'الحد الأقصى 300 شحنة في المرة', bk_e_name: 'الاسم ناقص', bk_e_phone: 'الموبايل غلط', bk_e_addr: 'العنوان ناقص', bk_e_cod: 'COD غلط', bk_e_area: 'المنطقة مش متغطية أو مش مكتوبة صح', bk_prog: 'جاري الرفع... {n}/{m}', bk_read: 'تعذّرت قراءة الملف' });
+  Object.assign(D.en, { bk_h: 'Bulk upload from Excel', bk_note: 'Download the template, fill in your shipments (name, phone, governorate, city, address, COD) and upload it. Every row is checked before adding.', bk_tpl: 'Download template', bk_ready: 'Ready', bk_bad: 'Has problems', bk_go: 'Upload {n} shipments', bk_row: 'Row', bk_done: '{n} shipments uploaded', bk_failed: '{n} failed', bk_empty: 'The file is empty or does not match the template', bk_many: 'Maximum 300 shipments at a time', bk_e_name: 'Name missing', bk_e_phone: 'Invalid phone', bk_e_addr: 'Address missing', bk_e_cod: 'Invalid COD', bk_e_area: 'Area not covered or misspelled', bk_prog: 'Uploading... {n}/{m}', bk_read: 'Could not read the file' });
   function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
   function el(id) { return document.getElementById(id); }
   function esc(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
@@ -240,6 +247,91 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     go.disabled = false;
     if (r.error) { toast('err', /area_not_covered/.test(r.error.message) ? t('e_area') : /not_active/.test(r.error.message) ? t('e_inactive') : t('e_save')); return; }
     toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; el('f-cod').value = 0; await load();
+  });
+
+  /* bulk upload */
+  function nrm(x) { return String(x == null ? '' : x).toLowerCase().replace(/[ً-ٟـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/\s+/g, ' ').trim(); }
+  function parseCSV(txt) {
+    var rows = [], row = [], cur = '', q = false, i, c;
+    txt = txt.replace(/^﻿/, '');
+    var first = txt.split('\n')[0] || '', delim = (first.split(';').length > first.split(',').length) ? ';' : (first.split('\t').length > first.split(',').length ? '\t' : ',');
+    for (i = 0; i < txt.length; i++) {
+      c = txt[i];
+      if (q) { if (c === '"') { if (txt[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += c; }
+      else if (c === '"') q = true;
+      else if (c === delim) { row.push(cur); cur = ''; }
+      else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+      else if (c !== '\r') cur += c;
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return rows;
+  }
+  function loadXLSX() {
+    return new Promise(function (res, rej) {
+      if (window.XLSX) return res(window.XLSX);
+      var sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      sc.onload = function () { res(window.XLSX); }; sc.onerror = rej; document.head.appendChild(sc);
+    });
+  }
+  function findArea(gov, city) {
+    var g = nrm(gov), c = nrm(city); if (!c) return null;
+    var cand = areas.filter(function (a) { return a.is_active && (nrm(a.city_ar) === c || nrm(a.city_en) === c); });
+    if (g) { var byG = cand.filter(function (a) { return nrm(a.gov_ar) === g || nrm(a.gov_en) === g; }); if (byG.length) cand = byG; }
+    return cand.length === 1 || (cand.length > 1 && g) ? cand[0] : null;
+  }
+  var bulk = [];
+  function renderBulk() {
+    var out = el('bk-out'); if (!bulk.length) { out.innerHTML = ''; return; }
+    var ok = bulk.filter(function (r) { return !r.err; }), bad = bulk.length - ok.length;
+    out.innerHTML = '<p class="note">' + ok.length + ' ' + t('bk_ready') + (bad ? ' · ' + bad + ' ' + t('bk_bad') : '') + '</p>' +
+      '<div class="tablewrap" style="max-height:300px;overflow:auto"><table><tbody>' + bulk.map(function (r) {
+        return '<tr><td>' + r.n + '</td><td>' + esc(r.name) + '<small>' + esc(r.phone) + '</small></td><td>' + esc(r.gov + ' ' + r.city) + '<small>' + esc(r.addr) + '</small></td><td>' + esc(r.cod) + '</td><td>' + (r.err ? '<span style="color:var(--bad)">' + esc(t(r.err)) + '</span>' : '✓') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' +
+      (ok.length ? '<div style="margin-top:10px"><button class="btn" type="button" id="bk-go">' + t('bk_go', { n: ok.length }) + '</button></div>' : '');
+  }
+  function ingest(rows) {
+    rows = rows.filter(function (r) { return r && r.some(function (x) { return String(x == null ? '' : x).trim() !== ''; }); });
+    if (rows.length && /name|اسم|customer|عميل/i.test(String(rows[0][0])) ) rows.shift();
+    if (!rows.length) { toast('err', t('bk_empty')); bulk = []; renderBulk(); return; }
+    if (rows.length > 300) { toast('err', t('bk_many')); bulk = []; renderBulk(); return; }
+    bulk = rows.map(function (r, i) {
+      var o = { n: i + 1, name: String(r[0] == null ? '' : r[0]).trim(), phone: String(r[1] == null ? '' : r[1]).replace(/[\s-]/g, ''), gov: String(r[2] == null ? '' : r[2]).trim(), city: String(r[3] == null ? '' : r[3]).trim(), addr: String(r[4] == null ? '' : r[4]).trim(), cod: String(r[5] == null || r[5] === '' ? 0 : r[5]).replace(/[,\s]/g, '') };
+      if (/^\d{9,10}$/.test(o.phone) && o.phone[0] !== '0') o.phone = '0' + o.phone;
+      var area = findArea(o.gov, o.city); o.area = area && area.id;
+      if (o.name.length < 1) o.err = 'bk_e_name';
+      else if (o.phone.length < 5 || o.phone.length > 30) o.err = 'bk_e_phone';
+      else if (o.addr.length < 3) o.err = 'bk_e_addr';
+      else if (isNaN(+o.cod) || +o.cod < 0 || +o.cod > 1000000) o.err = 'bk_e_cod';
+      else if (!o.area) o.err = 'bk_e_area';
+      return o;
+    });
+    renderBulk();
+  }
+  el('bk-tpl').addEventListener('click', function () {
+    var g0 = areas.filter(function (a) { return a.is_active; })[0] || { gov_ar: 'الجيزة', city_ar: 'المنيب' };
+    var csv = '﻿الاسم,الموبايل,المحافظة,المدينة,العنوان,COD\n' + 'أحمد محمد,01012345678,' + g0.gov_ar + ',' + g0.city_ar + ',شارع المثال - عمارة 5,350\n';
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'bareed-shipments-template.csv'; a.click();
+  });
+  el('bk-file').addEventListener('change', async function (e) {
+    var f = e.target.files && e.target.files[0]; if (!f) return;
+    try {
+      if (/\.csv$/i.test(f.name)) ingest(parseCSV(await f.text()));
+      else { var X = await loadXLSX(); var wb = X.read(await f.arrayBuffer(), { type: 'array' }); ingest(X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: false, defval: '' })); }
+    } catch (x) { toast('err', t('bk_read')); }
+    e.target.value = '';
+  });
+  el('bk-out').addEventListener('click', async function (e) {
+    var b = e.target.closest('#bk-go'); if (!b) return;
+    var ok = bulk.filter(function (r) { return !r.err; }), done = 0, fail = [];
+    b.disabled = true;
+    for (var i = 0; i < ok.length; i++) {
+      b.textContent = t('bk_prog', { n: i + 1, m: ok.length });
+      var r = await sb.rpc('create_shipment', { p_customer_name: ok[i].name, p_customer_phone: ok[i].phone, p_address: ok[i].addr, p_cod: +ok[i].cod || 0, p_area_id: ok[i].area });
+      if (r.error) { ok[i].err = /area_not_covered/.test(r.error.message) ? 'bk_e_area' : 'e_save'; fail.push(ok[i]); } else done++;
+    }
+    bulk = fail; renderBulk();
+    toast(fail.length ? 'err' : 'ok', t('bk_done', { n: done }) + (fail.length ? ' · ' + t('bk_failed', { n: fail.length }) : ''));
+    await load();
   });
   el('filters').addEventListener('click', function (e) { var b = e.target.closest('[data-f]'); if (b) { filter = b.getAttribute('data-f'); renderRows(); } });
   el('q').addEventListener('input', function (e) { query = e.target.value; renderRows(); });
