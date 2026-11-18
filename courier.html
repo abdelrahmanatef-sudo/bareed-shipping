@@ -39,14 +39,14 @@ main{max-width:720px;margin:-46px auto 0;padding:0 14px 90px;display:grid;gap:14
 .log{display:grid;gap:0}.log div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}.log div:first-child{border-top:0}.log small{color:var(--muted);display:block;font-size:12px}
 </style></head><body>
 <div id="login" class="login" hidden><div class="card">
-  <h1 id="l-t"></h1><p class="m" id="l-s"></p>
+  <div style="display:flex;justify-content:center"><svg class="logo" width="56" height="56" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#1A9CF0"/><rect x="13" y="16" width="26" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 19.5 26 27.5l11.5-8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 22h4M7.5 28H10" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg></div><h1 id="l-t"></h1><p class="m" id="l-s"></p>
   <div class="field"><label id="l-e"></label><input id="em" type="email" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
   <div class="field"><label id="l-p"></label><input id="pw" type="password" autocomplete="current-password"></div>
   <button class="btn" id="go"></button><p class="m" id="err" style="color:var(--bad)"></p>
   <button class="btn g" id="lg0"></button>
 </div></div>
 <div id="app" hidden>
-  <div class="head"><div class="bar"><div class="brand">بريد<small id="sub"></small></div><div style="display:flex;gap:8px"><button class="ib" id="lg"></button><button class="ib" id="out"></button></div></div>
+  <div class="head"><div class="bar"><div class="brand" style="display:flex;align-items:center;gap:10px"><svg class="logo" width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#1A9CF0"/><rect x="13" y="16" width="26" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 19.5 26 27.5l11.5-8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 22h4M7.5 28H10" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg><span>بريد<small id="sub"></small></span></div><div style="display:flex;gap:8px"><button class="ib" id="lg"></button><button class="ib" id="out"></button></div></div>
     <div class="hi"><h1 id="hello"></h1><p id="today"></p></div></div>
   <main>
     <div class="tiles" id="tiles"></div>
