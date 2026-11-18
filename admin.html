@@ -541,6 +541,7 @@ select.search { appearance: auto; cursor: pointer; }
             <div class="row"><button class="btn" type="submit" data-i18n="save_courier"></button></div>
           </form>
         </details>
+        <div id="co-flt"></div>
         <div id="co-stmt"></div>
         <div id="co-list" class="cards"></div>
         <div id="co-log"></div>
@@ -557,8 +558,9 @@ select.search { appearance: auto; cursor: pointer; }
             <button class="btn sm" type="button" id="nm-go" data-i18n="nm_go"></button>
           </div>
           <div id="nm-out"></div></div>
-        <div class="card" id="mreq-card" hidden><h2 data-i18n="h_mreq"></h2><div id="mreq"></div></div>
+        <div class="card" id="mreq-card" hidden><h2 data-i18n="h_mreq"></h2><div id="mr-flt"></div><div id="mreq"></div></div>
         <p class="note" data-i18n="me_note"></p>
+        <div id="me-flt"></div>
         <div id="me-list" class="cards"></div>
       </section>
 
@@ -827,16 +829,18 @@ select.search { appearance: auto; cursor: pointer; }
     var vcost = cpay + (D + R) * cfg.other;
     return { D: D, R: R, created: created, rev: rev, profit: rev - vcost - cfg.fixed, avgCod: D ? codSum / D : 0 };
   }
-  function courierHolds() {
+  var FLT = { co: { q: '', from: '', to: '', mode: 'all' }, me: { q: '', from: '', to: '', mode: 'all' }, mr: { q: '', mode: 'all' } };
+  function inR(s, f) { if (!f || (!f.from && !f.to)) return true; var d = new Date(s.createdAt); if (isNaN(d)) return true; if (f.from && d < new Date(f.from + 'T00:00:00')) return false; if (f.to && d > new Date(f.to + 'T23:59:59')) return false; return true; }
+  function courierHolds(f) {
     var m = {};
-    store.shipments.forEach(function (s) {
+    store.shipments.filter(function (s) { return inR(s, f); }).forEach(function (s) {
       if (s.status === 'delivered' && !s.settled && s.courierId) { m[s.courierId] = m[s.courierId] || { cod: 0, n: 0 }; m[s.courierId].cod += +s.cod || 0; m[s.courierId].n++; }
     });
     return m;
   }
-  function merchantDue() {
+  function merchantDue(f) {
     var m = {};
-    store.shipments.forEach(function (s) {
+    store.shipments.filter(function (s) { return inR(s, f); }).forEach(function (s) {
       var k = s.merchant || '-';
       m[k] = m[k] || { due: 0, delivered: 0, returned: 0, cod: 0, fees: 0, open: 0, unpaid: 0 };
       if (s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery') m[k].open++;
@@ -968,10 +972,23 @@ select.search { appearance: auto; cursor: pointer; }
 
   function initial(name) { return esc(String(name || '?').trim().charAt(0).toUpperCase()); }
   function renderCouriers() {
-    var holds = courierHolds();
+    var holds = courierHolds(FLT.co);
     if (!store.couriers.length) { el('co-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + t('e_courier') + '</b>' + t('e_courier_h') + '</div>'; return; }
-    el('co-list').innerHTML = store.couriers.map(function (c) {
-      var mine = store.shipments.filter(function (s) { return s.courierId === c.id; });
+    var fq = FLT.co.q.trim().toLowerCase(), fm = FLT.co.mode;
+    var vis = store.couriers.filter(function (c) {
+      if (fq && (c.name + ' ' + c.phone + ' ' + c.email).toLowerCase().indexOf(fq) < 0) return false;
+      var hd0 = holds[c.id] || { cod: 0, n: 0 };
+      var out0 = store.shipments.filter(function (s) { return s.courierId === c.id && s.status === 'out_for_delivery' && inR(s, FLT.co); }).length;
+      if (fm === 'cash') return hd0.cod > 0;
+      if (fm === 'carry') return out0 > 0;
+      if (fm === 'clear') return hd0.cod <= 0 && !out0;
+      if (fm === 'login') return !!c.email;
+      if (fm === 'nologin') return !c.email;
+      return true;
+    });
+    if (!vis.length) { el('co-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + t('f_empty') + '</b></div>'; return; }
+    el('co-list').innerHTML = vis.map(function (c) {
+      var mine = store.shipments.filter(function (s) { return s.courierId === c.id && inR(s, FLT.co); });
       var out = mine.filter(function (s) { return s.status === 'out_for_delivery'; }).length;
       var dl = mine.filter(function (s) { return s.status === 'delivered'; }).length;
       var rt = mine.filter(function (s) { return s.status === 'returned'; }).length;
@@ -986,7 +1003,18 @@ select.search { appearance: auto; cursor: pointer; }
   }
 
   function renderMerchants() {
-    var md = merchantDue(), keys = Object.keys(md).filter(function (k) { return k !== '-'; });
+    var md = merchantDue(FLT.me), keys = Object.keys(md).filter(function (k) { return k !== '-'; });
+    var mq = FLT.me.q.trim().toLowerCase(), mm = FLT.me.mode, allKeys = keys.length;
+    keys = keys.filter(function (k) {
+      if (mq && k.toLowerCase().indexOf(mq) < 0) return false;
+      var x = md[k];
+      if (mm === 'owed') return x.due > 0;
+      if (mm === 'owes') return x.due < 0;
+      if (mm === 'open') return x.open > 0;
+      if (mm === 'clear') return x.due === 0 && !x.open;
+      return true;
+    });
+    if (allKeys && !keys.length) { el('me-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + t('f_empty') + '</b></div>'; return; }
     if (!keys.length) { el('me-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + t('e_merchant') + '</b>' + t('e_merchant_h') + '</div>'; return; }
     keys.sort(function (a, b) { return md[b].due - md[a].due; });
     el('me-list').innerHTML = keys.map(function (k) {
@@ -1109,7 +1137,7 @@ select.search { appearance: auto; cursor: pointer; }
   }
   function setLang(l) {
     lang = l; try { localStorage.setItem('bareed.lang', l); } catch (e) {}
-    applyStatic(); buildCfgGrid(); renderAll();
+    applyStatic(); buildCfgGrid(); if (typeof buildFilters === 'function') buildFilters(); renderAll();
     var am = el('auth-msg'); if (am.getAttribute('data-k')) am.textContent = t(am.getAttribute('data-k'));
   }
   function effectiveTheme() {
@@ -1440,6 +1468,8 @@ select.search { appearance: auto; cursor: pointer; }
     var card = el('mreq-card'); if (!card) return;
     var rows = (mreqRows || []).filter(function (m) { return m.email || m.status !== 'active'; });
     card.hidden = !rows.length;
+    var rq = FLT.mr.q.trim().toLowerCase(), rm = FLT.mr.mode;
+    rows = rows.filter(function (m) { return (rm === 'all' || m.status === rm) && (!rq || [m.name, m.email, m.phone].join(' ').toLowerCase().indexOf(rq) >= 0); });
     el('mreq').innerHTML = '<div class="tablewrap"><table><tbody>' + rows.map(function (m) {
       var st = m.status, id = esc(m.id);
       var btns = st === 'pending' ? '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t('mr_approve') + '</button> <button class="btn ghost sm" type="button" data-ms="' + id + '|suspended">' + t('mr_suspend') + '</button>'
@@ -1555,6 +1585,41 @@ select.search { appearance: auto; cursor: pointer; }
       });
     });
   });
+
+  Object.assign(I18N.ar, { f_all: 'الكل', f_cash: 'معاه فلوس', f_carry: 'معاه شحنات دلوقتي', f_clear: 'مفيش عليه حاجة', f_login: 'عنده دخول', f_nologin: 'من غير دخول', f_owed: 'ليه فلوس', f_owes: 'عليه فلوس', f_open: 'شحناته مفتوحة', f_pend: 'واقف على التفعيل', f_act: 'مفعّل', f_sus: 'موقوف', f_q: 'ابحث بالاسم...', f_from: 'من', f_to: 'إلى', f_today: 'النهارده', f_7: '7 أيام', f_month: 'الشهر ده', f_empty: 'مفيش نتائج بالفلتر ده', f_reset: 'مسح الفلتر' });
+  Object.assign(I18N.en, { f_all: 'All', f_cash: 'Holds cash', f_carry: 'Carrying now', f_clear: 'Nothing due', f_login: 'Has login', f_nologin: 'No login', f_owed: 'Owed money', f_owes: 'Owes money', f_open: 'Open shipments', f_pend: 'Awaiting activation', f_act: 'Active', f_sus: 'Suspended', f_q: 'Search by name...', f_from: 'From', f_to: 'To', f_today: 'Today', f_7: '7 days', f_month: 'This month', f_empty: 'No results for this filter', f_reset: 'Clear filter' });
+  var FDEF = {
+    co: { dates: true, modes: [['all', 'f_all'], ['cash', 'f_cash'], ['carry', 'f_carry'], ['clear', 'f_clear'], ['login', 'f_login'], ['nologin', 'f_nologin']], box: 'co-flt', draw: function () { renderCouriers(); } },
+    me: { dates: true, modes: [['all', 'f_all'], ['owed', 'f_owed'], ['owes', 'f_owes'], ['open', 'f_open'], ['clear', 'f_clear']], box: 'me-flt', draw: function () { renderMerchants(); } },
+    mr: { dates: false, modes: [['all', 'f_all'], ['pending', 'f_pend'], ['active', 'f_act'], ['suspended', 'f_sus']], box: 'mr-flt', draw: function () { renderMreq(); } }
+  };
+  function ymd(d) { var z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 10); }
+  function buildFilters() {
+    Object.keys(FDEF).forEach(function (k) {
+      var d = FDEF[k], f = FLT[k], box = el(d.box); if (!box) return;
+      box.innerHTML = '<div class="card" style="gap:10px"><div class="toolbar"><input class="search" data-fq="' + k + '" placeholder="' + t('f_q') + '" value="' + esc(f.q) + '" style="max-width:240px">' +
+        (d.dates ? '<label class="note">' + t('f_from') + ' <input class="search" type="date" data-fd="' + k + '|from" value="' + f.from + '" style="max-width:150px"></label><label class="note">' + t('f_to') + ' <input class="search" type="date" data-fd="' + k + '|to" value="' + f.to + '" style="max-width:150px"></label>' +
+          '<span class="chips"><button class="chip" type="button" data-fr="' + k + '|0">' + t('f_today') + '</button><button class="chip" type="button" data-fr="' + k + '|7">' + t('f_7') + '</button><button class="chip" type="button" data-fr="' + k + '|m">' + t('f_month') + '</button></span>' : '') +
+        '<button class="btn ghost sm" type="button" data-freset="' + k + '">' + t('f_reset') + '</button></div>' +
+        '<div class="chips">' + d.modes.map(function (m) { return '<button class="chip" type="button" data-fm="' + k + '|' + m[0] + '" aria-pressed="' + (f.mode === m[0]) + '">' + t(m[1]) + '</button>'; }).join('') + '</div></div>';
+    });
+  }
+  document.addEventListener('input', function (e) {
+    var q = e.target.getAttribute && e.target.getAttribute('data-fq'), dd = e.target.getAttribute && e.target.getAttribute('data-fd');
+    if (q) { FLT[q].q = e.target.value; FDEF[q].draw(); }
+    else if (dd) { var p = dd.split('|'); FLT[p[0]][p[1]] = e.target.value; FDEF[p[0]].draw(); }
+  });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-fm],[data-fr],[data-freset]'); if (!b) return;
+    var v;
+    if ((v = b.getAttribute('data-fm'))) { var p = v.split('|'); FLT[p[0]].mode = p[1]; buildFilters(); FDEF[p[0]].draw(); }
+    else if ((v = b.getAttribute('data-fr'))) {
+      var r = v.split('|'), now = new Date(), f = FLT[r[0]];
+      if (r[1] === '0') { f.from = f.to = ymd(now); } else if (r[1] === '7') { f.from = ymd(new Date(now.getTime() - 6 * 864e5)); f.to = ymd(now); } else { f.from = ymd(new Date(now.getFullYear(), now.getMonth(), 1)); f.to = ymd(now); }
+      buildFilters(); FDEF[r[0]].draw();
+    } else if ((v = b.getAttribute('data-freset'))) { var o = FLT[v]; o.q = ''; o.mode = 'all'; if ('from' in o) { o.from = ''; o.to = ''; } buildFilters(); FDEF[v].draw(); }
+  });
+  buildFilters();
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
   async function startData() {
