@@ -37,6 +37,12 @@ main{max-width:720px;margin:-46px auto 0;padding:0 14px 90px;display:grid;gap:14
 .login{max-width:420px;margin:12vh auto;padding:0 16px}.login .card{padding:22px}
 .toast{position:fixed;inset-inline:16px;bottom:18px;max-width:420px;margin-inline:auto;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;z-index:9}
 .log{display:grid;gap:0}.log div{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}.log div:first-child{border-top:0}.log small{color:var(--muted);display:block;font-size:12px}
+.sheet{position:fixed;inset:0;background:rgba(5,13,26,.55);display:flex;align-items:flex-end;justify-content:center;z-index:20;backdrop-filter:blur(3px)}
+.sheet-box{background:var(--surface);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));display:grid;gap:10px}
+.sheet-box label{display:flex;gap:10px;align-items:center;padding:11px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.sheet-box label:has(input:checked){border-color:var(--brand);background:var(--surface-2)}
+.sheet-box textarea{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px;resize:none}
+#rs-list{display:grid;gap:8px}
 </style></head><body>
 <div id="login" class="login" hidden><div class="card">
   <div style="display:flex;justify-content:center"><svg class="logo" width="56" height="56" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#1A9CF0"/><rect x="13" y="16" width="26" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 19.5 26 27.5l11.5-8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 22h4M7.5 28H10" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg></div><h1 id="l-t"></h1><p class="m" id="l-s"></p>
@@ -54,14 +60,15 @@ main{max-width:720px;margin:-46px auto 0;padding:0 14px 90px;display:grid;gap:14
     <div id="list" style="display:grid;gap:12px"></div>
   </main>
 </div>
+<div id="rs" class="sheet" hidden><div class="sheet-box"><h3 id="rs-t"></h3><div id="rs-list"></div><textarea id="rs-o" rows="2" hidden></textarea><div class="acts" style="margin-top:10px"><button class="btn g" id="rs-x" type="button"></button><button class="btn r" id="rs-ok" type="button"></button></div></div></div>
 <div id="toast" class="toast" hidden></div>
 <script>
 (function(){
 var URL0='https://ybkkdjpgkkdnijafsuai.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU';
 var sb=window.supabase.createClient(URL0,KEY);
 var lang=(function(){try{return localStorage.getItem('bl')||'ar'}catch(e){return 'ar'}})();
-var D={ar:{title:'تطبيق المندوب',sub:'سجّل دخولك لشغل اليوم',email:'الإيميل',pass:'كلمة المرور',go:'دخول',bad:'بيانات خاطئة',notc:'الحساب ده مش حساب مندوب',susp:'حسابك موقوف. كلّم بريد.',out:'خروج',hello:'أهلاً {n}',now:'معايا',cash:'فلوس معايا',dn:'سلّمت النهارده',t1:'معايا',t2:'خلصت',t3:'سجلي',none:'مفيش شحنات هنا',cust:'العميل',cod:'تحصيل',call:'اتصال',wa:'واتساب',map:'الخريطة',pick:'استلمت من التاجر',outb:'خرجت للتوصيل',deliv:'تم التسليم',ret:'مرتجع',cd:'أكد إن العميل استلم وإنك حصّلت {m} جنيه؟',cr:'سبب الرجوع؟',ok:'تم',err:'حصل خطأ، جرّب تاني',st:{new:'جديدة',picked_up:'اتستلمت',out_for_delivery:'في الطريق',delivered:'اتسلمت',returned:'مرتجعة'},act:{assigned:'اتسندت ليك',unassigned:'اتشالت منك',settled:'اتحاسبت',unsettled:'اتلغت المحاسبة',status:'تغيير حالة'},cur:'ج.م',lang:'EN',set:'محاسَبة'},
-en:{title:'Delivery Representative app',sub:'Sign in to start your day',email:'Email',pass:'Password',go:'Sign in',bad:'Wrong email or password',notc:'This is not a delivery representative account',susp:'Your account is suspended. Contact Bareed.',out:'Sign out',hello:'Hi {n}',now:'Carrying',cash:'Cash on me',dn:'Delivered today',t1:'Mine',t2:'Done',t3:'My log',none:'No shipments here',cust:'Customer',cod:'Collect',call:'Call',wa:'WhatsApp',map:'Map',pick:'Picked up',outb:'Out for delivery',deliv:'Delivered',ret:'Returned',cd:'Confirm the customer received it and you collected {m} EGP?',cr:'Reason for return?',ok:'Done',err:'Something went wrong, try again',st:{new:'New',picked_up:'Picked up',out_for_delivery:'On the way',delivered:'Delivered',returned:'Returned'},act:{assigned:'Assigned to you',unassigned:'Removed from you',settled:'Settled',unsettled:'Settlement undone',status:'Status change'},cur:'EGP',lang:'AR',set:'settled'}};
+var D={ar:{title:'تطبيق المندوب',sub:'سجّل دخولك لشغل اليوم',email:'الإيميل',pass:'كلمة المرور',go:'دخول',bad:'بيانات خاطئة',notc:'الحساب ده مش حساب مندوب',susp:'حسابك موقوف. كلّم بريد.',out:'خروج',hello:'أهلاً {n}',now:'معايا',cash:'فلوس معايا',dn:'سلّمت النهارده',t1:'معايا',t2:'خلصت',t3:'سجلي',none:'مفيش شحنات هنا',cust:'العميل',cod:'تحصيل',call:'اتصال',wa:'واتساب',map:'الخريطة',pick:'استلمت من التاجر',outb:'خرجت للتوصيل',deliv:'تم التسليم',ret:'مرتجع',cd:'أكد إن العميل استلم وإنك حصّلت {m} جنيه؟',cr:'سبب المرتجع',rr:['العميل مردش','العميل رفض الاستلام','العنوان غلط أو مش واضح','العميل طلب التأجيل','المنتج مش مطابق','سبب تاني'],ro:'اكتب السبب',cn:'إلغاء',rok:'تأكيد المرتجع',ok:'تم',err:'حصل خطأ، جرّب تاني',st:{new:'جديدة',picked_up:'اتستلمت',out_for_delivery:'في الطريق',delivered:'اتسلمت',returned:'مرتجعة'},act:{assigned:'اتسندت ليك',unassigned:'اتشالت منك',settled:'اتحاسبت',unsettled:'اتلغت المحاسبة',status:'تغيير حالة'},cur:'ج.م',lang:'EN',set:'محاسَبة'},
+en:{title:'Delivery Representative app',sub:'Sign in to start your day',email:'Email',pass:'Password',go:'Sign in',bad:'Wrong email or password',notc:'This is not a delivery representative account',susp:'Your account is suspended. Contact Bareed.',out:'Sign out',hello:'Hi {n}',now:'Carrying',cash:'Cash on me',dn:'Delivered today',t1:'Mine',t2:'Done',t3:'My log',none:'No shipments here',cust:'Customer',cod:'Collect',call:'Call',wa:'WhatsApp',map:'Map',pick:'Picked up',outb:'Out for delivery',deliv:'Delivered',ret:'Returned',cd:'Confirm the customer received it and you collected {m} EGP?',cr:'Return reason',rr:['Customer not answering','Customer refused','Wrong or unclear address','Customer asked to postpone','Item not as described','Other'],ro:'Write the reason',cn:'Cancel',rok:'Confirm return',ok:'Done',err:'Something went wrong, try again',st:{new:'New',picked_up:'Picked up',out_for_delivery:'On the way',delivered:'Delivered',returned:'Returned'},act:{assigned:'Assigned to you',unassigned:'Removed from you',settled:'Settled',unsettled:'Settlement undone',status:'Status change'},cur:'EGP',lang:'AR',set:'settled'}};
 function t(k){return D[lang][k]}
 function $(i){return document.getElementById(i)}
 function esc(s){var d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML}
@@ -98,11 +105,20 @@ function card(r){
   '<div class="row"><span class="m">'+t('cod')+'</span><span class="cod">'+money(r.cod)+' <small class="m">'+t('cur')+'</small></span></div>'+
   (live?'<div class="acts"><a class="btn g" href="tel:'+esc(ph)+'">'+t('call')+'</a><a class="btn g" target="_blank" rel="noopener" href="https://wa.me/'+esc(wa)+'">'+t('wa')+'</a><a class="btn g" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(r.address+' '+(r.zone||''))+'">'+t('map')+'</a></div>':'')+
   (b?'<div class="acts">'+b+'</div>':'')+'</div>'}
+function askReason(){return new Promise(function(res){
+ var box=$('rs'),L=t('rr');$('rs-t').textContent=t('cr');$('rs-x').textContent=t('cn');$('rs-ok').textContent=t('rok');
+ $('rs-list').innerHTML=L.map(function(x,i){return '<label><input type="radio" name="rs" value="'+i+'"'+(i===0?' checked':'')+'><span>'+esc(x)+'</span></label>'}).join('');
+ var o=$('rs-o');o.value='';o.hidden=true;o.placeholder=t('ro');
+ $('rs-list').onchange=function(){var v=+document.querySelector('input[name=rs]:checked').value;o.hidden=v!==L.length-1};
+ function done(v){box.hidden=true;$('rs-ok').onclick=$('rs-x').onclick=null;res(v)}
+ $('rs-x').onclick=function(){done(null)};
+ $('rs-ok').onclick=function(){var v=+document.querySelector('input[name=rs]:checked').value;var txt=v===L.length-1?(o.value.trim()||L[v]):L[v];done(txt)};
+ box.hidden=false})}
 function getPos(){return new Promise(function(res){if(!navigator.geolocation)return res({});navigator.geolocation.getCurrentPosition(function(p){res({lat:p.coords.latitude,lng:p.coords.longitude})},function(){res({})},{timeout:3500,maximumAge:60000})})}
 $('list').addEventListener('click',async function(e){
  var b=e.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a'),id=b.getAttribute('data-id'),note=null;
  if(a==='delivered'&&!confirm(t('cd').replace('{m}',money(b.getAttribute('data-cod')))))return;
- if(a==='returned'){note=prompt(t('cr'));if(note===null)return}
+ if(a==='returned'){note=await askReason();if(note===null)return}
  b.disabled=true;var pos=await getPos();
  var r=await sb.rpc('courier_update_status',{p_shipment:id,p_status:a,p_note:note,p_lat:pos.lat||null,p_lng:pos.lng||null});
  if(r.error){toast(t('err'));b.disabled=false}else{toast(t('ok'))}
