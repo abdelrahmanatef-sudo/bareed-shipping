@@ -574,6 +574,9 @@ select.search { appearance: auto; cursor: pointer; }
       </section>
 
       <section id="p-rp" class="stack" hidden>
+        <div class="card" id="mrep"><h2 data-i18n="mp_h"></h2><p class="note" data-i18n="mp_note"></p>
+          <div class="toolbar"><input class="search" type="month" id="mrep-m" style="max-width:180px"><button class="btn sm" type="button" id="mrep-btn" data-i18n="mp_btn"></button></div>
+          <div id="mrep-sum"></div></div>
         <div class="card"><div class="toolbar"><div id="rp-range" class="chips" role="group">
           <button class="chip" type="button" data-r="m" aria-pressed="true"></button><button class="chip" type="button" data-r="90" aria-pressed="false"></button><button class="chip" type="button" data-r="all" aria-pressed="false"></button>
         </div></div></div>
@@ -1071,6 +1074,7 @@ select.search { appearance: auto; cursor: pointer; }
   /* ---------- reports ---------- */
   var rpRange = 'm';
   function renderReports() {
+    if (typeof renderMonthly === 'function') renderMonthly();
     var nowMs = Date.now();
     var inR = function (iso) {
       if (!iso) return false; if (rpRange === 'all') return true;
@@ -1760,6 +1764,56 @@ select.search { appearance: auto; cursor: pointer; }
         toast(t('bk_done')); renderAll();
       } catch (err) { toast(t('bk_fail')); b.disabled = false; b.textContent = old; }
     })();
+  });
+
+  Object.assign(I18N.ar, { mp_h: 'التقرير الشهري', mp_note: 'اختار الشهر وشوف ملخص الأداء والأرباح، ونزّل تقرير Excel فيه تفصيل كل تاجر وكل مندوب وكل شحنة.', mp_btn: 'تنزيل التقرير (Excel)', mp_created: 'شحنات اتسجلت', mp_deliv: 'اتسلمت', mp_ret: 'مرتجعة', mp_succ: 'نسبة النجاح', mp_cod: 'COD المحصّل', mp_rev: 'إيراد بريد', mp_cour: 'مستحقات المناديب', mp_other: 'تكاليف تشغيل', mp_fixed: 'مصاريف ثابتة', mp_net: 'صافي الربح', mp_none: 'مفيش حركة في الشهر ده', mp_merchant: 'التاجر', mp_courier: 'المندوب', mp_n: 'الشحنات', mp_pay: 'المستحق', mp_sum: 'الملخص', mp_ships: 'الشحنات', mp_code: 'الكود', mp_status: 'الحالة', mp_cust: 'العميل', mp_zone: 'المنطقة', mp_fee: 'رسوم الشحن', mp_created_at: 'تاريخ التسجيل', mp_done: 'تاريخ الإنهاء', mp_item: 'البند', mp_val: 'القيمة' });
+  Object.assign(I18N.en, { mp_h: 'Monthly report', mp_note: 'Pick a month to see performance and profit, and download an Excel report with every merchant, delivery representative and shipment.', mp_btn: 'Download report (Excel)', mp_created: 'Shipments created', mp_deliv: 'Delivered', mp_ret: 'Returned', mp_succ: 'Success rate', mp_cod: 'COD collected', mp_rev: 'Bareed revenue', mp_cour: 'Delivery rep pay', mp_other: 'Operating costs', mp_fixed: 'Fixed costs', mp_net: 'Net profit', mp_none: 'No activity in this month', mp_merchant: 'Merchant', mp_courier: 'Delivery representative', mp_n: 'Shipments', mp_pay: 'Pay', mp_sum: 'Summary', mp_ships: 'Shipments', mp_code: 'Code', mp_status: 'Status', mp_cust: 'Customer', mp_zone: 'Zone', mp_fee: 'Shipping fee', mp_created_at: 'Created', mp_done: 'Completed', mp_item: 'Item', mp_val: 'Value' });
+  function monthlyData(ym) {
+    var me = {}, co = {}, T = { created: 0, D: 0, R: 0, cod: 0, rev: 0, cour: 0 }, ships = [];
+    store.shipments.forEach(function (s) {
+      var inC = monthKey(s.createdAt) === ym, inD = (s.status === 'delivered' || s.status === 'returned') && monthKey(s.doneAt) === ym;
+      if (!inC && !inD) return;
+      var m = s.merchant || '-'; me[m] = me[m] || { n: 0, D: 0, R: 0, cod: 0, fees: 0, comm: 0, retf: 0 };
+      if (inC) { T.created++; me[m].n++; }
+      if (inD) {
+        var cname = (store.couriers.filter(function (c) { return c.id === s.courierId; })[0] || {}).name || '-';
+        var c = co[cname] = co[cname] || { D: 0, R: 0, cod: 0, pay: 0 };
+        if (s.status === 'delivered') { T.D++; T.cod += +s.cod || 0; me[m].D++; me[m].cod += +s.cod || 0; me[m].fees += +s.fee || 0; me[m].comm += commission(s); T.rev += (+s.fee || 0) + commission(s); c.D++; c.cod += +s.cod || 0; c.pay += cfg.courierDelivered; T.cour += cfg.courierDelivered; }
+        else { T.R++; me[m].R++; me[m].retf += cfg.returnFee; T.rev += cfg.returnFee; c.R++; c.pay += cfg.courierReturned; T.cour += cfg.courierReturned; }
+      }
+      ships.push(s);
+    });
+    T.other = (T.D + T.R) * cfg.other; T.fixed = cfg.fixed; T.net = T.rev - T.cour - T.other - T.fixed;
+    return { me: me, co: co, T: T, ships: ships };
+  }
+  function renderMonthly() {
+    var inp = el('mrep-m'); if (!inp) return; if (!inp.value) inp.value = NOW_MONTH;
+    var d = monthlyData(inp.value), T = d.T, tot = T.D + T.R;
+    if (!T.created && !tot) { el('mrep-sum').innerHTML = '<p class="note">' + t('mp_none') + '</p>'; return; }
+    var kv = function (k, v) { return '<div class="kv"><span>' + t(k) + '</span><b>' + v + '</b></div>'; };
+    el('mrep-sum').innerHTML = kv('mp_created', fmt(T.created)) + kv('mp_deliv', fmt(T.D)) + kv('mp_ret', fmt(T.R)) + kv('mp_succ', tot ? Math.round(T.D / tot * 100) + '%' : '-') + kv('mp_cod', money(T.cod)) + kv('mp_rev', money(T.rev)) + kv('mp_cour', money(T.cour)) + kv('mp_other', money(T.other)) + kv('mp_fixed', money(T.fixed)) + '<div class="sep"></div><div class="kv"><span>' + t('mp_net') + '</span><span class="due">' + money(T.net) + '</span></div>';
+  }
+  document.addEventListener('change', function (e) { if (e.target && e.target.id === 'mrep-m') renderMonthly(); });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#mrep-btn'); if (!b) return;
+    var ym = el('mrep-m').value || NOW_MONTH, d = monthlyData(ym), T = d.T, tot = T.D + T.R;
+    b.disabled = true;
+    loadXLSX2().then(function (X) {
+      var wb = X.utils.book_new(), L = function (k) { return t(k); };
+      var sum = [[L('mp_item'), L('mp_val')], [L('mp_created'), T.created], [L('mp_deliv'), T.D], [L('mp_ret'), T.R], [L('mp_succ'), tot ? Math.round(T.D / tot * 100) + '%' : '-'], [L('mp_cod'), T.cod], [L('mp_rev'), T.rev], [L('mp_cour'), T.cour], [L('mp_other'), T.other], [L('mp_fixed'), T.fixed], [L('mp_net'), T.net]];
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(sum), ym);
+      var mrows = [[L('mp_merchant'), L('mp_created'), L('mp_deliv'), L('mp_ret'), L('mp_succ'), L('mp_cod'), L('mp_fee'), 'Commission', L('mp_ret') + ' fees', L('mp_rev')]];
+      Object.keys(d.me).forEach(function (k) { var x = d.me[k], t2 = x.D + x.R; mrows.push([k, x.n, x.D, x.R, t2 ? Math.round(x.D / t2 * 100) + '%' : '-', x.cod, x.fees, Math.round(x.comm), x.retf, Math.round(x.fees + x.comm + x.retf)]); });
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(mrows), 'Merchants');
+      var crow = [[L('mp_courier'), L('mp_deliv'), L('mp_ret'), L('mp_cod'), L('mp_pay')]];
+      Object.keys(d.co).forEach(function (k) { var x = d.co[k]; crow.push([k, x.D, x.R, x.cod, x.pay]); });
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(crow), 'Delivery reps');
+      var srow = [[L('mp_code'), L('mp_merchant'), L('mp_cust'), L('mp_zone'), L('mp_status'), 'COD', L('mp_fee'), L('mp_created_at'), L('mp_done')]];
+      d.ships.forEach(function (s) { srow.push([s.code, s.merchant, s.customer, s.zone, s.status, s.cod, s.fee, s.createdAt ? String(s.createdAt).slice(0, 10) : '', s.doneAt ? String(s.doneAt).slice(0, 10) : '']); });
+      X.utils.book_append_sheet(wb, X.utils.aoa_to_sheet(srow), 'Shipments');
+      var out = X.write(wb, { bookType: 'xlsx', type: 'array' });
+      var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); a.download = 'bareed-report-' + ym + '.xlsx'; document.body.appendChild(a); a.click(); a.remove();
+    }).catch(function () { toast(t('bk_fail')); }).then(function () { b.disabled = false; });
   });
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
