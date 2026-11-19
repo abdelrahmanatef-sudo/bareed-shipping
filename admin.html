@@ -1436,7 +1436,7 @@ select.search { appearance: auto; cursor: pointer; }
       store.shipments = rs.data.map(function (r) {
         return { id: r.id, code: r.code, merchant: r.merchants ? r.merchants.name : '', merchantId: r.merchant_id, customer: r.customer_name, phone: r.customer_phone,
           address: r.address, zone: r.zone || '', cod: +r.cod, fee: +r.fee, courierId: r.courier_id || '', status: r.status, settled: r.courier_settled, paidMerchant: r.merchant_settled,
-          createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
+          attempts: +r.attempts || 0, nextAttempt: r.next_attempt || '', createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
       });
     } else if (name === 'couriers') {
       var rc = await sb.from('couriers').select('id,name,phone,email,status').order('created_at', { ascending: true });
@@ -1566,6 +1566,7 @@ select.search { appearance: auto; cursor: pointer; }
       '<div class="kv"><span>' + t('cs_comm') + '</span><b>' + money(comm) + '</b></div>' +
       '<div class="kv"><span>' + t('cs_ret') + '</span><b>' + rt.length + '</b></div><div class="sep"></div>' +
       '<div class="kv"><span>' + t('cs_net') + '</span><span class="due">' + money(net) + '</span></div>' +
+      (function () { var fa = op.filter(function (x) { return x.attempts > 0; }); return fa.length ? '<div class="kv"><span>' + t('cs_att') + '</span><b>' + fa.map(function (x) { return esc(x.code) + ' (' + x.attempts + '/3' + (x.nextAttempt ? ' → ' + esc(x.nextAttempt) : '') + ')'; }).join(' · ') + '</b></div>' : ''; })() +
       '<div class="kv"><span>' + t('cs_open') + '</span><b>' + op.length + ' · ' + t('cs_open_cod') + ' ' + money(sum(op)) + '</b></div>' +
       (rows ? '<div class="tablewrap"><table><thead><tr><th>' + t('cs_code') + '</th><th>' + t('cs_cust') + '</th><th>' + t('cs_cod') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="note">' + t('cs_none') + '</p>') +
       (function () { var hl = clog.filter(function (l) { return l.courier_id === cid; }).slice(0, 40); return hl.length ? '<h3 style="margin-top:6px">' + t('lg_hist') + '</h3><div class="tablewrap"><table><tbody>' + hl.map(function (l) { return logLine(l, false); }).join('') + '</tbody></table></div>' : ''; })() +
@@ -1660,8 +1661,8 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.ar, { ql_h: 'روابط سريعة', ql_m: 'لوحة التاجر', ql_c: 'تطبيق المندوب', ql_s: 'الموقع العام', ql_open: 'فتح', ql_copy: 'نسخ الرابط' });
   Object.assign(I18N.en, { ql_h: 'Quick links', ql_m: 'Merchant dashboard', ql_c: 'Delivery Representative app', ql_s: 'Public site', ql_open: 'Open', ql_copy: 'Copy link' });
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-qcopy]'); if (b) { try { navigator.clipboard.writeText(b.getAttribute('data-qcopy')); toast(t('nm_copied')); } catch (x) {} } });
-  Object.assign(I18N.ar, { ok_done: 'تم', mr_archived: 'محذوف (مؤرشف)', mr_restore: 'استرجاع', f_arch: 'المحذوفين', c_arch_merchant: 'هتحذف التاجر ده من القايمة؟ حسابه هيتقفل، وكل شحناته وحسابه وتاريخه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".', c_arch_courier: 'هتحذف المندوب ده من القايمة؟ دخوله هيتقفل، وكل شحناته وسجل حركاته وحسابه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".' });
-  Object.assign(I18N.en, { ok_done: 'Done', mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this delivery representative from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
+  Object.assign(I18N.ar, { lg_attempt: 'محاولة تسليم فاشلة', cs_att: 'شحنات فيها محاولات فاشلة', ok_done: 'تم', mr_archived: 'محذوف (مؤرشف)', mr_restore: 'استرجاع', f_arch: 'المحذوفين', c_arch_merchant: 'هتحذف التاجر ده من القايمة؟ حسابه هيتقفل، وكل شحناته وحسابه وتاريخه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".', c_arch_courier: 'هتحذف المندوب ده من القايمة؟ دخوله هيتقفل، وكل شحناته وسجل حركاته وحسابه هيفضلوا محفوظين، وتقدر ترجّعه في أي وقت من فلتر "المحذوفين".' });
+  Object.assign(I18N.en, { lg_attempt: 'Failed delivery attempt', cs_att: 'Shipments with failed attempts', ok_done: 'Done', mr_archived: 'Deleted (archived)', mr_restore: 'Restore', f_arch: 'Deleted', c_arch_merchant: 'Remove this merchant from the list? Their login will be disabled, but all their shipments, balance and history stay saved, and you can restore them any time from the "Deleted" filter.', c_arch_courier: 'Remove this delivery representative from the list? Their login will be disabled, but all their shipments, activity log and balance stay saved, and you can restore them any time from the "Deleted" filter.' });
   Object.assign(I18N.ar, { rn_btn: 'تعديل الاسم', rn_ask: 'الاسم الجديد:', rn_short: 'الاسم لازم يكون حرفين على الأقل' });
   Object.assign(I18N.en, { rn_btn: 'Edit name', rn_ask: 'New name:', rn_short: 'Name must be at least 2 characters' });
   document.addEventListener('click', function (e) {
