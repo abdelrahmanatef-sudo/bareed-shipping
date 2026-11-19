@@ -560,6 +560,7 @@ select.search { appearance: auto; cursor: pointer; }
           <div class="row" style="flex-wrap:wrap;gap:8px">
             <input class="search" id="nm-name" data-i18n-ph="nm_name" style="max-width:200px" autocomplete="off">
             <input class="search" id="nm-phone" data-i18n-ph="nm_phone" inputmode="tel" style="max-width:160px" autocomplete="off">
+            <input class="search" id="nm-addr" data-i18n-ph="nm_addr" style="max-width:260px" autocomplete="off" maxlength="300">
             <input class="search" id="nm-email" type="email" data-i18n-ph="nm_email" style="max-width:220px" autocomplete="off" autocapitalize="none">
             <input class="search" id="nm-pass" data-i18n-ph="nm_pass" style="max-width:170px" autocomplete="off" autocapitalize="none" spellcheck="false">
             <button class="btn ghost sm" type="button" id="nm-gen" data-i18n="nm_gen"></button>
@@ -1490,7 +1491,7 @@ select.search { appearance: auto; cursor: pointer; }
   });
   var mreqRows = [];
   async function loadMerchantReqs() {
-    var r = await sb.from('merchants').select('id,name,phone,email,status').order('status', { ascending: true });
+    var r = await sb.from('merchants').select('id,name,phone,email,status,address').order('status', { ascending: true });
     if (r.error) return; mreqRows = r.data || []; renderMreq();
   }
   function renderMreq() {
@@ -1504,15 +1505,19 @@ select.search { appearance: auto; cursor: pointer; }
       var btns = st === 'pending' ? '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t('mr_approve') + '</button> <button class="btn ghost sm" type="button" data-ms="' + id + '|suspended">' + t('mr_suspend') + '</button>'
         : st === 'active' ? '<button class="btn ghost sm" type="button" data-ms="' + id + '|suspended">' + t('mr_suspend') + '</button>'
         : '<button class="btn sm" type="button" data-ms="' + id + '|active">' + t(st === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>';
-      btns += ' <button class="btn ghost sm" type="button" data-rn="merchants|' + id + '">' + t('rn_btn') + '</button>';
+      btns += ' <button class="btn ghost sm" type="button" data-rn="merchants|' + id + '">' + t('rn_btn') + '</button> <button class="btn ghost sm" type="button" data-ad="' + id + '">' + t('ad_btn') + '</button>';
       if (st !== 'archived') btns += ' <button class="btn danger sm" type="button" data-ms="' + id + '|archived">' + t('del') + '</button>';
-      return '<tr><td class="m">' + esc(m.name) + '<small>' + esc([m.email, m.phone].filter(Boolean).join(' · ')) + '</small></td><td><span class="dot c-' + (st === 'active' ? 'delivered' : st === 'pending' ? 'out_for_delivery' : 'returned') + '">' + t('mr_' + st) + '</span></td><td>' + (canWrite ? btns : '') + '</td></tr>';
+      return '<tr><td class="m">' + esc(m.name) + '<small>' + esc([m.email, m.phone, m.address].filter(Boolean).join(' · ')) + '</small></td><td><span class="dot c-' + (st === 'active' ? 'delivered' : st === 'pending' ? 'out_for_delivery' : 'returned') + '">' + t('mr_' + st) + '</span></td><td>' + (canWrite ? btns : '') + '</td></tr>';
     }).join('') + '</tbody></table></div>';
   }
   document.addEventListener('click', function (e) {
     var cb = e.target.closest && e.target.closest('[data-cst]');
     if (cb) { var q = cb.getAttribute('data-cst').split('|'); var cr = store.couriers.filter(function (x) { return x.id === q[0]; })[0], cprev = cr && cr.status; if (cr) { cr.status = q[1]; renderAll(); }
       safe(async function () { var r = await sb.from('couriers').update({ status: q[1] }).eq('id', q[0]); if (r.error) { if (cr) { cr.status = cprev; renderAll(); } throw r.error; } refresh('couriers'); }); return; }
+    var ab = e.target.closest && e.target.closest('[data-ad]');
+    if (ab) { var aid = ab.getAttribute('data-ad'); var arow = (mreqRows || []).filter(function (m) { return m.id === aid; })[0];
+      var nv = prompt(t('ad_prompt'), (arow && arow.address) || ''); if (nv === null) return; nv = nv.trim().slice(0, 300);
+      safe(async function () { var r = await sb.from('merchants').update({ address: nv || null }).eq('id', aid); if (r.error) throw r.error; toast(t('ok_done')); loadMerchantReqs(); }); return; }
     var b = e.target.closest && e.target.closest('[data-ms]'); if (!b) return;
     var p = b.getAttribute('data-ms').split('|');
     if (p[1] === 'archived' && !confirm(t('c_arch_merchant'))) return;
@@ -1521,29 +1526,29 @@ select.search { appearance: auto; cursor: pointer; }
     safe(async function () { var r = await sb.from('merchants').update({ status: p[1] }).eq('id', p[0]); if (r.error) { if (row) { row.status = prev; renderMreq(); } throw r.error; } toast(t('ok_done')); loadMerchantReqs(); });
   });
 
-  Object.assign(I18N.ar, { nm_h: 'إنشاء حساب تاجر', nm_note: 'اعمل حساب لتاجر جديد بإيميل وباسورد، يدخل بيهم فوراً على لوحة التاجر.', nm_name: 'اسم التاجر / المتجر', nm_phone: 'الموبايل', nm_email: 'الإيميل', nm_pass: 'باسورد (8+ حروف)', nm_gen: 'باسورد عشوائي', nm_go: 'إنشاء الحساب',
+  Object.assign(I18N.ar, { nm_h: 'إنشاء حساب تاجر', nm_note: 'اعمل حساب لتاجر جديد بإيميل وباسورد، يدخل بيهم فوراً على لوحة التاجر.', nm_name: 'اسم التاجر / المتجر', nm_phone: 'الموبايل', nm_addr: 'عنوان التاجر (مكان الاستلام)', ad_btn: 'العنوان', ad_prompt: 'عنوان التاجر (مكان استلام الشحنات):', nm_email: 'الإيميل', nm_pass: 'باسورد (8+ حروف)', nm_gen: 'باسورد عشوائي', nm_go: 'إنشاء الحساب',
     nm_ok: 'تم إنشاء الحساب. ابعت البيانات دي للتاجر:', nm_copy: 'نسخ البيانات', nm_copied: 'تم النسخ', nm_login: 'رابط الدخول', nm_need: 'اكمل الاسم والإيميل وباسورد 8 حروف على الأقل', nm_dup: 'الإيميل ده مستخدم قبل كده', nm_fail: 'تعذّر إنشاء الحساب',
     k_today: 'شحنات النهارده', n_today: 'اتسجّلت من أول اليوم', k_late: 'متأخرة +48 ساعة', n_late: 'لسه مش مسلّمة ولا مرتجعة', k_mer: 'التجار المفعّلين', n_mer: '{p} قيد المراجعة' });
-  Object.assign(I18N.en, { nm_h: 'Create merchant account', nm_note: 'Create an account for a new merchant with an email and password; they can sign in to the merchant dashboard right away.', nm_name: 'Merchant / store name', nm_phone: 'Phone', nm_email: 'Email', nm_pass: 'Password (8+ chars)', nm_gen: 'Generate password', nm_go: 'Create account',
+  Object.assign(I18N.en, { nm_h: 'Create merchant account', nm_note: 'Create an account for a new merchant with an email and password; they can sign in to the merchant dashboard right away.', nm_name: 'Merchant / store name', nm_phone: 'Phone', nm_addr: 'Merchant address (pickup)', ad_btn: 'Address', ad_prompt: 'Merchant address (pickup location):', nm_email: 'Email', nm_pass: 'Password (8+ chars)', nm_gen: 'Generate password', nm_go: 'Create account',
     nm_ok: 'Account created. Send these details to the merchant:', nm_copy: 'Copy details', nm_copied: 'Copied', nm_login: 'Login link', nm_need: 'Enter a name, an email and a password of 8+ characters', nm_dup: 'This email is already in use', nm_fail: 'Could not create the account',
     k_today: 'Shipments today', n_today: 'created since midnight', k_late: 'Late (48h+)', n_late: 'not delivered or returned yet', k_mer: 'Active merchants', n_mer: '{p} pending review' });
   function genPass() { var c = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789', a = new Uint32Array(10); crypto.getRandomValues(a); return Array.prototype.map.call(a, function (x) { return c[x % c.length]; }).join(''); }
   el('nm-gen').addEventListener('click', function () { el('nm-pass').value = genPass(); });
   el('nm-go').addEventListener('click', function () {
-    var name = el('nm-name').value.trim(), email = el('nm-email').value.trim(), phone = el('nm-phone').value.trim(), pass = el('nm-pass').value;
+    var name = el('nm-name').value.trim(), email = el('nm-email').value.trim(), phone = el('nm-phone').value.trim(), address = el('nm-addr').value.trim(), pass = el('nm-pass').value;
     if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || pass.length < 8) { toast(t('nm_need')); return; }
     var btn = el('nm-go'); btn.disabled = true;
     safe(async function () {
       try {
         var ses = await sb.auth.getSession(); var tok = ses.data && ses.data.session && ses.data.session.access_token;
-        var res = await fetch(SUPABASE_URL + '/functions/v1/admin-create-merchant', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok, 'apikey': SUPABASE_ANON_KEY }, body: JSON.stringify({ name: name, phone: phone, email: email, password: pass }) });
+        var res = await fetch(SUPABASE_URL + '/functions/v1/admin-create-merchant', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok, 'apikey': SUPABASE_ANON_KEY }, body: JSON.stringify({ name: name, phone: phone, address: address, email: email, password: pass }) });
         var j = await res.json().catch(function () { return {}; });
         if (!res.ok) { toast(j.error === 'email_exists' ? t('nm_dup') : t('nm_fail')); return; }
         var link = location.origin + '/merchant', txt = name + '\n' + t('nm_login') + ': ' + link + '\n' + t('nm_email') + ': ' + email + '\n' + t('nm_pass').replace(/ \(.*\)/, '') + ': ' + pass;
         el('nm-out').innerHTML = '<div class="card" style="margin-top:12px"><b>' + t('nm_ok') + '</b><pre style="white-space:pre-wrap;direction:ltr;text-align:start;margin:8px 0" id="nm-txt"></pre><button class="btn sm" type="button" id="nm-copy">' + t('nm_copy') + '</button></div>';
         el('nm-txt').textContent = txt;
         el('nm-copy').addEventListener('click', function () { try { navigator.clipboard.writeText(txt); toast(t('nm_copied')); } catch (e) {} });
-        ['nm-name', 'nm-phone', 'nm-email', 'nm-pass'].forEach(function (i) { el(i).value = ''; });
+        ['nm-name', 'nm-phone', 'nm-addr', 'nm-email', 'nm-pass'].forEach(function (i) { el(i).value = ''; });
         await loadMerchantReqs();
       } finally { btn.disabled = false; }
     });
@@ -1824,6 +1829,7 @@ select.search { appearance: auto; cursor: pointer; }
     channel = sb.channel('bareed').on('postgres_changes', { event: '*', schema: 'public' }, function () {
       clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncAll().catch(function () {}); }, 400);
     }).subscribe();
+    if (!window._ap) { window._ap = setInterval(function () { if (started && document.visibilityState === 'visible') syncAll().catch(function () {}); }, 30000); document.addEventListener('visibilitychange', function () { if (started && document.visibilityState === 'visible') syncAll().catch(function () {}); }); }
   }
   function stopData() {
     started = false; store.shipments = []; store.couriers = []; store.merchants = []; loaded.shipments = loaded.couriers = false;

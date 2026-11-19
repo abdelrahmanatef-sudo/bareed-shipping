@@ -282,6 +282,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <form id="auth-form" style="display:grid;gap:16px">
       <div class="field" data-su><label for="a-name" data-i18n="a_name"></label><input id="a-name" maxlength="80" autocomplete="organization"></div>
       <div class="field" data-su><label for="a-phone" data-i18n="a_phone"></label><input id="a-phone" inputmode="tel" maxlength="30" dir="ltr" autocomplete="tel"></div>
+      <div class="field" data-su><label for="a-addr" data-i18n="a_addr"></label><input id="a-addr" maxlength="300" autocomplete="street-address"></div>
       <div class="field"><label for="a-email" data-i18n="a_email"></label><input id="a-email" type="email" required dir="ltr" autocomplete="username"></div>
       <div class="field"><label for="a-pass" data-i18n="a_pass"></label><input id="a-pass" type="password" required minlength="8" dir="ltr" autocomplete="current-password"></div>
       <label class="nm-check" data-li><input type="checkbox" id="a-remember"><span data-i18n="a_remember"></span></label>
@@ -316,7 +317,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       pr_1: 'تحصيل COD وتسوية مع التاجر', pr_2: 'تتبع بالكود للتاجر والعميل', pr_3: 'لوحة تحكم وتقارير', pr_soon_h: 'باقي المحافظات', pr_soon_p: 'هنعلن أسعارها أول ما نفتح كل منطقة.', pr_4: 'سجّل دلوقتي واحجز مكانك', pr_5: 'هنبلّغك لما منطقتك تتفتح',
       cta_h: 'جاهز تبدأ توصّل مع بريد؟', cta_p: 'التسجيل مجاني. بنراجع حسابك ونفعّله بسرعة.',
       foot: 'شحن وتوصيل داخل مصر', foot2: 'بنبدأ من الجيزة',
-      a_name: 'اسم المتجر', a_phone: 'رقم التليفون', a_email: 'الإيميل', a_pass: 'الباسورد (8 حروف على الأقل)',
+      a_name: 'اسم المتجر', a_phone: 'رقم التليفون', a_addr: 'عنوان المتجر (مكان استلام الشحنات)', a_email: 'الإيميل', a_pass: 'الباسورد (8 حروف على الأقل)',
       t_login: 'أهلاً بيك', t_signup: 'إنشاء حساب تاجر', s_login: 'سجّل دخول عشان تكمّل شغلك', s_signup: 'سجّل بيانات متجرك وإحنا نفعّل الحساب', a_remember: 'افتكر الإيميل', sw_to_signup: 'مش عندك حساب؟', sw_to_login: 'عندك حساب؟', go_login: 'دخول', go_signup: 'إنشاء الحساب',
       e_login: 'الإيميل أو الباسورد غلط.', e_fail: 'حصلت مشكلة، جرّب تاني.', e_name: 'اكتب اسم المتجر ورقم التليفون.',
       ok_signup: 'تم إنشاء الحساب. لو وصلك إيميل تأكيد افتحه الأول، وبعدها سجّل دخول.', no_lib: 'الخدمة مش متاحة دلوقتي. اتأكد من النت وحدّث الصفحة.',
@@ -343,7 +344,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       pr_1: 'COD collection and merchant settlement', pr_2: 'Tracking by code for merchant and customer', pr_3: 'Dashboard and reports', pr_soon_h: 'Other governorates', pr_soon_p: 'We will publish prices as soon as each area opens.', pr_4: 'Sign up now to reserve your place', pr_5: 'We will notify you when your area opens',
       cta_h: 'Ready to ship with Bareed?', cta_p: 'Signing up is free. We review and activate your account quickly.',
       foot: 'Delivery across Egypt', foot2: 'Starting in Giza',
-      a_name: 'Store name', a_phone: 'Phone number', a_email: 'Email', a_pass: 'Password (at least 8 characters)',
+      a_name: 'Store name', a_phone: 'Phone number', a_addr: 'Store address (pickup location)', a_email: 'Email', a_pass: 'Password (at least 8 characters)',
       t_login: 'Welcome', t_signup: 'Create a merchant account', s_login: 'Sign in to continue your journey', s_signup: 'Enter your store details and we will activate the account', a_remember: 'Remember my email', sw_to_signup: 'Don’t have an account?', sw_to_login: 'Already have an account?', go_login: 'Sign in', go_signup: 'Create account',
       e_login: 'Wrong email or password.', e_fail: 'Something went wrong. Try again.', e_name: 'Enter your store name and phone number.',
       ok_signup: 'Account created. If you received a confirmation email, open it first, then sign in.', no_lib: 'The service is unavailable right now. Check your connection and reload.',
@@ -527,9 +528,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         try { if (el('a-remember').checked) localStorage.setItem('bareed.email', email); else localStorage.removeItem('bareed.email'); } catch (e) {}
         await go();
       } else {
-        var name = el('a-name').value.trim(), phone = el('a-phone').value.trim();
+        var name = el('a-name').value.trim(), phone = el('a-phone').value.trim(), address = el('a-addr').value.trim();
         if (!name || !phone) { msg('e_name'); return; }
-        var s = await sb.auth.signUp({ email: email, password: pass, options: { data: { name: name, phone: phone } } });
+        var s = await sb.auth.signUp({ email: email, password: pass, options: { data: { name: name, phone: phone, address: address } } });
         if (s.error) { msg('e_fail'); return; }
         if (s.data && s.data.session) { location.href = 'merchant'; } else { msg('ok_signup', true); }
       }

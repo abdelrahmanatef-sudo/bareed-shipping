@@ -255,6 +255,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     banner('', null);
     await loadAreas(); renderAll(); await load(); loadPayouts();
     sb.channel('m-ships').on('postgres_changes', { event: '*', schema: 'public', table: 'shipments' }, function () { load(); }).subscribe();
+    if (!window._mp) { window._mp = setInterval(function () { if (document.visibilityState === 'visible') load(); }, 30000); document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') load(); }); }
   }
 
   /* events */
