@@ -472,6 +472,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   el('chk-city').addEventListener('change', showVerdict);
 
   /* ---------- tracking ---------- */
+  setTimeout(function () { try { var qc = new URLSearchParams(location.search).get('t'); if (qc && el('tr-in')) { el('tr-in').value = qc; el('track-form').dispatchEvent(new Event('submit', { cancelable: true })); el('track-form').scrollIntoView({ block: 'center' }); } } catch (e) {} }, 600);
   el('track-form').addEventListener('submit', function (e) {
     e.preventDefault();
     var code = el('tr-in').value.trim().toUpperCase(), out = el('tr-out');

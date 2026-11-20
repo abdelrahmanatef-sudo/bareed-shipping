@@ -104,7 +104,7 @@ function handCard(){var pend=hos.filter(function(h){return h.status==='pending'}
  var done=hos.filter(function(x){return x.status!=='pending'}).slice(0,3);
  if(done.length)h+='<div class="log" style="margin-top:8px"><div class="m">'+t('hhist')+'</div>'+done.map(function(x){var d=new Date(x.created_at).toLocaleDateString(lang==='ar'?'ar-EG':'en-GB',{day:'numeric',month:'short'});var sh=x.status==='confirmed'?(+x.claimed_amount-(+x.received_amount)):0;return '<div><span>'+d+' · '+(x.status==='rejected'?t('hrej'):t('hok').replace('{m}',money(x.received_amount)))+(sh>0?' · <b style="color:var(--warn)">'+t('hshort').replace('{m}',money(sh))+'</b>':sh<0?' · '+t('hsurp').replace('{m}',money(-sh)):'')+'</span></div>'}).join('')+'</div>';
  return h+'</div>'}
-function msg(r,kind){var mm=r.merchant?(lang==='ar'?' من '+r.merchant:' from '+r.merchant):'';return t(kind).replace('{c}',r.customer_name||'').replace('{k}',r.code).replace('{m}',mm).replace('{a}',money(r.cod))}
+function msg(r,kind){var mm=r.merchant?(lang==='ar'?' من '+r.merchant:' from '+r.merchant):'';var tx=t(kind).replace('{c}',r.customer_name||'').replace('{k}',r.code).replace('{m}',mm).replace('{a}',money(r.cod));if(kind!=='m_arr')tx+='\n'+(lang==='ar'?'تتبّع شحنتك: ':'Track your shipment: ')+location.origin+'/?t='+encodeURIComponent(r.code);return tx}
 function waLink(r,kind){var ph=String(r.customer_phone||'').replace(/[^0-9+]/g,'').replace(/^\+/,'').replace(/^0/,'20');return 'https://wa.me/'+ph+'?text='+encodeURIComponent(msg(r,kind))}
 function card(r){
  var ph=String(r.customer_phone||'').replace(/[^0-9+]/g,''),wa=ph.replace(/^\+/,'').replace(/^0/,'20');

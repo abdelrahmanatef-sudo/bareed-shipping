@@ -971,6 +971,7 @@ select.search { appearance: auto; cursor: pointer; }
       if (!inRange(s)) return false;
       return !q || (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
     });
+    window._shList = list;
     var copts = function (sel) {
       return '<option value="">' + t('no_courier') + '</option>' + store.couriers.filter(function (c) { return c.status === 'active' || c.id === sel; }).map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === sel ? ' selected' : '') + '>' + esc(c.name) + (c.status !== 'active' ? ' (' + t('mr_' + c.status) + ')' : '') + '</option>'; }).join('');
     };
@@ -1300,7 +1301,7 @@ select.search { appearance: auto; cursor: pointer; }
   function exportCSV() {
     var head = [t('th_code'), t('f_merchant'), t('f_customer'), t('f_phone'), t('f_address'), t('s_zone'), t('th_cod'), t('th_fee'), t('th_courier'), t('th_status'), t('tr_date') || 'date'];
     var rows = [head];
-    store.shipments.forEach(function (s) { var c = store.couriers.filter(function (x) { return x.id === s.courierId; })[0];
+    (window._shList || store.shipments).forEach(function (s) { var c = store.couriers.filter(function (x) { return x.id === s.courierId; })[0];
       rows.push([s.code, s.merchant, s.customer, s.phone, s.address, s.zone || '', s.cod, s.fee, c ? c.name : '', t('st_' + s.status), String(s.createdAt || '').slice(0, 10)]); });
     var csv = '\ufeff' + rows.map(function (r) { return r.map(function (v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(','); }).join('\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
