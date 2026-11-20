@@ -550,6 +550,7 @@ select.search { appearance: auto; cursor: pointer; }
           </form>
         </details>
         <div id="co-flt"></div>
+        <div id="co-ho"></div>
         <div id="co-stmt"></div>
         <div id="co-list" class="cards"></div>
         <div id="co-log"></div>
@@ -1014,7 +1015,7 @@ select.search { appearance: auto; cursor: pointer; }
       var dl = mine.filter(function (s) { return s.status === 'delivered'; }).length;
       var rt = mine.filter(function (s) { return s.status === 'returned'; }).length;
       var hd = holds[c.id] || { cod: 0, n: 0 };
-      return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.status !== 'active' ? ' <span class="dot c-returned">' + t('mr_' + c.status) + '</span>' : '') + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
+      return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.status === 'active' ? ' <span class="dot ' + (c.available ? 'c-delivered' : 'c-returned') + '">' + t(c.available ? 'av_on' : 'av_off') + '</span>' : '') + (c.status !== 'active' ? ' <span class="dot c-returned">' + t('mr_' + c.status) + '</span>' : '') + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
@@ -1440,9 +1441,9 @@ select.search { appearance: auto; cursor: pointer; }
           attempts: +r.attempts || 0, nextAttempt: r.next_attempt || '', createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
       });
     } else if (name === 'couriers') {
-      var rc = await sb.from('couriers').select('id,name,phone,email,status').order('created_at', { ascending: true });
+      var rc = await sb.from('couriers').select('id,name,phone,email,status,available').order('created_at', { ascending: true });
       if (rc.error) throw rc.error;
-      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active' }; });
+      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active', available: c.available !== false }; });
     } else if (name === 'merchants') {
       var rm = await sb.from('merchants').select('id,name');
       if (rm.error) throw rm.error;
@@ -1821,8 +1822,52 @@ select.search { appearance: auto; cursor: pointer; }
       var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })); a.download = 'bareed-report-' + ym + '.xlsx'; document.body.appendChild(a); a.click(); a.remove();
     }).catch(function () { toast(t('bk_fail')); }).then(function () { b.disabled = false; });
   });
+
+  /* ---- courier cash handovers + availability ---- */
+  Object.assign(I18N.ar, { av_on: 'متاح', av_off: 'مش متاح', ho_h: 'تسليمات فلوس المناديب', ho_claim: 'المندوب بيقول إنه سلّم', ho_recv: 'المبلغ اللي استلمته فعلاً', ho_note: 'ملاحظة (اختياري)', ho_ok: 'تأكيد الاستلام', ho_rej: 'رفض', ho_short: 'عجز', ho_surp: 'زيادة', ho_none: 'مفيش طلبات تسليم معلّقة', ho_hist: 'آخر التسليمات', ho_cnt: 'شحنة', ho_done: 'تم تسجيل الاستلام', ho_rejd: 'مرفوض', ho_pend: 'معلّق', ho_tot_short: 'إجمالي العجز المسجّل' });
+  Object.assign(I18N.en, { av_on: 'Available', av_off: 'Unavailable', ho_h: 'Courier cash handovers', ho_claim: 'Courier says he handed over', ho_recv: 'Amount you actually received', ho_note: 'Note (optional)', ho_ok: 'Confirm receipt', ho_rej: 'Reject', ho_short: 'Shortage', ho_surp: 'Surplus', ho_none: 'No pending handovers', ho_hist: 'Recent handovers', ho_cnt: 'shipments', ho_done: 'Receipt recorded', ho_rejd: 'Rejected', ho_pend: 'Pending', ho_tot_short: 'Total recorded shortage' });
+  var HO = [];
+  async function loadHandovers() {
+    if (local || !sb) return;
+    var r = await sb.from('courier_handovers').select('*').order('created_at', { ascending: false }).limit(200);
+    if (r.error) return; HO = r.data || []; renderHandovers();
+  }
+  function renderHandovers() {
+    var box = el('co-ho'); if (!box) return;
+    var nm = function (id) { var c = store.couriers.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; };
+    var pend = HO.filter(function (h) { return h.status === 'pending'; });
+    var done = HO.filter(function (h) { return h.status !== 'pending'; }).slice(0, 8);
+    if (!pend.length && !done.length) { box.innerHTML = ''; return; }
+    var h = '<div class="card"><h2>' + t('ho_h') + (pend.length ? ' <span class="dot c-out_for_delivery">' + pend.length + '</span>' : '') + '</h2>';
+    h += pend.length ? pend.map(function (p) {
+      return '<div class="card" style="margin:6px 0"><div class="kv"><span><b>' + esc(nm(p.courier_id)) + '</b> · ' + p.claimed_count + ' ' + t('ho_cnt') + '</span><span>' + fmtDT(p.created_at) + '</span></div>' +
+        '<div class="kv"><span>' + t('ho_claim') + '</span><b>' + money(p.claimed_amount) + '</b></div>' +
+        '<div class="row"><label class="note">' + t('ho_recv') + '</label><input class="search" type="number" min="0" step="0.01" inputmode="decimal" data-hr="' + esc(p.id) + '" value="' + (+p.claimed_amount) + '" style="max-width:140px"><input class="search" data-hn="' + esc(p.id) + '" placeholder="' + t('ho_note') + '" maxlength="300" style="max-width:220px"></div>' +
+        '<div class="row"><button class="btn sm" type="button" data-hok="' + esc(p.id) + '">' + t('ho_ok') + '</button><button class="btn danger sm" type="button" data-hrj="' + esc(p.id) + '">' + t('ho_rej') + '</button></div></div>';
+    }).join('') : '<p class="note">' + t('ho_none') + '</p>';
+    if (done.length) h += '<h3 style="margin-top:8px">' + t('ho_hist') + '</h3><div class="tablewrap"><table><tbody>' + done.map(function (d) {
+      var sh = d.status === 'confirmed' ? (+d.claimed_amount - (+d.received_amount)) : 0;
+      return '<tr><td>' + esc(nm(d.courier_id)) + '</td><td>' + fmtDT(d.created_at) + '</td><td>' + (d.status === 'confirmed' ? money(d.received_amount) + ' / ' + money(d.claimed_amount) : t('ho_rejd')) + '</td><td>' + (sh > 0 ? '<b style="color:var(--bad,#c0392b)">' + t('ho_short') + ' ' + money(sh) + '</b>' : sh < 0 ? t('ho_surp') + ' ' + money(-sh) : '') + (d.admin_note ? '<small>' + esc(d.admin_note) + '</small>' : '') + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+    box.innerHTML = h + '</div>';
+  }
+  document.addEventListener('click', function (e) {
+    var ok = e.target.closest && e.target.closest('[data-hok]'), rj = e.target.closest && e.target.closest('[data-hrj]');
+    if (!ok && !rj) return;
+    var id = (ok || rj).getAttribute(ok ? 'data-hok' : 'data-hrj');
+    var amt = document.querySelector('[data-hr="' + id + '"]'), nt = document.querySelector('[data-hn="' + id + '"]');
+    var val = amt ? parseFloat(amt.value) : NaN, p = HO.filter(function (x) { return x.id === id; })[0];
+    if (ok && (isNaN(val) || val < 0)) { toast(t('t_err')); return; }
+    if (ok && p && val !== +p.claimed_amount && !confirm(t(val < +p.claimed_amount ? 'ho_short' : 'ho_surp') + ' ' + fmt(Math.abs(+p.claimed_amount - val)) + ' ' + t('cur') + '؟')) return;
+    (ok || rj).disabled = true;
+    safe(async function () {
+      var r = await sb.rpc('admin_decide_handover', { p_id: id, p_received: ok ? val : null, p_note: nt && nt.value.trim() ? nt.value.trim() : null, p_reject: !!rj });
+      if (r.error) { (ok || rj).disabled = false; throw r.error; }
+      toast(t('ho_done')); await Promise.all([refresh('shipments'), loadHandovers(), loadCourierLog()]);
+    });
+  });
   applyStatic();
-  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog()]); }
+  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers()]); }
   async function startData() {
     if (started) return; started = true;
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
