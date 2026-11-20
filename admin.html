@@ -522,6 +522,8 @@ select.search { appearance: auto; cursor: pointer; }
               <button class="chip" type="button" data-f="out_for_delivery" aria-pressed="false"></button>
               <button class="chip" type="button" data-f="delivered" aria-pressed="false"></button>
               <button class="chip" type="button" data-f="returned" aria-pressed="false"></button>
+              <button class="chip" type="button" data-f="late" aria-pressed="false"></button>
+              <button class="chip" type="button" data-f="unassigned" aria-pressed="false"></button>
             </div>
             <input class="search" id="sh-q" type="search" data-i18n-ph="search_ph">
             <label class="dt"><span data-i18n="date_from"></span><input class="search" type="date" id="sh-from"></label>
@@ -772,7 +774,7 @@ select.search { appearance: auto; cursor: pointer; }
   var CFG_FIELDS = [['fee', 'u_egp'], ['returnFee', 'u_egp'], ['commissionPct', 'u_pctcod'], ['courierDelivered', 'u_egp'], ['courierReturned', 'u_egp'],
     ['other', 'u_egp'], ['fixed', 'u_month'], ['rate', 'u_pct'], ['avgCod', 'u_egp'], ['volume', 'u_ship']];
   var STATUSES = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'];
-  var FILTER_KEYS = { all: 'fl_all', new: 'fl_new', picked_up: 'fl_picked', out_for_delivery: 'fl_out', delivered: 'fl_del', returned: 'fl_ret' };
+  var FILTER_KEYS = { all: 'fl_all', new: 'fl_new', picked_up: 'fl_picked', out_for_delivery: 'fl_out', delivered: 'fl_del', returned: 'fl_ret', late: 'fl_late', unassigned: 'fl_unas' };
   var PAGES = ['ov', 'sh', 'co', 'me', 'rp', 'ct', 'tr'];
 
   var store = { shipments: [], couriers: [], merchants: [], zones: [], events: {} };
@@ -962,7 +964,10 @@ select.search { appearance: auto; cursor: pointer; }
   function renderShipments() {
     var q = query.trim().toLowerCase();
     var list = store.shipments.slice().sort(function (a, b) { return String(b.createdAt).localeCompare(String(a.createdAt)); }).filter(function (s) {
-      if (filter !== 'all' && s.status !== filter) return false;
+      var open_ = s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery';
+      if (filter === 'late') { if (!open_ || (Date.now() - new Date(s.createdAt).getTime()) < 48 * 36e5) return false; }
+      else if (filter === 'unassigned') { if (!open_ || s.courierId) return false; }
+      else if (filter !== 'all' && s.status !== filter) return false;
       if (!inRange(s)) return false;
       return !q || (String(s.merchant) + ' ' + String(s.customer) + ' ' + String(s.code)).toLowerCase().indexOf(q) !== -1;
     });
@@ -1632,6 +1637,8 @@ select.search { appearance: auto; cursor: pointer; }
 
   Object.assign(I18N.ar, { f_all: 'الكل', f_cash: 'معاه فلوس', f_carry: 'معاه شحنات دلوقتي', f_clear: 'مفيش عليه حاجة', f_login: 'عنده دخول', f_nologin: 'من غير دخول', f_owed: 'ليه فلوس', f_owes: 'عليه فلوس', f_open: 'شحناته مفتوحة', f_pend: 'واقف على التفعيل', f_act: 'مفعّل', f_sus: 'موقوف', f_q: 'ابحث بالاسم...', f_from: 'من', f_to: 'إلى', f_today: 'النهارده', f_7: '7 أيام', f_month: 'الشهر ده', f_empty: 'مفيش نتائج بالفلتر ده', f_reset: 'مسح الفلتر' });
   Object.assign(I18N.en, { f_all: 'All', f_cash: 'Holds cash', f_carry: 'Carrying now', f_clear: 'Nothing due', f_login: 'Has login', f_nologin: 'No login', f_owed: 'Owed money', f_owes: 'Owes money', f_open: 'Open shipments', f_pend: 'Awaiting activation', f_act: 'Active', f_sus: 'Suspended', f_q: 'Search by name...', f_from: 'From', f_to: 'To', f_today: 'Today', f_7: '7 days', f_month: 'This month', f_empty: 'No results for this filter', f_reset: 'Clear filter' });
+  Object.assign(I18N.ar, { fl_late: 'متأخرة (+48 ساعة)', fl_unas: 'من غير مندوب' });
+  Object.assign(I18N.en, { fl_late: 'Late (48h+)', fl_unas: 'No courier' });
   var FDEF = {
     co: { dates: true, modes: [['all', 'f_all'], ['cash', 'f_cash'], ['carry', 'f_carry'], ['clear', 'f_clear'], ['login', 'f_login'], ['nologin', 'f_nologin'], ['susp', 'f_susp'], ['archived', 'f_arch']], box: 'co-flt', draw: function () { renderCouriers(); } },
     me: { dates: true, modes: [['all', 'f_all'], ['owed', 'f_owed'], ['owes', 'f_owes'], ['open', 'f_open'], ['clear', 'f_clear']], box: 'me-flt', draw: function () { renderMerchants(); } },
