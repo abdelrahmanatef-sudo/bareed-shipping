@@ -124,7 +124,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
         <div id="bk-out"></div>
       </div>
       <div class="card"><h2 data-i18n="h_ships"></h2>
-        <div class="toolbar"><div class="chips" id="filters"></div><input class="search" id="q" type="search" data-i18n-ph="search"><button class="btn ghost sm" id="csv" type="button" data-i18n="export"></button></div>
+        <div class="toolbar"><div class="chips" id="filters"></div><input class="search" id="q" type="search" data-i18n-ph="search"><label class="note" style="display:flex;gap:4px;align-items:center"><span id="lf">من</span><input class="search" type="date" id="df" style="min-width:140px;flex:none"></label><label class="note" style="display:flex;gap:4px;align-items:center"><span id="lt">إلى</span><input class="search" type="date" id="dto" style="min-width:140px;flex:none"></label><button class="btn ghost sm" id="csv" type="button" data-i18n="export"></button></div>
         <div class="tablewrap"><table><thead><tr><th data-i18n="th_code"></th><th data-i18n="f_customer"></th><th data-i18n="th_area"></th><th data-i18n="th_cod"></th><th data-i18n="th_fee"></th><th data-i18n="th_status"></th><th data-i18n="th_date"></th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
         <div id="empty" class="empty" hidden></div>
       </div>
@@ -200,9 +200,18 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     el('legend').innerHTML = STAT.map(function (k) { return '<span class="badge s-' + k + '">' + t('st_' + k) + ' ' + cnt[k] + '</span>'; }).join('');
   }
   function dt(iso, long) { try { return new Date(iso).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', long ? { dateStyle: 'medium', timeStyle: 'short' } : { dateStyle: 'medium' }); } catch (e) { return ''; } }
+  function visible() {
+    var q = query.trim().toLowerCase(), f = el('df') && el('df').value, to = el('dto') && el('dto').value;
+    var a = f ? new Date(f + 'T00:00:00') : null, b = to ? new Date(to + 'T23:59:59') : null;
+    return ships.filter(function (s) {
+      if (filter !== 'all' && s.status !== filter) return false;
+      var d = new Date(s.created_at); if (a && d < a) return false; if (b && d > b) return false;
+      return !q || (s.code + ' ' + s.customer_name + ' ' + (s.customer_phone || '')).toLowerCase().indexOf(q) !== -1;
+    });
+  }
   function renderRows() {
-    var q = query.trim().toLowerCase();
-    var list = ships.filter(function (s) { return (filter === 'all' || s.status === filter) && (!q || (s.code + ' ' + s.customer_name).toLowerCase().indexOf(q) !== -1); });
+    if (el('lf')) { el('lf').textContent = lang === 'ar' ? 'من' : 'From'; el('lt').textContent = lang === 'ar' ? 'إلى' : 'To'; }
+    var list = visible();
     el('rows').innerHTML = list.map(function (s) {
       return '<tr><td class="code">' + esc(s.code) + '</td><td>' + esc(s.customer_name) + '<small dir="ltr" style="text-align:start">' + esc(s.customer_phone) + '</small></td><td>' + esc(s.zone || '') + '<small>' + esc(s.address) + '</small></td>' +
         '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td><td><span class="badge s-' + s.status + '">' + t('st_' + s.status) + '</span></td><td>' + esc(dt(s.created_at)) + '</td>' +
@@ -395,8 +404,9 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   });
   el('m-close').addEventListener('click', function () { el('modal').hidden = true; });
   el('modal').addEventListener('click', function (e) { if (e.target === el('modal')) el('modal').hidden = true; });
+  ['df', 'dto'].forEach(function (i) { el(i).addEventListener('change', renderRows); });
   el('csv').addEventListener('click', function () {
-    var rows = [['code', 'customer', 'phone', 'area', 'address', 'cod', 'fee', 'status', 'date']].concat(ships.map(function (s) { return [s.code, s.customer_name, s.customer_phone, s.zone || '', s.address, s.cod, s.fee, s.status, s.created_at]; }));
+    var rows = [['code', 'customer', 'phone', 'area', 'address', 'cod', 'fee', 'status', 'date']].concat(visible().map(function (s) { return [s.code, s.customer_name, s.customer_phone, s.zone || '', s.address, s.cod, s.fee, s.status, s.created_at]; }));
     var csv = '﻿' + rows.map(function (r) { return r.map(function (c) { var v = String(c == null ? '' : c); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
     var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'bareed-shipments.csv'; document.body.appendChild(a); a.click(); a.remove();
   });
