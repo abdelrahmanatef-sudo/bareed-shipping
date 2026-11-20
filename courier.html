@@ -139,7 +139,7 @@ $('list').addEventListener('click',async function(e){
  await load()});
 $('tabs').addEventListener('click',function(e){var b=e.target.closest('[data-t]');if(b){tab=+b.getAttribute('data-t');render()}});
 async function load(){
- var r=await sb.rpc('courier_my_shipments');if(!r.error)rows=r.data||[]else{if(/JWT|expired|401/i.test(r.error.message||'')){await sb.auth.signOut();location.reload();return}toast(t('err'))}
+ var r=await sb.rpc('courier_my_shipments');if(!r.error)rows=r.data||[];else{if(/JWT|expired|401/i.test(r.error.message||'')){await sb.auth.signOut();location.reload();return}toast(t('err'))}
  var l=await sb.from('courier_log').select('shipment_code,action,to_status,note,created_at').order('created_at',{ascending:false}).limit(200);if(!l.error)logs=l.data||[];
  render()}
 async function enter(){
