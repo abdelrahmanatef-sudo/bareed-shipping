@@ -139,14 +139,14 @@ $('list').addEventListener('click',async function(e){
  await load()});
 $('tabs').addEventListener('click',function(e){var b=e.target.closest('[data-t]');if(b){tab=+b.getAttribute('data-t');render()}});
 async function load(){
- var r=await sb.rpc('courier_my_shipments');if(!r.error)rows=r.data||[];
+ var r=await sb.rpc('courier_my_shipments');if(!r.error)rows=r.data||[]else{if(/JWT|expired|401/i.test(r.error.message||'')){await sb.auth.signOut();location.reload();return}toast(t('err'))}
  var l=await sb.from('courier_log').select('shipment_code,action,to_status,note,created_at').order('created_at',{ascending:false}).limit(200);if(!l.error)logs=l.data||[];
  render()}
 async function enter(){
  var c=await sb.from('couriers').select('name,phone,status').maybeSingle();
  if(c.error||!c.data||c.data.status!=='active'){var bad=!!(c.data&&c.data.status!=='active');await sb.auth.signOut();$('app').hidden=true;$('login').hidden=false;$('err').textContent=t(bad?'susp':'notc');return}
  me=c.data;$('login').hidden=true;$('app').hidden=false;await load();
- if(!window._poll){window._poll=setInterval(function(){if(document.visibilityState==='visible')load()},30000);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&me)load()})}}
+ if(!window._poll){window._poll=setInterval(function(){if(document.visibilityState==='visible')load()},30000);window.addEventListener('pageshow',function(){if(me)load()});window.addEventListener('online',function(){if(me)load()});window.addEventListener('focus',function(){if(me)load()});document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&me)load()})}}
 $('go').onclick=async function(){
  $('err').textContent='';var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
  if(r.error){$('err').textContent=t('bad');return}await enter()};
