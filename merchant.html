@@ -277,7 +277,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; el('f-cod').value = 0; await load();
   });
 
-  var PMETH = { ar: { cash: 'كاش', vodafone: 'فودافون كاش', instapay: 'إنستاباي', bank: 'تحويل بنكي', other: 'أخرى' }, en: { cash: 'Cash', vodafone: 'Vodafone Cash', instapay: 'InstaPay', bank: 'Bank transfer', other: 'Other' } };
+  var PMETH = { ar: { cash: 'كاش', vodafone: 'محفظة إلكترونية', instapay: 'إنستاباي', bank: 'تحويل بنكي', other: 'أخرى' }, en: { cash: 'Cash', vodafone: 'E-wallet', instapay: 'InstaPay', bank: 'Bank transfer', other: 'Other' } };
   function payNote(x) { return [x.method ? (PMETH[lang] || PMETH.ar)[x.method] : '', x.reference ? '#' + x.reference : '', x.note || ''].filter(Boolean).join(' · '); }
   var payouts = [];
   async function loadPayouts() { var r = await sb.from('merchant_payouts').select('amount,shipments_count,note,method,reference,created_at').order('created_at', { ascending: false }).limit(200); if (!r.error) { payouts = r.data || []; renderPayouts(); } }

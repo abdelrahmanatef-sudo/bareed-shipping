@@ -1266,11 +1266,11 @@ select.search { appearance: auto; cursor: pointer; }
     }
   });
 
-  var PMETH = { ar: { cash: 'كاش', vodafone: 'فودافون كاش', instapay: 'إنستاباي', bank: 'تحويل بنكي', other: 'أخرى' }, en: { cash: 'Cash', vodafone: 'Vodafone Cash', instapay: 'InstaPay', bank: 'Bank transfer', other: 'Other' } };
+  var PMETH = { ar: { cash: 'كاش', vodafone: 'محفظة إلكترونية', instapay: 'إنستاباي', bank: 'تحويل بنكي', other: 'أخرى' }, en: { cash: 'Cash', vodafone: 'E-wallet', instapay: 'InstaPay', bank: 'Bank transfer', other: 'Other' } };
   function payNote(x) { return [x.method ? (PMETH[lang] || PMETH.ar)[x.method] : '', x.reference ? '#' + x.reference : '', x.note || ''].filter(Boolean).join(' · '); }
   function askPayout(m, due) {
     return new Promise(function (resolve) {
-      var ar = lang === 'ar', L = ar ? { h: 'تسوية التاجر', due: 'المبلغ', meth: 'طريقة الدفع', ref: 'رقم العملية', refh: 'مطلوب في التحويلات (فودافون / إنستاباي / بنك)', note: 'ملاحظة (اختياري)', ok: 'تأكيد التحويل', no: 'إلغاء' } : { h: 'Settle merchant', due: 'Amount', meth: 'Payment method', ref: 'Transaction reference', refh: 'Required for transfers (Vodafone / InstaPay / bank)', note: 'Note (optional)', ok: 'Confirm payout', no: 'Cancel' };
+      var ar = lang === 'ar', L = ar ? { h: 'تسوية التاجر', due: 'المبلغ', meth: 'طريقة الدفع', ref: 'رقم العملية', refh: 'مطلوب في التحويلات (محفظة / إنستاباي / بنك)', note: 'ملاحظة (اختياري)', ok: 'تأكيد التحويل', no: 'إلغاء' } : { h: 'Settle merchant', due: 'Amount', meth: 'Payment method', ref: 'Transaction reference', refh: 'Required for transfers (e-wallet / InstaPay / bank)', note: 'Note (optional)', ok: 'Confirm payout', no: 'Cancel' };
       var ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
       var box = document.createElement('div'); box.style.cssText = 'background:var(--surface,#fff);color:var(--ink,#111);border:1px solid var(--line,#ddd);border-radius:18px;padding:18px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:10px';
       var meths = Object.keys(PMETH.ar);
