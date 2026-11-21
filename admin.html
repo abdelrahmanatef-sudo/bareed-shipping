@@ -1265,16 +1265,40 @@ select.search { appearance: auto; cursor: pointer; }
       safe(async function () { var r = await sb.from('couriers').update({ status: 'archived' }).eq('id', did); if (r.error) { if (cr2) { cr2.status = cp2; renderAll(); } throw r.error; } refresh('couriers'); loadCourierLog(); });
     }
   });
-  el('me-list').addEventListener('click', function (e) {
+
+  var PMETH = { ar: { cash: 'كاش', vodafone: 'فودافون كاش', instapay: 'إنستاباي', bank: 'تحويل بنكي', other: 'أخرى' }, en: { cash: 'Cash', vodafone: 'Vodafone Cash', instapay: 'InstaPay', bank: 'Bank transfer', other: 'Other' } };
+  function payNote(x) { return [x.method ? (PMETH[lang] || PMETH.ar)[x.method] : '', x.reference ? '#' + x.reference : '', x.note || ''].filter(Boolean).join(' · '); }
+  function askPayout(m, due) {
+    return new Promise(function (resolve) {
+      var ar = lang === 'ar', L = ar ? { h: 'تسوية التاجر', due: 'المبلغ', meth: 'طريقة الدفع', ref: 'رقم العملية', refh: 'مطلوب في التحويلات (فودافون / إنستاباي / بنك)', note: 'ملاحظة (اختياري)', ok: 'تأكيد التحويل', no: 'إلغاء' } : { h: 'Settle merchant', due: 'Amount', meth: 'Payment method', ref: 'Transaction reference', refh: 'Required for transfers (Vodafone / InstaPay / bank)', note: 'Note (optional)', ok: 'Confirm payout', no: 'Cancel' };
+      var ov = document.createElement('div'); ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+      var box = document.createElement('div'); box.style.cssText = 'background:var(--surface,#fff);color:var(--ink,#111);border:1px solid var(--line,#ddd);border-radius:18px;padding:18px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:10px';
+      var meths = Object.keys(PMETH.ar);
+      box.innerHTML = '<h2 style="margin:0">' + L.h + ': ' + esc(m) + '</h2><div class="kv"><span>' + L.due + '</span><b>' + money(due) + '</b></div><div class="note">' + L.meth + '</div><div class="chips" id="po-m">' + meths.map(function (k, i) { return '<button class="chip" type="button" data-pm="' + k + '" aria-pressed="' + (i === 0) + '">' + (PMETH[lang] || PMETH.ar)[k] + '</button>'; }).join('') + '</div><div id="po-r-box" hidden><div class="note">' + L.ref + ' <small>(' + L.refh + ')</small></div><input class="search" id="po-r" maxlength="60" autocomplete="off" dir="ltr"></div><input class="search" id="po-n" maxlength="300" placeholder="' + L.note + '"><div class="row"><button class="btn" type="button" id="po-ok">' + L.ok + '</button><button class="btn ghost" type="button" id="po-no">' + L.no + '</button></div>';
+      ov.appendChild(box); document.body.appendChild(ov);
+      var method = 'cash';
+      function sync() { box.querySelectorAll('[data-pm]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-pm') === method)); }); box.querySelector('#po-r-box').hidden = (method === 'cash' || method === 'other'); }
+      function done(v) { ov.remove(); resolve(v); }
+      box.addEventListener('click', function (e) { var b = e.target.closest('[data-pm]'); if (b) { method = b.getAttribute('data-pm'); sync(); } });
+      box.querySelector('#po-no').onclick = function () { done(null); };
+      ov.addEventListener('click', function (e) { if (e.target === ov) done(null); });
+      box.querySelector('#po-ok').onclick = function () {
+        var ref = box.querySelector('#po-r').value.trim();
+        if ((method === 'vodafone' || method === 'instapay' || method === 'bank') && !ref) { box.querySelector('#po-r').focus(); box.querySelector('#po-r').style.outline = '2px solid #c0392b'; return; }
+        done({ method: method, reference: (method === 'cash' || method === 'other') ? (ref || null) : ref, note: box.querySelector('#po-n').value.trim() || null });
+      };
+      sync();
+    });
+  }
+  el('me-list').addEventListener('click', async function (e) {
     var p = e.target.closest('[data-pay]'); if (!p) return;
     var m = p.getAttribute('data-pay');
     var due = (merchantDue()[m] || {}).due || 0;
-    if (!confirm(t('c_settle_m', { m: m }) + ' (' + fmt(due) + ')')) return;
-    var note = prompt(t('po_note'), ''); if (note === null) return;
+    var po = await askPayout(m, due); if (!po) return;
     safe(async function () {
       var rows = store.shipments.filter(function (x) { return x.merchant === m && !x.paidMerchant && (x.status === 'delivered' || x.status === 'returned'); });
       if (!rows.length) return;
-      var ins = await sb.from('merchant_payouts').insert({ merchant_id: rows[0].merchantId, amount: Math.round(due * 100) / 100, shipments_count: rows.length, note: note.trim() || null });
+      var ins = await sb.from('merchant_payouts').insert({ merchant_id: rows[0].merchantId, amount: Math.round(due * 100) / 100, shipments_count: rows.length, note: po.note, method: po.method, reference: po.reference });
       if (ins.error) throw ins.error;
       for (var i = 0; i < rows.length; i++) { var n = strip(rows[i]); n.paidMerchant = true; await put('shipments', rows[i].id, n); }
       toast(t('t_settled_m', { m: m })); await loadPayouts(); if (el('me-stmt')) el('me-stmt').innerHTML = '';
@@ -1725,7 +1749,7 @@ select.search { appearance: auto; cursor: pointer; }
       '<div class="kv"><span>' + t('ms_due') + '</span><span class="due">' + money(due) + '</span></div>' +
       '<div class="kv"><span>' + t('ms_paid') + '</span><b>' + money(paid) + '</b></div>' +
       (rows ? '<h3 style="margin-top:6px">' + t('ms_unp') + '</h3><div class="tablewrap"><table><thead><tr><th>' + t('cs_code') + '</th><th>' + t('cs_cust') + '</th><th>COD</th><th>' + t('ms_net') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
-      '<h3 style="margin-top:6px">' + t('ms_pays') + '</h3>' + (pays.length ? '<div class="tablewrap"><table><thead><tr><th>' + t('ms_date') + '</th><th>' + t('ms_amt') + '</th><th>' + t('ms_n') + '</th><th>' + t('ms_note') + '</th></tr></thead><tbody>' + pays.map(function (x) { return '<tr><td dir="ltr">' + esc(fd(x.created_at)) + '</td><td>' + money(x.amount) + '</td><td>' + x.shipments_count + '</td><td>' + esc(x.note || '') + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="note">' + t('ms_nopay') + '</p>') +
+      '<h3 style="margin-top:6px">' + t('ms_pays') + '</h3>' + (pays.length ? '<div class="tablewrap"><table><thead><tr><th>' + t('ms_date') + '</th><th>' + t('ms_amt') + '</th><th>' + t('ms_n') + '</th><th>' + t('ms_note') + '</th></tr></thead><tbody>' + pays.map(function (x) { return '<tr><td dir="ltr">' + esc(fd(x.created_at)) + '</td><td>' + money(x.amount) + '</td><td>' + x.shipments_count + '</td><td>' + esc(payNote(x)) + '</td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="note">' + t('ms_nopay') + '</p>') +
       '<div class="row"><button class="btn ghost sm" type="button" onclick="window.print()">' + t('cs_print') + '</button><button class="btn ghost sm" type="button" id="ms-close">' + t('cs_close') + '</button></div></div>';
     el('me-stmt').scrollIntoView({ behavior: 'smooth', block: 'start' });
     el('ms-close').addEventListener('click', function () { el('me-stmt').innerHTML = ''; });
