@@ -1024,7 +1024,7 @@ select.search { appearance: auto; cursor: pointer; }
       return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.status === 'active' ? ' <span class="dot ' + (c.available ? 'c-delivered' : 'c-returned') + '">' + t(c.available ? 'av_on' : 'av_off') + '</span>' : '') + (c.status !== 'active' ? ' <span class="dot c-returned">' + t('mr_' + c.status) + '</span>' : '') + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
-        '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (shortOf(c.id) > 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b style="color:var(--bad,#c0392b)">' + money(shortOf(c.id)) + '</b></div>' : '') + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
+        '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (shortOf(c.id) > 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b style="color:var(--bad,#c0392b)">' + money(shortOf(c.id)) + '</b></div><div class="row"><button class="btn ghost sm" type="button" data-sp="' + esc(c.id) + '">' + t('sp_btn') + '</button></div>' : '') + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
         '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
           '<button class="btn ghost sm" type="button" data-rn="couriers|' + esc(c.id) + '">' + t('rn_btn') + '</button>' +
           (c.status === 'active' ? '<button class="btn ghost sm" type="button" data-cst="' + esc(c.id) + '|suspended">' + t('mr_suspend') + '</button>' : '<button class="btn sm" type="button" data-cst="' + esc(c.id) + '|active">' + t(c.status === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>') +
@@ -1836,10 +1836,14 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.ar, { av_on: 'متاح', av_off: 'مش متاح', ho_h: 'تسليمات فلوس المناديب', ho_claim: 'المندوب بيقول إنه سلّم', ho_recv: 'المبلغ اللي استلمته فعلاً', ho_note: 'ملاحظة (اختياري)', ho_ok: 'تأكيد الاستلام', ho_rej: 'رفض', ho_short: 'عجز', ho_surp: 'زيادة', ho_none: 'مفيش طلبات تسليم معلّقة', ho_hist: 'آخر التسليمات', ho_cnt: 'شحنة', ho_done: 'تم تسجيل الاستلام', ho_rejd: 'مرفوض', ho_pend: 'معلّق', ho_tot_short: 'إجمالي العجز المسجّل' });
   Object.assign(I18N.en, { av_on: 'Available', av_off: 'Unavailable', ho_h: 'Courier cash handovers', ho_claim: 'Courier says he handed over', ho_recv: 'Amount you actually received', ho_note: 'Note (optional)', ho_ok: 'Confirm receipt', ho_rej: 'Reject', ho_short: 'Shortage', ho_surp: 'Surplus', ho_none: 'No pending handovers', ho_hist: 'Recent handovers', ho_cnt: 'shipments', ho_done: 'Receipt recorded', ho_rejd: 'Rejected', ho_pend: 'Pending', ho_tot_short: 'Total recorded shortage' });
   var HO = [];
-  function shortOf(cid) { return HO.filter(function (h) { return h.courier_id === cid && h.status === 'confirmed'; }).reduce(function (n, h) { return n + (+h.claimed_amount - (+h.received_amount)); }, 0); }
+  var SP = [];
+  Object.assign(I18N.ar, { sp_btn: 'سدّد عجز', sp_prompt: 'المبلغ اللي المندوب سدّده من العجز (ج.م):', sp_note: 'ملاحظة (اختياري):', sp_done: 'اتسجّل سداد العجز.', sp_big: 'المبلغ أكبر من العجز المسجّل.' });
+  Object.assign(I18N.en, { sp_btn: 'Record shortage payment', sp_prompt: 'Amount the courier paid back (EGP):', sp_note: 'Note (optional):', sp_done: 'Shortage payment recorded.', sp_big: 'Amount exceeds the recorded shortage.' });
+  function shortOf(cid) { return HO.filter(function (h) { return h.courier_id === cid && h.status === 'confirmed'; }).reduce(function (n, h) { return n + (+h.claimed_amount - (+h.received_amount)); }, 0) - SP.filter(function (x) { return x.courier_id === cid; }).reduce(function (n, x) { return n + (+x.amount); }, 0); }
   async function loadHandovers() {
     if (local || !sb) return;
     var r = await sb.from('courier_handovers').select('*').order('created_at', { ascending: false }).limit(200);
+    var rp = await sb.from('courier_shortage_payments').select('courier_id,amount,created_at').limit(1000); if (!rp.error) SP = rp.data || [];
     if (r.error) return; HO = r.data || []; renderHandovers(); if (typeof renderCouriers === 'function') renderCouriers();
   }
   function renderHandovers() {
@@ -1861,6 +1865,18 @@ select.search { appearance: auto; cursor: pointer; }
     }).join('') + '</tbody></table></div>';
     box.innerHTML = h + '</div>';
   }
+  document.addEventListener('click', function (e) {
+    var sp = e.target.closest && e.target.closest('[data-sp]'); if (!sp) return;
+    var cid = sp.getAttribute('data-sp'), bal = shortOf(cid);
+    var v = prompt(t('sp_prompt'), String(Math.max(0, bal))); if (v === null) return;
+    var amt = parseFloat(String(v).replace(/[^0-9.]/g, '')); if (!(amt > 0)) return;
+    if (amt > bal + 0.001) { toast(t('sp_big')); return; }
+    var nt = prompt(t('sp_note'), ''); 
+    safe(async function () {
+      var r = await sb.from('courier_shortage_payments').insert({ courier_id: cid, amount: Math.round(amt * 100) / 100, note: nt && nt.trim() ? nt.trim().slice(0, 300) : null });
+      if (r.error) throw r.error; toast(t('sp_done')); await loadHandovers();
+    });
+  });
   document.addEventListener('click', function (e) {
     var ok = e.target.closest && e.target.closest('[data-hok]'), rj = e.target.closest && e.target.closest('[data-hrj]');
     if (!ok && !rj) return;
