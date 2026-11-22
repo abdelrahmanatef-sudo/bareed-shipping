@@ -583,11 +583,11 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     var box = document.createElement('div'); box.id = 'bb-box'; box.hidden = true;
     box.innerHTML = '<div id="bb-h"><span id="bb-t"></span><button type="button" id="bb-x" aria-label="close">×</button></div><div id="bb-m" aria-live="polite"></div><div id="bb-q"></div><form id="bb-f"><input id="bb-i" autocomplete="off" maxlength="200"><button type="submit" id="bb-s"></button></form>';
     document.body.appendChild(fab); document.body.appendChild(box);
-    var $ = function (id) { return document.getElementById(id); }, started = false, awaiting = null;
+    var $ = function (id) { return document.getElementById(id); }, started = false, awaiting = null, hist = [], aiOff = false;
     function X() { return L[lang] || L.ar; }
     function paintStatic() { var x = X(); fab.textContent = '💬 ' + x.open; $('bb-t').textContent = x.name; $('bb-i').placeholder = x.ph; $('bb-s').textContent = x.send; chips(); }
     function chips() { var x = X(), keys = ['track', 'area', 'reg', 'cod', 'ret'].concat(CONTACT ? ['wa'] : []); $('bb-q').innerHTML = ''; keys.forEach(function (k) { var b = document.createElement('button'); b.type = 'button'; b.textContent = x.q[k]; b.onclick = function () { say(x.q[k], true); route(k); }; $('bb-q').appendChild(b); }); }
-    function say(text, me) { var d = document.createElement('div'); d.className = 'bb-b ' + (me ? 'bb-me' : 'bb-bot'); d.textContent = text; $('bb-m').appendChild(d); $('bb-m').scrollTop = 1e6; }
+    function say(text, me) { var d = document.createElement('div'); d.className = 'bb-b ' + (me ? 'bb-me' : 'bb-bot'); d.textContent = text; $('bb-m').appendChild(d); $('bb-m').scrollTop = 1e6; hist.push({ role: me ? 'user' : 'bot', text: text }); if (hist.length > 12) hist.shift(); }
     function norm(s) { return String(s || '').toLowerCase().replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').trim(); }
     function track(code) {
       var x = X(); if (!sb) { say(x.fail); return; }
@@ -611,12 +611,26 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       else if (k === 'wa') { window.open('https://wa.me/' + CONTACT + '?text=' + encodeURIComponent(x.waMsg), '_blank', 'noopener'); }
       else say(x[k]);
     }
+    function ai(text, fallback) {
+      if (aiOff) { fallback(); return; }
+      var tp = document.createElement('div'); tp.className = 'bb-b bb-bot'; tp.textContent = '…'; $('bb-m').appendChild(tp); $('bb-m').scrollTop = 1e6;
+      var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 20000), done = false;
+      function fin(fn) { if (done) return; done = true; clearTimeout(tm); tp.remove(); fn(); }
+      fetch(SUPABASE_URL + '/functions/v1/bareed-chat', { method: 'POST', signal: ctl ? ctl.signal : undefined, headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + SUPABASE_ANON_KEY }, body: JSON.stringify({ messages: hist.slice(-10) }) })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (d) { if (d && d.reply) fin(function () { say(String(d.reply).slice(0, 1200)); }); else { if (d && d.error === 'not_configured') aiOff = true; fin(fallback); } })
+        .catch(function () { fin(fallback); });
+    }
     function answer(text) {
-      var x = X(), n = norm(text), m = String(text).match(/BR-?[A-Za-z0-9]{6,10}/i);
+      var m = String(text).match(/BR-?[A-Za-z0-9]{6,10}/i);
       if (m) { awaiting = null; track(m[0].toUpperCase().replace(/^BR(?!-)/, 'BR-')); return; }
       if (awaiting === 'track' && /^[A-Za-z0-9-]{4,14}$/.test(String(text).trim())) { awaiting = null; track(String(text).trim().toUpperCase()); return; }
-      if (awaiting === 'area' && n.length < 40) { awaiting = null; area(text); return; }
-      awaiting = null;
+      var aw = awaiting; awaiting = null;
+      ai(text, function () { rules(text, aw); });
+    }
+    function rules(text, aw) {
+      var x = X(), n = norm(text);
+      if (aw === 'area' && n.length < 40) { area(text); return; }
       var has = function (w) { return w.some(function (k) { return n.indexOf(norm(k)) !== -1; }); };
       if (has(['تتبع', 'شحنتي', 'فين', 'وصلت', 'track', 'where is'])) route('track');
       else if (has(['مندوب', 'courier', 'driver'])) say(x.cour);
