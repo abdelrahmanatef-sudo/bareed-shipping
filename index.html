@@ -549,6 +549,90 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     sb.from('areas').select('id,gov_ar,gov_en,city_ar,city_en,is_active,fee').then(function (r) { if (!r.error && r.data) { areas = r.data; renderAll(); } });
     sb.auth.getSession().then(function (r) { if (r.data && r.data.session) { signedIn = true; el('login-btn').textContent = t('dash'); } });
   }
+
+  /* ---------- help bot (free, rule-based) ---------- */
+  (function () {
+    var CONTACT = ''; // optional: WhatsApp number in international format, e.g. 2010xxxxxxxx
+    var L = {
+      ar: { name: 'مساعد بريد', hello: 'أهلاً! أنا مساعد بريد. أقدر أساعدك في تتبع شحنة، أو أعرفك مناطق التغطية والأسعار، أو أشرحلك إزاي تسجّل كتاجر. اختار من تحت أو اكتب سؤالك.', ph: 'اكتب سؤالك…', send: 'إرسال', open: 'مساعدة',
+        q: { track: 'تتبع شحنة', area: 'التغطية والأسعار', reg: 'التسجيل كتاجر', cod: 'التحصيل والتسوية', ret: 'المرتجعات', wa: 'كلّمنا على واتساب' },
+        askCode: 'اكتب كود الشحنة (شكله BR-XXXXXXXX).', notFound: 'ما لقيتش شحنة بالكود ده. اتأكد من الكود وجرّب تاني.', fail: 'حصلت مشكلة في التتبع دلوقتي، جرّب بعد شوية.', st: 'حالة الشحنة', last: 'آخر تحديث',
+        askArea: 'اكتب اسم المنطقة أو المدينة اللي عايز تتأكد إننا بنوصلها.', yes: 'بنوصل {c}، {g}. أجرة الشحن {f} جنيه.', no: '{c} لسه مش مفتوحة للتوصيل، وبنتوسع قريب. سجّل وهنعرّفك أول ما تتفتح.', none: 'ما لقيتش المنطقة دي في القايمة. جرّب تكتب اسمها بشكل تاني.', openList: 'المناطق المفتوحة حالياً: ',
+        reg: 'للتسجيل كتاجر: دوس على زرار الدخول أو إنشاء حساب في أعلى الموقع واعمل حساب. بعد ما الإدارة تفعّل حسابك بتقدر تسجّل شحناتك وتتابعها وتطبع البوليصة.',
+        cod: 'بنحصّل مبلغ الشحنة (COD) من العميل عند التسليم، وبنحوّله لك بعد خصم رسوم الشحن. كل تحويل بيظهر في لوحتك بطريقة الدفع والتاريخ.',
+        ret: 'لو العميل مردّش أو رفض، المندوب بيحاول أكتر من مرة (لحد 3 محاولات) وبعدها الشحنة بترجع للتاجر. وبتشوف سبب الرجوع في لوحتك.',
+        cour: 'لو انت مندوب، افتح تطبيق المندوب من رابط /courier وسجّل دخولك بحسابك.',
+        hi: 'أهلاً بيك! تحب أساعدك في إيه؟', fb: 'ما فهمتش سؤالك أوي. اختار من الأزرار أو اكتب كود شحنتك للتتبع.', waMsg: 'أهلاً، عندي استفسار بخصوص بريد' },
+      en: { name: 'Bareed help', hello: 'Hi! I am the Bareed assistant. I can track a shipment, check coverage and prices, or explain how to sign up as a merchant. Pick an option or type your question.', ph: 'Type your question…', send: 'Send', open: 'Help',
+        q: { track: 'Track a shipment', area: 'Coverage & prices', reg: 'Sign up as a merchant', cod: 'COD & payouts', ret: 'Returns', wa: 'Chat on WhatsApp' },
+        askCode: 'Type the shipment code (looks like BR-XXXXXXXX).', notFound: 'I could not find a shipment with that code. Check it and try again.', fail: 'Tracking is not available right now, please try again soon.', st: 'Shipment status', last: 'Last update',
+        askArea: 'Type the area or city you want to check.', yes: 'We deliver to {c}, {g}. Shipping fee: {f} EGP.', no: '{c} is not open yet; we are expanding soon. Sign up and we will tell you when it opens.', none: 'I could not find that area. Try another spelling.', openList: 'Areas open now: ',
+        reg: 'To sign up as a merchant: use the sign in / create account button at the top of the site. Once the team activates your account you can add shipments, follow them and print labels.',
+        cod: 'We collect the shipment amount (COD) from the customer on delivery and transfer it to you after deducting the shipping fee. Every payout appears in your dashboard with its method and date.',
+        ret: 'If the customer does not answer or refuses, the courier retries (up to 3 attempts) and then the shipment goes back to the merchant. You see the reason in your dashboard.',
+        cour: 'If you are a courier, open the courier app at /courier and sign in.',
+        hi: 'Hello! How can I help?', fb: 'I did not quite get that. Pick a button or type your shipment code to track it.', waMsg: 'Hello, I have a question about Bareed' } };
+    var css = '#bb-fab{position:fixed;inset-inline-end:16px;bottom:16px;z-index:9998;background:var(--brand,#0A8BE0);color:var(--on-brand,#fff);border:0;border-radius:99px;padding:12px 18px;font:600 15px inherit;font-family:inherit;box-shadow:0 6px 20px rgba(10,139,224,.35);cursor:pointer}' +
+      '#bb-box{position:fixed;inset-inline-end:16px;bottom:72px;z-index:9998;width:min(360px,calc(100vw - 32px));height:min(520px,calc(100vh - 100px));background:var(--surface,#fff);color:var(--ink,#111);border:1px solid var(--line,#ddd);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.25)}#bb-box[hidden]{display:none}' +
+      '#bb-h{padding:12px 14px;background:var(--brand,#0A8BE0);color:var(--on-brand,#fff);font-weight:700;display:flex;justify-content:space-between;align-items:center}#bb-h button{background:none;border:0;color:inherit;font-size:20px;cursor:pointer}' +
+      '#bb-m{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px}.bb-b{max-width:85%;padding:9px 12px;border-radius:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;font-size:14px}.bb-bot{background:var(--surface-2,#EBF3FB);align-self:flex-start}.bb-me{background:var(--brand,#0A8BE0);color:var(--on-brand,#fff);align-self:flex-end}' +
+      '#bb-q{display:flex;flex-wrap:wrap;gap:6px;padding:0 12px 8px}#bb-q button{border:1px solid var(--line,#ddd);background:var(--surface,#fff);color:inherit;border-radius:99px;padding:5px 12px;font:inherit;font-size:13px;cursor:pointer}' +
+      '#bb-f{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line,#ddd)}#bb-f input{flex:1;min-width:0;border:1px solid var(--line,#ddd);background:var(--surface-2,#EBF3FB);color:inherit;border-radius:12px;padding:9px 12px;font:inherit}#bb-f button{border:0;background:var(--brand,#0A8BE0);color:var(--on-brand,#fff);border-radius:12px;padding:0 14px;font:inherit;font-weight:600;cursor:pointer}';
+    var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
+    var fab = document.createElement('button'); fab.id = 'bb-fab'; fab.type = 'button';
+    var box = document.createElement('div'); box.id = 'bb-box'; box.hidden = true;
+    box.innerHTML = '<div id="bb-h"><span id="bb-t"></span><button type="button" id="bb-x" aria-label="close">×</button></div><div id="bb-m" aria-live="polite"></div><div id="bb-q"></div><form id="bb-f"><input id="bb-i" autocomplete="off" maxlength="200"><button type="submit" id="bb-s"></button></form>';
+    document.body.appendChild(fab); document.body.appendChild(box);
+    var $ = function (id) { return document.getElementById(id); }, started = false, awaiting = null;
+    function X() { return L[lang] || L.ar; }
+    function paintStatic() { var x = X(); fab.textContent = '💬 ' + x.open; $('bb-t').textContent = x.name; $('bb-i').placeholder = x.ph; $('bb-s').textContent = x.send; chips(); }
+    function chips() { var x = X(), keys = ['track', 'area', 'reg', 'cod', 'ret'].concat(CONTACT ? ['wa'] : []); $('bb-q').innerHTML = ''; keys.forEach(function (k) { var b = document.createElement('button'); b.type = 'button'; b.textContent = x.q[k]; b.onclick = function () { say(x.q[k], true); route(k); }; $('bb-q').appendChild(b); }); }
+    function say(text, me) { var d = document.createElement('div'); d.className = 'bb-b ' + (me ? 'bb-me' : 'bb-bot'); d.textContent = text; $('bb-m').appendChild(d); $('bb-m').scrollTop = 1e6; }
+    function norm(s) { return String(s || '').toLowerCase().replace(/[ً-ْـ]/g, '').replace(/[أإآ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').trim(); }
+    function track(code) {
+      var x = X(); if (!sb) { say(x.fail); return; }
+      sb.rpc('track_shipment', { p_code: code }).then(function (r) {
+        if (r.error) { say(x.fail); return; } if (!r.data) { say(x.notFound); return; }
+        var ev = r.data.events || [], last = ev.length ? ev[ev.length - 1].created_at : r.data.created_at, d = new Date(last);
+        say(r.data.code + '\n' + x.st + ': ' + t('st_' + r.data.status) + '\n' + x.last + ': ' + (isNaN(d) ? '' : d.toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })));
+      }).catch(function () { say(x.fail); });
+    }
+    function area(q) {
+      var x = X(), n = norm(q), hit = null;
+      areas.forEach(function (a) { var c = norm(a.city_ar), e = String(a.city_en || '').toLowerCase(); if (!hit && n.length > 1 && (n.indexOf(c) !== -1 || (e && String(q).toLowerCase().indexOf(e) !== -1))) hit = a; });
+      if (!hit) { var open = areas.filter(function (a) { return a.is_active; }).map(function (a) { return lang === 'ar' ? a.city_ar : (a.city_en || a.city_ar); }); say(x.none + (open.length ? '\n' + x.openList + open.join('، ') : '')); return; }
+      var c = lang === 'ar' ? hit.city_ar : (hit.city_en || hit.city_ar), g = lang === 'ar' ? hit.gov_ar : (hit.gov_en || hit.gov_ar);
+      say((hit.is_active ? x.yes : x.no).replace('{c}', c).replace('{g}', g).replace('{f}', fmt(hit.fee)));
+    }
+    function route(k) {
+      var x = X(); awaiting = null;
+      if (k === 'track') { say(x.askCode); awaiting = 'track'; }
+      else if (k === 'area') { say(x.askArea); awaiting = 'area'; }
+      else if (k === 'wa') { window.open('https://wa.me/' + CONTACT + '?text=' + encodeURIComponent(x.waMsg), '_blank', 'noopener'); }
+      else say(x[k]);
+    }
+    function answer(text) {
+      var x = X(), n = norm(text), m = String(text).match(/BR-?[A-Za-z0-9]{6,10}/i);
+      if (m) { awaiting = null; track(m[0].toUpperCase().replace(/^BR(?!-)/, 'BR-')); return; }
+      if (awaiting === 'track' && /^[A-Za-z0-9-]{4,14}$/.test(String(text).trim())) { awaiting = null; track(String(text).trim().toUpperCase()); return; }
+      if (awaiting === 'area' && n.length < 40) { awaiting = null; area(text); return; }
+      awaiting = null;
+      var has = function (w) { return w.some(function (k) { return n.indexOf(norm(k)) !== -1; }); };
+      if (has(['تتبع', 'شحنتي', 'فين', 'وصلت', 'track', 'where is'])) route('track');
+      else if (has(['مندوب', 'courier', 'driver'])) say(x.cour);
+      else if (has(['تغطي', 'منطقه', 'مناطق', 'بتوصلوا', 'توصلوا', 'سعر', 'اسعار', 'تكلف', 'كام', 'شحن بكام', 'price', 'fee', 'cover', 'deliver to'])) { var ar = areas.some(function (a) { return n.indexOf(norm(a.city_ar)) !== -1; }); if (ar) area(text); else route('area'); }
+      else if (has(['تاجر', 'تسجيل', 'اشترك', 'اسجل', 'حساب', 'register', 'sign up', 'merchant'])) route('reg');
+      else if (has(['تحصيل', 'تسويه', 'فلوس', 'مستحقات', 'دفع', 'cod', 'payout', 'payment'])) route('cod');
+      else if (has(['مرتجع', 'رجوع', 'ارجاع', 'رفض', 'return'])) route('ret');
+      else if (has(['مرحبا', 'اهلا', 'السلام', 'hello', 'hi', 'ازيك'])) say(x.hi);
+      else say(x.fb);
+    }
+    fab.onclick = function () { box.hidden = !box.hidden; if (!box.hidden && !started) { started = true; say(X().hello); } if (!box.hidden) $('bb-i').focus(); };
+    $('bb-x').onclick = function () { box.hidden = true; };
+    $('bb-f').onsubmit = function (e) { e.preventDefault(); var v = $('bb-i').value.trim(); if (!v) return; $('bb-i').value = ''; say(v, true); answer(v); };
+    paintStatic();
+    var lb = document.getElementById('lang'); if (lb) lb.addEventListener('click', function () { setTimeout(paintStatic, 50); });
+  })();
 })();
 </script>
 </body></html>
