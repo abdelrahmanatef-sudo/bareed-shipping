@@ -393,7 +393,9 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     await load();
   });
   el('filters').addEventListener('click', function (e) { var b = e.target.closest('[data-f]'); if (b) { filter = b.getAttribute('data-f'); renderRows(); } });
-  el('q').addEventListener('input', function (e) { query = e.target.value; renderRows(); });
+  function debounce(fn, ms) { var t; return function () { var a = arguments, c = this; clearTimeout(t); t = setTimeout(function () { fn.apply(c, a); }, ms); }; }
+  var drawRowsDebounced = debounce(function () { renderRows(); }, 250);
+  el('q').addEventListener('input', function (e) { query = e.target.value; drawRowsDebounced(); });
   el('rows').addEventListener('click', async function (e) {
     var b = e.target.closest('[data-track]'); if (!b) return;
     var s = ships.filter(function (x) { return x.id === b.getAttribute('data-track'); })[0]; if (!s) return;

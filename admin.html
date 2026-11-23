@@ -1205,7 +1205,9 @@ select.search { appearance: auto; cursor: pointer; }
     document.querySelectorAll('#sh-filters .chip').forEach(function (x) { x.setAttribute('aria-pressed', String(x === b)); });
     renderShipments();
   });
-  el('sh-q').addEventListener('input', function (e) { query = e.target.value; renderShipments(); });
+  function debounce(fn, ms) { var t; return function () { var a = arguments, c = this; clearTimeout(t); t = setTimeout(function () { fn.apply(c, a); }, ms); }; }
+  var drawShipsDebounced = debounce(function () { renderShipments(); }, 250);
+  el('sh-q').addEventListener('input', function (e) { query = e.target.value; drawShipsDebounced(); });
   el('sh-from').addEventListener('change', function (e) { dFrom = e.target.value; renderShipments(); });
   el('sh-to').addEventListener('change', function (e) { dTo = e.target.value; renderShipments(); });
 
@@ -1682,9 +1684,10 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="chips">' + d.modes.map(function (m) { return '<button class="chip" type="button" data-fm="' + k + '|' + m[0] + '" aria-pressed="' + (f.mode === m[0]) + '">' + t(m[1]) + '</button>'; }).join('') + '</div></div>';
     });
   }
+  var FDRAW = {};
   document.addEventListener('input', function (e) {
     var q = e.target.getAttribute && e.target.getAttribute('data-fq'), dd = e.target.getAttribute && e.target.getAttribute('data-fd');
-    if (q) { FLT[q].q = e.target.value; FDEF[q].draw(); }
+    if (q) { FLT[q].q = e.target.value; (FDRAW[q] = FDRAW[q] || debounce(function () { FDEF[q].draw(); }, 250))(); }
     else if (dd) { var p = dd.split('|'); FLT[p[0]][p[1]] = e.target.value; FDEF[p[0]].draw(); }
   });
   document.addEventListener('click', function (e) {
