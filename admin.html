@@ -1010,6 +1010,9 @@ select.search { appearance: auto; cursor: pointer; }
       if (fm === 'susp') return c.status === 'suspended';
       if (fm === 'cash') return hd0.cod > 0;
       if (fm === 'carry') return out0 > 0;
+      if (fm === 'avail') return c.status === 'active' && c.available;
+      if (fm === 'unavail') return c.status === 'active' && !c.available;
+      if (fm === 'copen') return store.shipments.some(function (s) { return s.courierId === c.id && (s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'); });
       if (fm === 'clear') return hd0.cod <= 0 && !out0;
       if (fm === 'login') return !!c.email;
       if (fm === 'nologin') return !c.email;
@@ -1039,6 +1042,7 @@ select.search { appearance: auto; cursor: pointer; }
     keys = keys.filter(function (k) {
       if (mq && k.toLowerCase().indexOf(mq) < 0) return false;
       var x = md[k];
+      if (mm === 'mact' || mm === 'msusp') { var mr_ = (store.merchants || []).filter(function (m) { return m.name === k; })[0]; var st_ = mr_ ? mr_.status : 'active'; return mm === 'mact' ? st_ === 'active' : st_ === 'suspended'; }
       if (mm === 'owed') return x.due > 0;
       if (mm === 'owes') return x.due < 0;
       if (mm === 'open') return x.open > 0;
@@ -1668,9 +1672,11 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.en, { f_all: 'All', f_cash: 'Holds cash', f_carry: 'Carrying now', f_clear: 'Nothing due', f_login: 'Has login', f_nologin: 'No login', f_owed: 'Owed money', f_owes: 'Owes money', f_open: 'Open shipments', f_pend: 'Awaiting activation', f_act: 'Active', f_sus: 'Suspended', f_q: 'Search by name...', f_from: 'From', f_to: 'To', f_today: 'Today', f_7: '7 days', f_month: 'This month', f_empty: 'No results for this filter', f_reset: 'Clear filter' });
   Object.assign(I18N.ar, { fl_late: 'متأخرة (+48 ساعة)', fl_unas: 'من غير مندوب' });
   Object.assign(I18N.en, { fl_late: 'Late (48h+)', fl_unas: 'No courier' });
+  Object.assign(I18N.ar, { f_avail: 'متاح للشغل', f_unavail: 'مش متاح', f_copen: 'عنده شحنات مفتوحة', f_mact: 'شغّال', f_msusp: 'موقوف' });
+  Object.assign(I18N.en, { f_avail: 'Available', f_unavail: 'Unavailable', f_copen: 'Has open shipments', f_mact: 'Active', f_msusp: 'Suspended' });
   var FDEF = {
-    co: { dates: true, modes: [['all', 'f_all'], ['cash', 'f_cash'], ['carry', 'f_carry'], ['clear', 'f_clear'], ['login', 'f_login'], ['nologin', 'f_nologin'], ['susp', 'f_susp'], ['archived', 'f_arch']], box: 'co-flt', draw: function () { renderCouriers(); } },
-    me: { dates: true, modes: [['all', 'f_all'], ['owed', 'f_owed'], ['owes', 'f_owes'], ['open', 'f_open'], ['clear', 'f_clear']], box: 'me-flt', draw: function () { renderMerchants(); } },
+    co: { dates: true, modes: [['all', 'f_all'], ['avail', 'f_avail'], ['unavail', 'f_unavail'], ['cash', 'f_cash'], ['copen', 'f_copen'], ['carry', 'f_carry'], ['clear', 'f_clear'], ['login', 'f_login'], ['nologin', 'f_nologin'], ['susp', 'f_susp'], ['archived', 'f_arch']], box: 'co-flt', draw: function () { renderCouriers(); } },
+    me: { dates: true, modes: [['all', 'f_all'], ['mact', 'f_mact'], ['msusp', 'f_msusp'], ['owed', 'f_owed'], ['owes', 'f_owes'], ['open', 'f_open'], ['clear', 'f_clear']], box: 'me-flt', draw: function () { renderMerchants(); } },
     mr: { dates: false, modes: [['all', 'f_all'], ['pending', 'f_pend'], ['active', 'f_act'], ['suspended', 'f_sus'], ['archived', 'f_arch']], box: 'mr-flt', draw: function () { renderMreq(); } }
   };
   function ymd(d) { var z = new Date(d.getTime() - d.getTimezoneOffset() * 60000); return z.toISOString().slice(0, 10); }
