@@ -130,7 +130,8 @@ section { padding-block: 84px; }
 .chip.soon { color: var(--muted); cursor: default; } .chip.soon:hover { transform: none; border-color: var(--line); }
 .chip.city.open { background: var(--good-bg); color: var(--good); border-color: transparent; font-weight: 600; }
 .sel { display: grid; gap: 12px; margin-top: 8px; }
-.sel select, .field input, .field select { width: 100%; background: var(--surface-2); border: 1px solid transparent; border-radius: 12px; padding: 11px 14px; color: var(--ink); }
+.sel select, .field textarea { width: 100%; background: var(--surface-2); border: 1px solid transparent; border-radius: 12px; padding: 11px 14px; color: var(--ink); font: inherit; resize: vertical; }
+  .field input, .field select { width: 100%; background: var(--surface-2); border: 1px solid transparent; border-radius: 12px; padding: 11px 14px; color: var(--ink); }
 .sel select:focus, .field input:focus, .field select:focus { border-color: var(--brand); outline: none; }
 .verdict { margin-top: 14px; padding: 14px 16px; border-radius: 14px; font-weight: 500; }
 .verdict.yes { background: var(--good-bg); color: var(--good); } .verdict.no { background: var(--warn-bg); color: var(--warn); }
@@ -303,7 +304,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <div class="field"><label for="o-sn" data-i18n="o_sn"></label><input id="o-sn" required maxlength="120" autocomplete="name"></div>
       <div class="field"><label for="o-sp" data-i18n="o_sp"></label><input id="o-sp" required inputmode="tel" maxlength="20" dir="ltr" autocomplete="tel"></div>
       <div class="field"><label for="o-pa" data-i18n="o_pa"></label><input id="o-pa" required maxlength="300" autocomplete="street-address"></div>
-      <div class="field"><label for="o-nt" data-i18n="o_nt"></label><input id="o-nt" maxlength="500"></div>
+      <div class="field"><label for="o-nt" data-i18n="o_nt"></label><textarea id="o-nt" required rows="4" minlength="5" maxlength="500"></textarea></div>
       <input id="o-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <button class="btn" type="submit" id="o-submit" data-i18n="o_go"></button>
       <p class="msg" id="o-msg" role="status"></p>
@@ -371,22 +372,22 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     }
   };
   Object.assign(D.ar, {
-    send_btn: 'اطلب مندوب (أفراد)', o_t: 'اطلب مندوب', o_s: 'سيب بياناتك ومندوب هيتصل بيك ويكمّل معاك.',
-    o_sn: 'اسمك', o_sp: 'رقم تليفونك', o_pa: 'عنوانك (فين المندوب ييجي)', o_rn: 'اسم المستلم', o_rp: 'تليفون المستلم', o_ra: 'عنوان المستلم',
-    o_area: 'منطقة التسليم', o_val: 'قيمة الشحنة اللي المستلم يدفعها (لو في، وإلا اتركها فاضية)', o_nt: 'عايز توصّل إيه وفين؟ (اختياري)', o_go: 'أرسل الطلب',
+    send_btn: 'اطلب مندوب (أفراد)', o_t: 'اطلب مندوب', o_s: 'سيب بياناتك واكتب طلبك، والمندوب هيراجعه ويحدد السعر.',
+    o_sn: 'اسمك', o_sp: 'رقم تليفونك', o_pa: 'فين المندوب ييجيلك؟ (العنوان)', o_rn: 'اسم المستلم', o_rp: 'تليفون المستلم', o_ra: 'عنوان المستلم',
+    o_area: 'منطقة التسليم', o_val: 'قيمة الشحنة اللي المستلم يدفعها (لو في، وإلا اتركها فاضية)', o_nt: 'اشرح طلبك: عايز المندوب يعمل إيه؟ (يجيب إيه ومن فين ويوصله فين)', o_go: 'أرسل الطلب',
     o_pick: 'اختار المنطقة', o_fee: 'أجرة الشحن {f} جنيه بتتدفع من المستلم عند التسليم{v}', o_vplus: ' + قيمة الشحنة {v} جنيه',
     o_err: 'اتأكد من البيانات، وتليفون صح.', o_rate: 'وصلنا أكتر من طلب منك النهارده. كلمنا لو محتاج حاجة تانية.', o_fail: 'حصلت مشكلة، جرّب تاني.',
-    o_ok: 'وصل طلبك! الكود:', o_ok2: 'مندوب هيتصل بيك قريب. تقدر تتابع بالكود.', o_track: 'تتبّع الشحنة',
-    st_pending_confirmation: 'في انتظار تأكيدنا', st_rejected_request: 'الطلب اتلغى'
+    o_ok: 'وصل طلبك! الكود:', o_ok2: 'المندوب هيراجع طلبك ويحدد السعر. تابع الكود وهتشوف السعر وتوافق عليه.', o_track: 'تتبّع الشحنة',
+    st_pending_confirmation: 'في انتظار تأكيدنا', st_rejected_request: 'الطلب اتلغى', rq_pending: 'في انتظار مراجعة المندوب لطلبك', rq_accepted: 'المندوب قبل طلبك وهيتواصل معاك لتحديد السعر', rq_quoted: 'السعر المطلوب لطلبك', rq_cur: 'جنيه', rq_phone: 'اكتب رقم تليفونك اللي سجلت بيه للتأكيد', rq_yes: 'موافق', rq_no: 'مش موافق', rq_approved: 'وافقت على السعر، المندوب بيبدأ تنفيذ طلبك', rq_declined: 'الطلب اتلغى', rq_bad: 'الرقم مش مطابق للي سجلت بيه.'
   });
   Object.assign(D.en, {
-    send_btn: 'Request a courier (individuals)', o_t: 'Request a courier', o_s: 'Leave your details and a courier will call you.',
-    o_sn: 'Your name', o_sp: 'Your phone', o_pa: 'Your address (where the courier comes)', o_rn: 'Recipient name', o_rp: 'Recipient phone', o_ra: 'Recipient address',
-    o_area: 'Delivery area', o_val: 'Item value the recipient pays (leave empty if none)', o_nt: 'What to send and where? (optional)', o_go: 'Submit request',
+    send_btn: 'Request a courier (individuals)', o_t: 'Request a courier', o_s: 'Leave your details and describe your request. A courier will review it and set the price.',
+    o_sn: 'Your name', o_sp: 'Your phone', o_pa: 'Where should the courier come? (address)', o_rn: 'Recipient name', o_rp: 'Recipient phone', o_ra: 'Recipient address',
+    o_area: 'Delivery area', o_val: 'Item value the recipient pays (leave empty if none)', o_nt: 'Describe your request: what should the courier do? (what to get, from where, deliver where)', o_go: 'Submit request',
     o_pick: 'Choose area', o_fee: 'Delivery fee {f} EGP, paid by the recipient on delivery{v}', o_vplus: ' + item value {v} EGP',
     o_err: 'Check the details and phone numbers.', o_rate: 'Too many requests from you today. Contact us if you need more.', o_fail: 'Something went wrong, try again.',
-    o_ok: 'Request received! Code:', o_ok2: 'A courier will call you soon. Track with the code.', o_track: 'Track shipment',
-    st_pending_confirmation: 'Awaiting our confirmation', st_rejected_request: 'Request cancelled'
+    o_ok: 'Request received! Code:', o_ok2: 'A courier will review your request and set the price. Track with the code to see the price and approve it.', o_track: 'Track shipment',
+    st_pending_confirmation: 'Awaiting our confirmation', st_rejected_request: 'Request cancelled', rq_pending: 'Waiting for a courier to review your request', rq_accepted: 'A courier accepted and will contact you to agree on the price', rq_quoted: 'Price for your request', rq_cur: 'EGP', rq_phone: 'Enter the phone number you registered with to confirm', rq_yes: 'Approve', rq_no: 'Decline', rq_approved: 'You approved the price. The courier is starting your request', rq_declined: 'Request cancelled', rq_bad: 'The number does not match the one you registered with.'
   });
   var lang = 'ar';
   try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
@@ -522,7 +523,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     }).catch(function () { out.innerHTML = '<div class="tr-card">' + esc(t('tr_err')) + '</div>'; });
   });
   function dt(iso) { try { return new Date(iso).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return ''; } }
-  function trackHTML(d) {
+  function trackHTML0(d) {
     if (d.status === 'pending_confirmation' || d.status === 'rejected_request') return '<div class="tr-card"><b style="font-family:var(--font-display)">' + esc(d.code) + '</b> <span class="badge" style="background:var(--brand-soft);color:var(--brand)">' + esc(t('st_' + d.status)) + '</span></div>';
     var steps = [['new', 'box'], ['picked_up', 'box'], ['out_for_delivery', 'truck'], [d.status === 'returned' ? 'returned' : 'delivered', d.status === 'returned' ? 'rotate' : 'check']];
     var idx = -1; steps.forEach(function (s, i) { if (s[0] === d.status) idx = i; });
@@ -530,6 +531,34 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     return '<div class="tr-card"><b style="font-family:var(--font-display)">' + esc(d.code) + '</b> <span class="badge" style="background:var(--brand-soft);color:var(--brand)">' + esc(t('st_' + d.status)) + '</span><ul class="tl">' +
       steps.map(function (s, i) { var c = i < idx ? 'done' : i === idx ? 'now' : '', w = when(s[0]); return '<li class="' + c + '"><span class="d">' + ic(s[1]) + '</span><div>' + esc(t('st_' + s[0])) + (w ? '<small>' + esc(dt(w)) + '</small>' : '') + '</div></li>'; }).join('') + '</ul></div>';
   }
+
+  function reqCard(d) {
+    var h = '<div class="tr-card"' + ((d.req_stage === 'pending' || d.req_stage === 'accepted') ? ' data-poll="1"' : '') + '><b style="font-family:var(--font-display)">' + esc(d.code) + '</b> ';
+    var badge = function (k) { return '<span class="badge" style="background:var(--brand-soft);color:var(--brand)">' + esc(t(k)) + '</span>'; };
+    if (d.req_stage === 'quoted') {
+      var pr = Number(d.quote).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { maximumFractionDigits: 2 });
+      return h + badge('rq_quoted') + '<div style="font-size:34px;font-family:var(--font-display);margin:12px 0" dir="ltr">' + esc(pr) + ' <small style="font-size:16px">' + esc(t('rq_cur')) + '</small></div>' +
+        '<div class="field"><label for="rq-ph">' + esc(t('rq_phone')) + '</label><input id="rq-ph" inputmode="tel" dir="ltr" maxlength="20"></div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn" type="button" data-rq="1">' + esc(t('rq_yes')) + '</button><button class="btn ghost" type="button" data-rq="0">' + esc(t('rq_no')) + '</button></div><p class="msg" id="rq-msg" role="status"></p></div>';
+    }
+    return h + badge('rq_' + d.req_stage) + '</div>';
+  }
+  function trackHTML(d) {
+    if (d.req_stage && d.req_stage !== 'approved') return reqCard(d);
+    var h = trackHTML0(d);
+    if (d.req_stage === 'approved') { var pr = Number(d.quote).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { maximumFractionDigits: 2 }); h = h.replace('<ul class="tl">', '<div class="nm-sub" style="margin:8px 0">' + esc(t('rq_approved')) + ' · ' + esc(pr) + ' ' + esc(t('rq_cur')) + '</div><ul class="tl">'); }
+    return h;
+  }
+  el('tr-out').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-rq]'); if (!b || !sb) return;
+    var code = el('tr-in').value.trim().toUpperCase(), ph = (el('rq-ph') || {}).value || '', msg = el('rq-msg');
+    b.disabled = true;
+    sb.rpc('customer_decide_quote', { p_code: code, p_phone: ph, p_approve: b.getAttribute('data-rq') === '1' }).then(function (r) {
+      if (r.error) { b.disabled = false; if (msg) { msg.className = 'msg err'; msg.textContent = t('rq_bad'); } return; }
+      el('track-form').dispatchEvent(new Event('submit', { cancelable: true }));
+    }).catch(function () { b.disabled = false; });
+  });
+  setInterval(function () { if (document.visibilityState === 'visible' && el('tr-out').querySelector('[data-poll]') && sb) el('track-form').dispatchEvent(new Event('submit', { cancelable: true })); }, 30000);
 
   /* ---------- auth ---------- */
   function renderAuthTexts() {
