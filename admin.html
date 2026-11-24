@@ -498,6 +498,7 @@ select.search { appearance: auto; cursor: pointer; }
       <section id="p-ov" class="stack"></section>
 
       <section id="p-sh" class="stack" hidden>
+        <div id="ind-orders"></div>
         <details class="add" id="add-sh">
           <summary><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="add_ship"></span></summary>
           <form id="form-sh" autocomplete="off">
@@ -1937,8 +1938,55 @@ select.search { appearance: auto; cursor: pointer; }
       toast(t('ho_done')); await Promise.all([refresh('shipments'), loadHandovers(), loadCourierLog()]);
     });
   });
+  /* ---------- individual orders ---------- */
+  var IO = [];
+  Object.assign(I18N.ar, { io_h: 'طلبات الأفراد', io_none: 'مفيش طلبات في الانتظار', io_from: 'المرسل', io_to: 'المستلم', io_area: 'المنطقة', io_fee: 'أجرة الشحن', io_val: 'قيمة الشحنة', io_ok: 'تأكيد وإنشاء الشحنة', io_rej: 'رفض', io_call: 'اتصل', io_wa: 'واتساب', io_done: 'تم.', io_note: 'سبب الرفض (اختياري)', io_pick: 'استلام من', io_deliv: 'تسليم إلى', io_hist: 'آخر الطلبات', io_st_confirmed: 'اتأكد', io_st_rejected: 'مرفوض', io_conf_q: 'تأكيد الطلب وإنشاء الشحنة؟', io_rej_q: 'رفض الطلب؟' });
+  Object.assign(I18N.en, { io_h: 'Individual requests', io_none: 'No pending requests', io_from: 'Sender', io_to: 'Recipient', io_area: 'Area', io_fee: 'Delivery fee', io_val: 'Item value', io_ok: 'Confirm and create shipment', io_rej: 'Reject', io_call: 'Call', io_wa: 'WhatsApp', io_done: 'Done.', io_note: 'Rejection reason (optional)', io_pick: 'Pickup', io_deliv: 'Deliver to', io_hist: 'Recent requests', io_st_confirmed: 'Confirmed', io_st_rejected: 'Rejected', io_conf_q: 'Confirm the request and create the shipment?', io_rej_q: 'Reject this request?' });
+  async function loadIndOrders() {
+    if (local || !sb) return;
+    var r = await sb.from('public_orders').select('*').order('created_at', { ascending: false }).limit(100);
+    if (r.error) return; IO = r.data || []; renderIndOrders();
+  }
+  function renderIndOrders() {
+    var box = el('ind-orders'); if (!box) return;
+    var pend = IO.filter(function (o) { return o.status === 'pending'; }), done = IO.filter(function (o) { return o.status !== 'pending'; }).slice(0, 6);
+    if (!IO.length) { box.innerHTML = ''; return; }
+    var ar = function (id) { var a = (areaRows || []).filter(function (x) { return x.id === id; })[0]; return a ? (lang === 'ar' ? a.gov_ar + ' - ' + a.city_ar : a.gov_en + ' - ' + a.city_en) : ''; };
+    var h = '<div class="card"><h2>' + t('io_h') + (pend.length ? ' <span class="dot c-out_for_delivery">' + pend.length + '</span>' : '') + '</h2>';
+    h += pend.length ? pend.map(function (o) {
+      return '<div class="card" style="margin:6px 0"><div class="kv"><span><b dir="ltr">' + esc(o.code) + '</b></span><span>' + fmtDT(o.created_at) + '</span></div>' +
+        '<div class="kv"><span>' + t('io_from') + '</span><span>' + esc(o.sender_name) + ' · <a href="tel:' + esc(o.sender_phone) + '" dir="ltr">' + esc(o.sender_phone) + '</a> · <a href="https://wa.me/' + waPhone(o.sender_phone) + '" target="_blank" rel="noopener">' + t('io_wa') + '</a></span></div>' +
+        '<div class="kv"><span>' + t('io_pick') + '</span><span>' + esc(o.pickup_address) + '</span></div>' +
+        '<div class="kv"><span>' + t('io_to') + '</span><span>' + esc(o.receiver_name) + ' · <span dir="ltr">' + esc(o.receiver_phone) + '</span></span></div>' +
+        '<div class="kv"><span>' + t('io_deliv') + '</span><span>' + esc(o.receiver_address) + '</span></div>' +
+        '<div class="kv"><span>' + t('io_area') + '</span><span>' + esc(ar(o.area_id)) + '</span></div>' +
+        '<div class="kv"><span>' + t('io_val') + '</span><b>' + money(o.item_value) + '</b></div>' +
+        (o.notes ? '<p class="note">' + esc(o.notes) + '</p>' : '') +
+        '<div class="row"><label class="note">' + t('io_fee') + '</label><input class="search" type="number" min="0" step="1" inputmode="decimal" data-iof="' + esc(o.id) + '" value="' + (+o.fee) + '" style="max-width:110px"><input class="search" data-ion="' + esc(o.id) + '" placeholder="' + t('io_note') + '" maxlength="200"></div>' +
+        '<div class="row"><button class="btn sm" type="button" data-iook="' + esc(o.id) + '">' + t('io_ok') + '</button><button class="btn danger sm" type="button" data-iorj="' + esc(o.id) + '">' + t('io_rej') + '</button></div></div>';
+    }).join('') : '<p class="note">' + t('io_none') + '</p>';
+    if (done.length) h += '<h3 style="margin-top:8px">' + t('io_hist') + '</h3><div class="tablewrap"><table><tbody>' + done.map(function (o) {
+      return '<tr><td dir="ltr">' + esc(o.code) + '</td><td>' + esc(o.sender_name) + '</td><td>' + fmtDT(o.created_at) + '</td><td>' + t('io_st_' + o.status) + '</td></tr>';
+    }).join('') + '</tbody></table></div>';
+    box.innerHTML = h + '</div>';
+  }
+  document.addEventListener('click', function (e) {
+    var ok = e.target.closest && e.target.closest('[data-iook]'), rj = e.target.closest && e.target.closest('[data-iorj]');
+    if (!ok && !rj) return;
+    var b = ok || rj, id = b.getAttribute(ok ? 'data-iook' : 'data-iorj');
+    var fe = document.querySelector('[data-iof="' + id + '"]'), ne = document.querySelector('[data-ion="' + id + '"]');
+    var fee = fe ? parseFloat(fe.value) : NaN;
+    if (ok && (isNaN(fee) || fee < 0)) { toast(t('t_err')); return; }
+    if (!confirm(t(ok ? 'io_conf_q' : 'io_rej_q'))) return;
+    b.disabled = true;
+    safe(async function () {
+      var r = await sb.rpc('admin_decide_order', { p_id: id, p_approve: !!ok, p_fee: ok ? fee : null, p_note: ne && ne.value.trim() ? ne.value.trim() : null });
+      if (r.error) { b.disabled = false; throw r.error; }
+      toast(t('io_done')); await Promise.all([refresh('shipments'), loadIndOrders()]);
+    });
+  });
   applyStatic();
-  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers()]); }
+  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders()]); }
   async function startData() {
     if (started) return; started = true;
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }

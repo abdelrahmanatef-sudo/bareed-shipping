@@ -214,7 +214,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <span class="eyebrow"><i></i><span data-i18n="eyebrow"></span></span>
         <h1 data-i18n-html="h1"></h1>
         <p class="lead" data-i18n="lead"></p>
-        <div class="cta-row"><button class="btn lg" id="signup-btn" type="button" data-i18n="signup"></button><a class="btn ghost lg" href="#coverage" data-i18n="n_cov"></a></div>
+        <div class="cta-row"><button class="btn lg" id="signup-btn" type="button" data-i18n="signup"></button><button class="btn ghost lg" id="send-btn" type="button" data-i18n="send_btn"></button><a class="btn ghost lg" href="#coverage" data-i18n="n_cov"></a></div>
         <form class="track" id="track-form"><input id="tr-in" required maxlength="20" autocomplete="off" data-i18n-ph="tr_ph" aria-label="Tracking code"><button class="btn" type="submit" data-i18n="tr_btn"></button></form>
         <div id="tr-out" aria-live="polite"></div>
       </div>
@@ -294,6 +294,30 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   </div>
 </div>
 
+<div class="modal nm" id="omodal" hidden>
+  <i class="nm-circle c1"></i><i class="nm-circle c2"></i><i class="nm-circle c3"></i>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="o-t" style="width:min(460px,100%)">
+    <button class="nm-x" id="o-close" type="button" aria-label="Close"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div style="text-align:center"><h2 id="o-t" data-i18n="o_t"></h2><p class="nm-sub" data-i18n="o_s"></p></div>
+    <form id="o-form" style="display:grid;gap:14px">
+      <div class="field"><label for="o-sn" data-i18n="o_sn"></label><input id="o-sn" required maxlength="120" autocomplete="name"></div>
+      <div class="field"><label for="o-sp" data-i18n="o_sp"></label><input id="o-sp" required inputmode="tel" maxlength="20" dir="ltr" autocomplete="tel"></div>
+      <div class="field"><label for="o-pa" data-i18n="o_pa"></label><input id="o-pa" required maxlength="300"></div>
+      <div class="field"><label for="o-rn" data-i18n="o_rn"></label><input id="o-rn" required maxlength="120"></div>
+      <div class="field"><label for="o-rp" data-i18n="o_rp"></label><input id="o-rp" required inputmode="tel" maxlength="20" dir="ltr"></div>
+      <div class="field"><label for="o-ra" data-i18n="o_ra"></label><input id="o-ra" required maxlength="300"></div>
+      <div class="field"><label for="o-area" data-i18n="o_area"></label><select id="o-area" required style="width:100%;background:var(--nm-bg);border:0;border-radius:16px;padding:14px 16px;color:var(--ink)"></select></div>
+      <div class="field"><label for="o-val" data-i18n="o_val"></label><input id="o-val" inputmode="numeric" maxlength="9" dir="ltr" placeholder="0"></div>
+      <div class="field"><label for="o-nt" data-i18n="o_nt"></label><input id="o-nt" maxlength="500"></div>
+      <input id="o-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+      <p class="nm-sub" id="o-fee" style="text-align:center"></p>
+      <button class="btn" type="submit" id="o-submit" data-i18n="o_go"></button>
+      <p class="msg" id="o-msg" role="status"></p>
+    </form>
+    <div id="o-done" hidden style="text-align:center;display:grid;gap:10px"></div>
+  </div>
+</div>
+
 <script>
 (function () {
   var D = {
@@ -352,6 +376,24 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       st_new: 'New', st_picked_up: 'Picked up from merchant', st_out_for_delivery: 'Out for delivery', st_delivered: 'Delivered', st_returned: 'Returned'
     }
   };
+  Object.assign(D.ar, {
+    send_btn: 'ابعت شحنة (أفراد)', o_t: 'ابعت شحنة', o_s: 'اكتب البيانات وهنتصل بيك نأكد الطلب.',
+    o_sn: 'اسمك', o_sp: 'رقم تليفونك', o_pa: 'عنوان الاستلام منك', o_rn: 'اسم المستلم', o_rp: 'تليفون المستلم', o_ra: 'عنوان المستلم',
+    o_area: 'منطقة التسليم', o_val: 'قيمة الشحنة اللي المستلم يدفعها (لو في، وإلا اتركها فاضية)', o_nt: 'ملاحظات (اختياري)', o_go: 'أرسل الطلب',
+    o_pick: 'اختار المنطقة', o_fee: 'أجرة الشحن {f} جنيه بتتدفع من المستلم عند التسليم{v}', o_vplus: ' + قيمة الشحنة {v} جنيه',
+    o_err: 'اتأكد من البيانات، وتليفون صح.', o_rate: 'وصلنا أكتر من طلب منك النهارده. كلمنا لو محتاج حاجة تانية.', o_fail: 'حصلت مشكلة، جرّب تاني.',
+    o_ok: 'وصل طلبك! كود الشحنة:', o_ok2: 'هنتصل بيك على رقمك نأكد الطلب. تقدر تتابعه بالكود.', o_track: 'تتبّع الشحنة',
+    st_pending_confirmation: 'في انتظار تأكيدنا', st_rejected_request: 'الطلب اتلغى'
+  });
+  Object.assign(D.en, {
+    send_btn: 'Send a parcel (individuals)', o_t: 'Send a parcel', o_s: 'Fill in the details and we will call you to confirm.',
+    o_sn: 'Your name', o_sp: 'Your phone', o_pa: 'Pickup address', o_rn: 'Recipient name', o_rp: 'Recipient phone', o_ra: 'Recipient address',
+    o_area: 'Delivery area', o_val: 'Item value the recipient pays (leave empty if none)', o_nt: 'Notes (optional)', o_go: 'Submit request',
+    o_pick: 'Choose area', o_fee: 'Delivery fee {f} EGP, paid by the recipient on delivery{v}', o_vplus: ' + item value {v} EGP',
+    o_err: 'Check the details and phone numbers.', o_rate: 'Too many requests from you today. Contact us if you need more.', o_fail: 'Something went wrong, try again.',
+    o_ok: 'Request received! Shipment code:', o_ok2: 'We will call you to confirm. You can track it with the code.', o_track: 'Track shipment',
+    st_pending_confirmation: 'Awaiting our confirmation', st_rejected_request: 'Request cancelled'
+  });
   var lang = 'ar';
   try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
   function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
@@ -487,6 +529,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   });
   function dt(iso) { try { return new Date(iso).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return ''; } }
   function trackHTML(d) {
+    if (d.status === 'pending_confirmation' || d.status === 'rejected_request') return '<div class="tr-card"><b style="font-family:var(--font-display)">' + esc(d.code) + '</b> <span class="badge" style="background:var(--brand-soft);color:var(--brand)">' + esc(t('st_' + d.status)) + '</span></div>';
     var steps = [['new', 'box'], ['picked_up', 'box'], ['out_for_delivery', 'truck'], [d.status === 'returned' ? 'returned' : 'delivered', d.status === 'returned' ? 'rotate' : 'check']];
     var idx = -1; steps.forEach(function (s, i) { if (s[0] === d.status) idx = i; });
     var when = function (k) { if (k === 'new') return d.created_at; var ev = (d.events || []).filter(function (e) { return e.status === k; })[0]; return ev ? ev.created_at : null; };
@@ -538,6 +581,45 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       }
     } catch (err) { msg('e_fail'); }
   });
+
+  /* ---------- individual orders ---------- */
+  (function () {
+    var form = el('o-form'), amsg = el('o-msg');
+    function fillAreas() {
+      var sel = el('o-area'), cur = sel.value;
+      var act = (areas || []).filter(function (a) { return a.is_active; });
+      sel.innerHTML = '<option value="">' + esc(t('o_pick')) + '</option>' + act.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(gname(a) + ' - ' + cname(a)) + '</option>'; }).join('');
+      sel.value = cur; fee();
+    }
+    function fee() {
+      var a = (areas || []).filter(function (x) { return x.id === el('o-area').value; })[0], v = parseFloat(el('o-val').value) || 0;
+      el('o-fee').textContent = a ? t('o_fee', { f: a.fee, v: v > 0 ? t('o_vplus', { v: v }) : '' }) : '';
+    }
+    function open() { el('o-done').hidden = true; form.hidden = false; amsg.textContent = ''; fillAreas(); el('omodal').hidden = false; }
+    el('send-btn').addEventListener('click', open);
+    el('o-close').addEventListener('click', function () { el('omodal').hidden = true; });
+    el('omodal').addEventListener('click', function (e) { if (e.target === el('omodal')) el('omodal').hidden = true; });
+    el('o-area').addEventListener('change', fee); el('o-val').addEventListener('input', fee);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (el('o-hp').value) return;
+      if (!sb) { amsg.className = 'msg err'; amsg.textContent = t('no_lib'); return; }
+      var btn = el('o-submit'); btn.disabled = true; amsg.textContent = '';
+      sb.rpc('submit_public_order', {
+        p_sender_name: el('o-sn').value, p_sender_phone: el('o-sp').value, p_pickup_address: el('o-pa').value,
+        p_receiver_name: el('o-rn').value, p_receiver_phone: el('o-rp').value, p_receiver_address: el('o-ra').value,
+        p_area_id: el('o-area').value, p_item_value: parseFloat(el('o-val').value) || 0, p_notes: el('o-nt').value
+      }).then(function (r) {
+        btn.disabled = false;
+        if (r.error) { amsg.className = 'msg err'; amsg.textContent = /rate_limited/.test(r.error.message) ? t('o_rate') : /invalid_input|area_not/.test(r.error.message) ? t('o_err') : t('o_fail'); return; }
+        var c = r.data && r.data.code; form.hidden = true; form.reset();
+        var d = el('o-done'); d.hidden = false;
+        d.innerHTML = '<h2>' + esc(t('o_ok')) + '</h2><p style="font-family:var(--font-display);font-size:28px;color:var(--brand)" dir="ltr">' + esc(c) + '</p><p class="nm-sub">' + esc(t('o_ok2')) + '</p><button class="btn" type="button" id="o-tr">' + esc(t('o_track')) + '</button>';
+        el('o-tr').onclick = function () { el('omodal').hidden = true; el('tr-in').value = c; el('track-form').dispatchEvent(new Event('submit', { cancelable: true })); el('track-form').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+      }).catch(function () { btn.disabled = false; amsg.className = 'msg err'; amsg.textContent = t('o_fail'); });
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') el('omodal').hidden = true; });
+  })();
 
   /* ---------- boot ---------- */
   renderAll(); observe();
