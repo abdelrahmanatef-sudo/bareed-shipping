@@ -53,6 +53,16 @@ main{max-width:720px;margin:-46px auto 0;padding:0 14px 90px;display:grid;gap:14
   <button class="btn" id="go"></button><p class="m" id="err" style="color:var(--bad)"></p>
   <button class="btn g" id="lg0"></button>
 </div></div>
+<div id="kyc" class="login" hidden><div class="card">
+  <h2 id="k-t" style="margin:0"></h2><p class="m" id="k-s"></p><p class="m" id="k-rj" style="color:var(--bad)"></p>
+  <div class="field"><label id="k-nl"></label><input id="k-n" inputmode="numeric" maxlength="14" dir="ltr" autocomplete="off"></div>
+  <div class="field"><label id="k-fl"></label><input id="k-f" type="file" accept="image/*" capture="environment"><img id="k-fp" alt="" style="display:none;max-width:100%;border-radius:10px;margin-top:6px"></div>
+  <div class="field"><label id="k-bl"></label><input id="k-b" type="file" accept="image/*" capture="environment"><img id="k-bp" alt="" style="display:none;max-width:100%;border-radius:10px;margin-top:6px"></div>
+  <div class="field"><label id="k-sl"></label><input id="k-se" type="file" accept="image/*" capture="user"><img id="k-sp" alt="" style="display:none;max-width:100%;border-radius:10px;margin-top:6px"></div>
+  <label class="m" style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="k-c" style="margin-top:3px"><span id="k-ct"></span></label>
+  <button class="btn" id="k-go"></button><p class="m" id="k-err" style="color:var(--bad)"></p>
+  <button class="btn g" id="k-out"></button>
+</div></div>
 <div id="app" hidden>
   <div class="head"><div class="bar"><div class="brand" style="display:flex;align-items:center;gap:10px"><svg class="logo" width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#1A9CF0"/><rect x="13" y="16" width="26" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 19.5 26 27.5l11.5-8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 22h4M7.5 28H10" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg><span>بريد<small id="sub"></small></span></div><div style="display:flex;gap:8px"><button class="ib" id="rf" type="button" aria-label="refresh">↻</button><button class="ib" id="lg"></button><button class="ib" id="out"></button></div></div>
     <div class="hi"><h1 id="hello"></h1><p id="today"></p></div><div id="avl" style="margin-top:12px"></div></div>
@@ -73,6 +83,14 @@ var D={ar:{title:'تطبيق المندوب',sub:'سجّل دخولك لشغل �
 en:{title:'Delivery Representative app',sub:'Sign in to start your day',email:'Email',pass:'Password',go:'Sign in',bad:'Wrong email or password',notc:'This is not a delivery representative account',susp:'Your account is suspended. Contact Bareed.',out:'Sign out',hello:'Hi {n}',now:'Carrying',cash:'Cash on me',dn:'Delivered today',t1:'Mine',t2:'Done',t3:'My log',none:'No shipments here',cust:'Customer',cod:'Collect',call:'Call',wa:'WhatsApp',arr:'Arrived',m_pick:'Hi {c}, your shipment {k}{m} was picked up from the merchant and will reach you soon. Bareed.',m_out:'Hi {c}, I am your Bareed delivery representative. Shipment {k}{m} is on its way to you now. Amount due: {a} EGP. Please be ready to receive it.',m_arr:'Hi {c}, I am your Bareed delivery representative and I have arrived at the address with shipment {k}. Amount due: {a} EGP.',map:'Map',pick:'Picked up',outb:'Out for delivery',deliv:'Delivered',ret:'Returned',cd:'Confirm the customer received it and you collected {m} EGP?',cr:'Return reason',rr:['Customer not answering','Customer refused','Wrong or unclear address','Customer asked to postpone','Item not as described','Other'],ro:'Write the reason',cn:'Cancel',ar:['Customer not answering','Customer not available','Customer asked to postpone','Wrong or unclear address','Other'],at:'Failed delivery attempt',atb:'Failed attempt',atok:'Log attempt',d0:'Retry today',d1:'Retry tomorrow',d2:'Retry in 2 days',att:'Attempts',nxt:'Next try',maxw:'Maximum reached (3 attempts). Mark it as returned.',rok:'Confirm return',ok:'Done',err:'Something went wrong, try again',st:{new:'New',picked_up:'Picked up',out_for_delivery:'On the way',delivered:'Delivered',returned:'Returned'},act:{attempt:'Failed attempt',assigned:'Assigned to you',unassigned:'Removed from you',settled:'Settled',unsettled:'Settlement undone',status:'Status change'},cur:'EGP',av_on:'🟢 Available for work',av_off:'⚪ Not available',av_hint:'Tap to change. When unavailable you will not receive new shipments.',hcard:'Hand over cash',hbtn:'I handed the cash to accounting',hconf:'Confirm you handed over {m} EGP to accounting? They will review and confirm.',hpend:'Waiting for accounting to confirm {m} EGP',hok:'Accounting received {m} EGP',hshort:'Shortage {m} EGP',hsurp:'Surplus {m} EGP',hrej:'Request rejected by accounting',hhist:'Recent cash handovers',hnone:'No cash to hand over',lang:'AR',set:'settled'}};
 D.ar.frm='استلم من التاجر';D.en.frm='Pick up from';D.ar.callm='اتصل بالتاجر';D.en.callm='Call merchant';D.ar.carr='إجمالي COD الشحنات اللي معايا';D.en.carr='Total COD of shipments I carry';D.ar.rfn='تحديث';D.en.rfn='Refresh';D.ar.upd='آخر تحديث';D.en.upd='Last updated';D.ar.lerr='تعذّر تحميل الشحنات، اضغط تحديث';D.en.lerr='Could not load shipments, tap refresh';D.ar.madr='عنوان الاستلام';D.en.madr='Pickup address';
 D.ar.qacc='قبول الطلب';D.en.qacc='Accept request';D.ar.qsend='إرسال السعر للعميل';D.en.qsend='Send price to customer';D.ar.qph='السعر الإجمالي للعميل (شامل نسبة بريد)';D.en.qph='Total price for customer (includes Bareed share)';D.ar.qbad='اكتب سعر صحيح';D.en.qbad='Enter a valid price';D.ar.qreq='طلب العميل';D.en.qreq='Customer request';D.ar.qhid='رقم العميل بيظهر بعد قبول الطلب';D.en.qhid='Customer phone shows after you accept';D.ar.qwait='مستني موافقة العميل على السعر';D.en.qwait='Waiting for customer approval';D.ar.rq_pending='طلب جديد من عميل';D.en.rq_pending='New customer request';D.ar.rq_accepted='قبلته · حدد السعر';D.en.rq_accepted='Accepted · set price';D.ar.rq_quoted='السعر اتبعت';D.en.rq_quoted='Price sent';D.ar.rq_declined='العميل رفض السعر';D.en.rq_declined='Customer declined';D.ar.qstart='بدأت التنفيذ';D.en.qstart='Started';
+D.ar.k_t='توثيق هويتك';D.en.k_t='Verify your identity';
+D.ar.k_s='عشان نشغّلك لازم نتأكد من هويتك. صوّر البطاقة من الوش والضهر وصورة سيلفي ليك دلوقتي بالكاميرا، وبياناتك محفوظة بشكل سري ومحدش بيشوفها غير الإدارة.';D.en.k_s='To start working we must verify who you are. Take photos of your ID (front and back) and a selfie with the camera now. Your data is kept confidential and only management can see it.';
+D.ar.k_n='الرقم القومي (14 رقم)';D.en.k_n='National ID number (14 digits)';D.ar.k_f='صورة البطاقة - الوش';D.en.k_f='ID card - front';D.ar.k_b='صورة البطاقة - الضهر';D.en.k_b='ID card - back';D.ar.k_se='صورة سيلفي ليك';D.en.k_se='A selfie of you';
+D.ar.k_c='أوافق إن بريد تحتفظ ببيانات بطاقتي وصوري لأغراض التحقق من الهوية والأمان، وإنها تتراجع من الإدارة.';D.en.k_c='I agree that Bareed keeps my ID data and photos for identity verification and safety, and that management reviews them.';
+D.ar.k_go='إرسال للمراجعة';D.en.k_go='Submit for review';D.ar.k_wait='بياناتك قيد المراجعة. ممكن تشتغل لحد ما الإدارة تراجعها.';D.en.k_wait='Your documents are under review. You can work meanwhile.';
+D.ar.k_miss='اكتب الرقم القومي وارفع الصور التلاتة ووافق على الشرط.';D.en.k_miss='Enter your ID number, add all three photos and accept the consent.';
+D.ar.k_bad='الرقم القومي غلط. راجعه.';D.en.k_bad='Invalid national ID number.';D.ar.k_dup='الرقم القومي ده مسجل قبل كده.';D.en.k_dup='This national ID is already registered.';D.ar.k_age='السن لازم يكون من 18 لـ 75 سنة.';D.en.k_age='Age must be between 18 and 75.';
+D.ar.k_fail='حصلت مشكلة في الرفع، جرّب تاني.';D.en.k_fail='Upload failed, try again.';D.ar.k_rj='تم رفض المستندات السابقة. السبب:';D.en.k_rj='Previous documents were rejected. Reason:';D.ar.k_sending='جاري الرفع...';D.en.k_sending='Uploading...';
 function t(k){return D[lang][k]}
 function $(i){return document.getElementById(i)}
 function esc(s){var d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML}
@@ -165,12 +183,31 @@ async function load(){
  var hr=await sb.rpc('courier_my_handovers');if(!hr.error)hos=hr.data||[];
  var l=await sb.from('courier_log').select('shipment_code,action,to_status,note,created_at').order('created_at',{ascending:false}).limit(200);if(!l.error)logs=l.data||[];
  if(rb)rb.disabled=false;if(!(document.activeElement&&document.activeElement.classList&&document.activeElement.classList.contains('qin')))render()}
+function renderKyc(){$('k-t').textContent=t('k_t');$('k-s').textContent=t('k_s');$('k-nl').textContent=t('k_n');$('k-fl').textContent=t('k_f');$('k-bl').textContent=t('k_b');$('k-sl').textContent=t('k_se');$('k-ct').textContent=t('k_c');$('k-go').textContent=t('k_go');$('k-out').textContent=t('out');
+ $('k-rj').textContent=me&&me.kyc_reject_reason?t('k_rj')+' '+me.kyc_reject_reason:(me&&me.id_status==='rejected'?t('k_rj'):'')}
+function showKyc(){$('login').hidden=true;$('app').hidden=true;$('kyc').hidden=false;renderKyc()}
+function packImg(file){return new Promise(function(res,rej){var im=new Image(),u=URL.createObjectURL(file);im.onload=function(){var m=1400,w=im.width,h=im.height,k=Math.min(1,m/Math.max(w,h));var c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(b){b?res(b):rej(new Error('img'))},'image/jpeg',0.82)};im.onerror=function(){rej(new Error('img'))};im.src=u})}
+[['k-f','k-fp'],['k-b','k-bp'],['k-se','k-sp']].forEach(function(p){$(p[0]).addEventListener('change',function(){var f=this.files[0],i=$(p[1]);if(f){i.src=URL.createObjectURL(f);i.style.display='block'}else i.style.display='none'})});
+$('k-out').onclick=async function(){await sb.auth.signOut({scope:'local'});location.reload()};
+$('k-go').onclick=async function(){
+ var err=$('k-err');err.textContent='';var n=$('k-n').value.replace(/\s/g,''),fs=[$('k-f').files[0],$('k-b').files[0],$('k-se').files[0]];
+ if(!n||!fs[0]||!fs[1]||!fs[2]||!$('k-c').checked){err.textContent=t('k_miss');return}
+ var b=$('k-go');b.disabled=true;b.textContent=t('k_sending');
+ try{
+  var names=['front','back','selfie'];
+  for(var i=0;i<3;i++){var blob=await packImg(fs[i]);var up=await sb.storage.from('kyc').upload(me.id+'/'+names[i]+'.jpg',blob,{upsert:true,contentType:'image/jpeg'});if(up.error)throw up.error}
+  var r=await sb.rpc('courier_submit_kyc',{p_national_id:n,p_consent:true,p_ocr_ok:null});
+  if(r.error){var m=r.error.message||'';err.textContent=/bad_id/.test(m)?t('k_bad'):/duplicate/.test(m)?t('k_dup'):/bad_age/.test(m)?t('k_age'):t('k_fail');b.disabled=false;b.textContent=t('k_go');return}
+  $('kyc').hidden=true;b.disabled=false;b.textContent=t('k_go');await enter()
+ }catch(e){err.textContent=t('k_fail');b.disabled=false;b.textContent=t('k_go')}
+};
 async function enter(){
  var ss=await sb.auth.getSession();var uid=ss.data&&ss.data.session?ss.data.session.user.id:null;
- var c=uid?await sb.from('couriers').select('name,phone,status,available').eq('user_id',uid).maybeSingle():{data:null};
+ var c=uid?await sb.from('couriers').select('id,name,phone,status,available,id_status,kyc_reject_reason').eq('user_id',uid).maybeSingle():{data:null};
  if(c.error){$('app').hidden=true;$('login').hidden=false;$('err').textContent=t('bad');return}
  if(!c.data||c.data.status!=='active'){var bad=!!(c.data&&c.data.status!=='active');await sb.auth.signOut({scope:'local'});$('app').hidden=true;$('login').hidden=false;$('err').textContent=t(bad?'susp':'notc');return}
- me=c.data;$('login').hidden=true;$('app').hidden=false;await load();
+ me=c.data;if(me.id_status==='none'||me.id_status==='rejected'){showKyc();return}
+ $('kyc').hidden=true;$('login').hidden=true;$('app').hidden=false;if(me.id_status==='pending')toast(t('k_wait'));await load();
  if(!window._poll){window._poll=setInterval(function(){if(document.visibilityState==='visible')load()},30000);document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&me)load()})}}
 $('go').onclick=async function(){
  $('err').textContent='';var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});

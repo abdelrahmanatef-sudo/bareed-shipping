@@ -1027,7 +1027,7 @@ select.search { appearance: auto; cursor: pointer; }
     if (!store.couriers.length) { el('co-list').innerHTML = '<div class="empty" style="grid-column:1/-1"><b>' + t('e_courier') + '</b>' + t('e_courier_h') + '</div>'; return; }
     var fq = FLT.co.q.trim().toLowerCase(), fm = FLT.co.mode;
     var vis = store.couriers.filter(function (c) {
-      if (fq && (c.name + ' ' + c.phone + ' ' + c.email).toLowerCase().indexOf(fq) < 0) return false;
+      if (fq && (c.name + ' ' + c.phone + ' ' + c.email + ' ' + (c.nid || '')).toLowerCase().indexOf(fq) < 0) return false;
       var hd0 = holds[c.id] || { cod: 0, n: 0 };
       var out0 = store.shipments.filter(function (s) { return s.courierId === c.id && s.status === 'out_for_delivery' && inR(s, FLT.co); }).length;
       if (fm === 'archived') return c.status === 'archived';
@@ -1050,11 +1050,11 @@ select.search { appearance: auto; cursor: pointer; }
       var dl = mine.filter(function (s) { return s.status === 'delivered'; }).length;
       var rt = mine.filter(function (s) { return s.status === 'returned'; }).length;
       var hd = holds[c.id] || { cod: 0, n: 0 };
-      return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.status === 'active' ? ' <span class="dot ' + (c.available ? 'c-delivered' : 'c-returned') + '">' + t(c.available ? 'av_on' : 'av_off') + '</span>' : '') + (c.status !== 'active' ? ' <span class="dot c-returned">' + t('mr_' + c.status) + '</span>' : '') + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
+      return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b> <span class="dot ' + (c.kyc === 'verified' ? 'c-delivered' : c.kyc === 'pending' ? 'c-out_for_delivery' : 'c-returned') + '">' + t('kyc_' + c.kyc) + '</span>' + (c.status === 'active' ? ' <span class="dot ' + (c.available ? 'c-delivered' : 'c-returned') + '">' + t(c.available ? 'av_on' : 'av_off') + '</span>' : '') + (c.status !== 'active' ? ' <span class="dot c-returned">' + t('mr_' + c.status) + '</span>' : '') + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (fm === 'cash' ? shipDetail(mine.filter(function (s) { return s.status === 'delivered' && !s.settled; })) : fm === 'carry' ? shipDetail(mine.filter(function (s) { return s.status === 'out_for_delivery'; })) : fm === 'copen' ? shipDetail(mine.filter(function (s) { return s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'; })) : '') + (shortOf(c.id) > 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b style="color:var(--bad,#c0392b)">' + money(shortOf(c.id)) + '</b></div><div class="row"><button class="btn ghost sm" type="button" data-sp="' + esc(c.id) + '">' + t('sp_btn') + '</button></div>' : '') + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
-        '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
+        '<div class="row"><button class="btn ghost sm" type="button" data-kyc="' + esc(c.id) + '">' + t('kyc_btn') + '</button><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
           '<button class="btn ghost sm" type="button" data-rn="couriers|' + esc(c.id) + '">' + t('rn_btn') + '</button>' +
           (c.status === 'active' ? '<button class="btn ghost sm" type="button" data-cst="' + esc(c.id) + '|suspended">' + t('mr_suspend') + '</button>' : '<button class="btn sm" type="button" data-cst="' + esc(c.id) + '|active">' + t(c.status === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>') +
           (c.status !== 'archived' ? '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button>' : '') + '</div>' : '') + '</div>';
@@ -1504,9 +1504,9 @@ select.search { appearance: auto; cursor: pointer; }
           attempts: +r.attempts || 0, nextAttempt: r.next_attempt || '', createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
       });
     } else if (name === 'couriers') {
-      var rc = await sb.from('couriers').select('id,name,phone,email,status,available').order('created_at', { ascending: true });
+      var rc = await sb.from('couriers').select('id,name,phone,email,status,available,national_id,id_status,id_birthdate,id_gender,id_governorate,kyc_submitted_at,kyc_decided_at,kyc_reject_reason').order('created_at', { ascending: true });
       if (rc.error) throw rc.error;
-      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active', available: c.available !== false }; });
+      store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active', available: c.available !== false, nid: c.national_id || '', kyc: c.id_status || 'none', bd: c.id_birthdate, gd: c.id_gender, gov: c.id_governorate, kycAt: c.kyc_submitted_at, kycRj: c.kyc_reject_reason }; });
     } else if (name === 'merchants') {
       var rm = await sb.from('merchants').select('id,name,status');
       if (rm.error) throw rm.error;
@@ -2061,6 +2061,46 @@ select.search { appearance: auto; cursor: pointer; }
       safe(async function () { var r = await sb.from('expenses').delete().eq('id', b.getAttribute('data-exdel')); if (r.error) throw r.error; toast(t('ex_deld')); await loadExpenses(); renderAll(); });
     });
   })();
+  /* ---------- courier identity verification ---------- */
+  Object.assign(I18N.ar, { kyc_btn: 'الهوية', kyc_none: 'لم يوثّق', kyc_pending: 'هوية قيد المراجعة', kyc_verified: 'هوية موثّقة', kyc_rejected: 'هوية مرفوضة', kyc_h: 'ملف هوية المندوب', kyc_nid: 'الرقم القومي', kyc_bd: 'تاريخ الميلاد', kyc_age: 'السن', kyc_gd: 'النوع', kyc_m: 'ذكر', kyc_f: 'أنثى', kyc_gov: 'محافظة الميلاد', kyc_ph: 'التليفون', kyc_front: 'البطاقة - الوش', kyc_back: 'البطاقة - الضهر', kyc_selfie: 'سيلفي', kyc_ok: 'توثيق (مطابقة)', kyc_rej: 'رفض', kyc_reason: 'سبب الرفض:', kyc_done: 'تم.', kyc_nofiles: 'المندوب لسه ما رفعش مستندات.', kyc_close: 'إغلاق', kyc_note: 'اتأكد بنفسك إن الصور واضحة وإن وش البطاقة هو نفس وش السيلفي وإن بيانات البطاقة سليمة، وبعدين وثّق.', kyc_gv: { '01': 'القاهرة', '02': 'الإسكندرية', '03': 'بورسعيد', '04': 'السويس', '11': 'دمياط', '12': 'الدقهلية', '13': 'الشرقية', '14': 'القليوبية', '15': 'كفر الشيخ', '16': 'الغربية', '17': 'المنوفية', '18': 'البحيرة', '19': 'الإسماعيلية', '21': 'الجيزة', '22': 'بني سويف', '23': 'الفيوم', '24': 'المنيا', '25': 'أسيوط', '26': 'سوهاج', '27': 'قنا', '28': 'أسوان', '29': 'الأقصر', '31': 'البحر الأحمر', '32': 'الوادي الجديد', '33': 'مطروح', '34': 'شمال سيناء', '35': 'جنوب سيناء', '88': 'مولود بالخارج' } });
+  Object.assign(I18N.en, { kyc_btn: 'ID', kyc_none: 'Not verified', kyc_pending: 'ID pending review', kyc_verified: 'ID verified', kyc_rejected: 'ID rejected', kyc_h: 'Courier identity file', kyc_nid: 'National ID', kyc_bd: 'Birth date', kyc_age: 'Age', kyc_gd: 'Gender', kyc_m: 'Male', kyc_f: 'Female', kyc_gov: 'Birth governorate', kyc_ph: 'Phone', kyc_front: 'ID - front', kyc_back: 'ID - back', kyc_selfie: 'Selfie', kyc_ok: 'Verify (matches)', kyc_rej: 'Reject', kyc_reason: 'Rejection reason:', kyc_done: 'Done.', kyc_nofiles: 'The courier has not uploaded documents yet.', kyc_close: 'Close', kyc_note: 'Check yourself that the photos are clear, the ID face matches the selfie and the ID details look genuine, then verify.', kyc_gv: { '01': 'Cairo', '02': 'Alexandria', '03': 'Port Said', '04': 'Suez', '11': 'Damietta', '12': 'Dakahlia', '13': 'Sharqia', '14': 'Qalyubia', '15': 'Kafr El Sheikh', '16': 'Gharbia', '17': 'Monufia', '18': 'Beheira', '19': 'Ismailia', '21': 'Giza', '22': 'Beni Suef', '23': 'Fayoum', '24': 'Minya', '25': 'Assiut', '26': 'Sohag', '27': 'Qena', '28': 'Aswan', '29': 'Luxor', '31': 'Red Sea', '32': 'New Valley', '33': 'Matrouh', '34': 'North Sinai', '35': 'South Sinai', '88': 'Born abroad' } });
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-kyc]'); if (!b) return;
+    var c = store.couriers.filter(function (x) { return x.id === b.getAttribute('data-kyc'); })[0]; if (!c) return;
+    var old = document.getElementById('kyc-ov'); if (old) old.remove();
+    var ov = document.createElement('div'); ov.id = 'kyc-ov';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);overflow:auto;padding:16px;display:flex;justify-content:center;align-items:flex-start';
+    var age = c.bd ? Math.floor((Date.now() - new Date(c.bd).getTime()) / 31557600000) : '';
+    var gv = (t('kyc_gv') || {})[c.gov] || c.gov || '';
+    var kv = function (k, v) { return '<div class="kv"><span>' + t(k) + '</span><b>' + esc(v) + '</b></div>'; };
+    ov.innerHTML = '<div class="card" style="max-width:640px;width:100%;margin:auto;background:var(--surface,#fff)"><h2>' + t('kyc_h') + ' · ' + esc(c.name) + ' <span class="dot ' + (c.kyc === 'verified' ? 'c-delivered' : c.kyc === 'pending' ? 'c-out_for_delivery' : 'c-returned') + '">' + t('kyc_' + c.kyc) + '</span></h2>' +
+      kv('kyc_ph', c.phone) + (c.nid ? kv('kyc_nid', c.nid) + kv('kyc_bd', c.bd) + kv('kyc_age', age) + kv('kyc_gd', t(c.gd === 'M' ? 'kyc_m' : 'kyc_f')) + kv('kyc_gov', gv) : '') +
+      (c.kycRj ? '<p class="note">' + t('kyc_reason') + ' ' + esc(c.kycRj) + '</p>' : '') +
+      '<div id="kyc-imgs" style="display:grid;gap:10px;margin:10px 0"><p class="note">…</p></div>' +
+      (c.kyc === 'pending' ? '<p class="note">' + t('kyc_note') + '</p><div class="row"><button class="btn sm" type="button" id="kyc-ok">' + t('kyc_ok') + '</button><button class="btn danger sm" type="button" id="kyc-no">' + t('kyc_rej') + '</button></div>' : '') +
+      '<div class="row"><button class="btn ghost sm" type="button" id="kyc-x">' + t('kyc_close') + '</button></div></div>';
+    document.body.appendChild(ov);
+    var close = function () { ov.remove(); };
+    ov.addEventListener('click', function (ev) { if (ev.target === ov) close(); });
+    ov.querySelector('#kyc-x').onclick = close;
+    (async function () {
+      var box = ov.querySelector('#kyc-imgs'), h = '', any = false;
+      for (var k of ['front', 'back', 'selfie']) {
+        var r = await sb.storage.from('kyc').createSignedUrl(c.id + '/' + k + '.jpg', 300);
+        if (r.data && r.data.signedUrl) { any = true; h += '<div><div class="note">' + t('kyc_' + k) + '</div><a href="' + esc(r.data.signedUrl) + '" target="_blank" rel="noopener"><img src="' + esc(r.data.signedUrl) + '" alt="" style="max-width:100%;border-radius:10px"></a></div>'; }
+      }
+      box.innerHTML = any ? h : '<p class="note">' + t('kyc_nofiles') + '</p>';
+    })();
+    var dec = function (ok) {
+      var reason = null; if (!ok) { reason = prompt(t('kyc_reason'), ''); if (reason === null) return; }
+      safe(async function () {
+        var r = await sb.rpc('admin_decide_kyc', { p_courier: c.id, p_approve: ok, p_reason: reason }); if (r.error) throw r.error;
+        toast(t('kyc_done')); close(); await refresh('couriers');
+      });
+    };
+    var ok = ov.querySelector('#kyc-ok'), no = ov.querySelector('#kyc-no');
+    if (ok) ok.onclick = function () { dec(true); }; if (no) no.onclick = function () { dec(false); };
+  });
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
