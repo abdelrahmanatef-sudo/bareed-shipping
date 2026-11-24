@@ -996,6 +996,14 @@ select.search { appearance: auto; cursor: pointer; }
     document.querySelectorAll('#sh-filters .chip').forEach(function (b) { b.textContent = t(FILTER_KEYS[b.getAttribute('data-f')]); });
   }
 
+  function shipDetail(list) {
+    if (!list.length) return '';
+    var total = list.reduce(function (n, s) { return n + (+s.cod || 0); }, 0);
+    return '<div class="sep"></div><div class="note" style="font-weight:600">' + t('dt_h', { n: list.length, m: fmt(total) }) + '</div>' +
+      list.slice(0, 40).map(function (s) {
+        return '<div class="kv" style="font-size:13px"><span dir="ltr">' + esc(s.code) + ' · ' + esc(s.customer || '') + (s.zone ? ' · ' + esc(s.zone) : '') + '</span><b>' + fmt(s.cod) + '</b></div>';
+      }).join('') + (list.length > 40 ? '<div class="note">+' + (list.length - 40) + '</div>' : '');
+  }
   function initial(name) { return esc(String(name || '?').trim().charAt(0).toUpperCase()); }
   function renderCouriers() {
     var holds = courierHolds(FLT.co);
@@ -1028,7 +1036,7 @@ select.search { appearance: auto; cursor: pointer; }
       return '<div class="card"><div class="person"><span class="avatar">' + initial(c.name) + '</span><div><b>' + esc(c.name) + '</b>' + (c.status === 'active' ? ' <span class="dot ' + (c.available ? 'c-delivered' : 'c-returned') + '">' + t(c.available ? 'av_on' : 'av_off') + '</span>' : '') + (c.status !== 'active' ? ' <span class="dot c-returned">' + t('mr_' + c.status) + '</span>' : '') + (c.phone ? '<span class="note" dir="ltr">' + esc(c.phone) + '</span>' : '') + '</div></div>' +
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
-        '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (shortOf(c.id) > 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b style="color:var(--bad,#c0392b)">' + money(shortOf(c.id)) + '</b></div><div class="row"><button class="btn ghost sm" type="button" data-sp="' + esc(c.id) + '">' + t('sp_btn') + '</button></div>' : '') + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
+        '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (fm === 'cash' ? shipDetail(mine.filter(function (s) { return s.status === 'delivered' && !s.settled; })) : fm === 'carry' ? shipDetail(mine.filter(function (s) { return s.status === 'out_for_delivery'; })) : fm === 'copen' ? shipDetail(mine.filter(function (s) { return s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'; })) : '') + (shortOf(c.id) > 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b style="color:var(--bad,#c0392b)">' + money(shortOf(c.id)) + '</b></div><div class="row"><button class="btn ghost sm" type="button" data-sp="' + esc(c.id) + '">' + t('sp_btn') + '</button></div>' : '') + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
         '<div class="row"><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
           '<button class="btn ghost sm" type="button" data-rn="couriers|' + esc(c.id) + '">' + t('rn_btn') + '</button>' +
           (c.status === 'active' ? '<button class="btn ghost sm" type="button" data-cst="' + esc(c.id) + '|suspended">' + t('mr_suspend') + '</button>' : '<button class="btn sm" type="button" data-cst="' + esc(c.id) + '|active">' + t(c.status === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>') +
@@ -1058,6 +1066,7 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="kv"><span>' + t('m_dr') + '</span><b>' + m.delivered + ' / ' + m.returned + '</b></div>' +
         '<div class="kv"><span>' + t('m_cod') + '</span><b>' + fmt(m.cod) + '</b></div>' +
         '<div class="kv"><span>' + t('m_fees') + '</span><b>' + fmt(m.fees) + '</b></div>' +
+        (mm === 'open' ? shipDetail(store.shipments.filter(function (s) { return s.merchant === k && (s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'); })) : mm === 'owed' ? shipDetail(store.shipments.filter(function (s) { return s.merchant === k && s.status === 'delivered' && !s.paidMerchant; })) : '') +
         (m.open ? '<div class="kv"><span>' + t('m_open') + '</span><b>' + m.open + '</b></div>' : '') + '<div class="sep"></div>' +
         '<div class="kv"><span>' + (m.due >= 0 ? t('m_to') : t('m_from')) + '</span><span class="due">' + money(Math.abs(m.due)) + '</span></div>' +
         '<div class="row"><button class="btn ghost sm" type="button" data-mstmt="' + esc(k) + '">' + t('ms_btn') + '</button>' + (canWrite ? '<button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button>' : '') + '</div>' + '</div>';
@@ -1482,7 +1491,7 @@ select.search { appearance: auto; cursor: pointer; }
       if (rc.error) throw rc.error;
       store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active', available: c.available !== false }; });
     } else if (name === 'merchants') {
-      var rm = await sb.from('merchants').select('id,name');
+      var rm = await sb.from('merchants').select('id,name,status');
       if (rm.error) throw rm.error;
       store.merchants = rm.data;
     }
@@ -1674,6 +1683,8 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.en, { fl_late: 'Late (48h+)', fl_unas: 'No courier' });
   Object.assign(I18N.ar, { f_avail: 'متاح للشغل', f_unavail: 'مش متاح', f_copen: 'عنده شحنات مفتوحة', f_mact: 'شغّال', f_msusp: 'موقوف' });
   Object.assign(I18N.en, { f_avail: 'Available', f_unavail: 'Unavailable', f_copen: 'Has open shipments', f_mact: 'Active', f_msusp: 'Suspended' });
+  Object.assign(I18N.ar, { dt_h: '{n} شحنة · إجمالي {m} ج.م' });
+  Object.assign(I18N.en, { dt_h: '{n} shipments · total {m} EGP' });
   var FDEF = {
     co: { dates: true, modes: [['all', 'f_all'], ['avail', 'f_avail'], ['unavail', 'f_unavail'], ['cash', 'f_cash'], ['copen', 'f_copen'], ['carry', 'f_carry'], ['clear', 'f_clear'], ['login', 'f_login'], ['nologin', 'f_nologin'], ['susp', 'f_susp'], ['archived', 'f_arch']], box: 'co-flt', draw: function () { renderCouriers(); } },
     me: { dates: true, modes: [['all', 'f_all'], ['mact', 'f_mact'], ['msusp', 'f_msusp'], ['owed', 'f_owed'], ['owes', 'f_owes'], ['open', 'f_open'], ['clear', 'f_clear']], box: 'me-flt', draw: function () { renderMerchants(); } },
