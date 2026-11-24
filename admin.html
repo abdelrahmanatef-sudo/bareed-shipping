@@ -1955,13 +1955,14 @@ select.search { appearance: auto; cursor: pointer; }
   function authMsg(k) { var m = el('auth-msg'); m.setAttribute('data-k', k || ''); m.textContent = k ? t(k) : ''; }
   async function enter() {
     var r = await sb.from('admins').select('user_id').maybeSingle();
-    if (r.error || !r.data) { authMsg('err_admin'); await sb.auth.signOut(); showApp(false); return; }
+    if (r.error) { authMsg('err_admin'); showApp(false); return; }
+    if (!r.data) { authMsg('err_admin'); await sb.auth.signOut({ scope: 'local' }); showApp(false); return; }
     showApp(true); startData();
   }
 
   (function boot() {
     if (!window.supabase) { local = true; loaded.shipments = loaded.couriers = true; banner('bn_local'); showApp(true); renderAll(); return; }
-    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { storageKey: 'bareed-admin-auth' } });
     sbPub = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
     window.addEventListener('hashchange', openTrackFromHash);
     sb.auth.getSession().then(function (r) { if (r.data && r.data.session) enter(); else showApp(false); openTrackFromHash(); });
@@ -1972,7 +1973,7 @@ select.search { appearance: auto; cursor: pointer; }
       if (r.error) { authMsg('err_login'); return; }
       authMsg(''); el('a-pass').value = ''; enter();
     });
-    el('logout').addEventListener('click', function () { sb.auth.signOut(); });
+    el('logout').addEventListener('click', function () { sb.auth.signOut({ scope: 'local' }); });
   })();
 })();
 </script>

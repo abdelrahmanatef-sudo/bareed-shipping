@@ -420,7 +420,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   function curTheme() { return document.documentElement.getAttribute('data-theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
   function paintTheme() { el('theme').innerHTML = ic(curTheme() === 'dark' ? 'sun' : 'moon'); }
   el('theme').addEventListener('click', function () { var n = curTheme() === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', n); try { localStorage.setItem('bareed.theme', n); } catch (e) {} paintTheme(); });
-  el('logout').addEventListener('click', async function () { await sb.auth.signOut(); location.href = './'; });
+  el('logout').addEventListener('click', async function () { await sb.auth.signOut({ scope: 'local' }); location.href = './'; });
 
   var SUPABASE_URL = 'https://ybkkdjpgkkdnijafsuai.supabase.co';
   // Public (anon) key: safe in the browser; row-level security limits each merchant to their own rows.
