@@ -580,6 +580,20 @@ select.search { appearance: auto; cursor: pointer; }
       </section>
 
       <section id="p-rp" class="stack" hidden>
+        <div class="card" id="pnl">
+          <h2 data-i18n="pl_h"></h2><p class="note" data-i18n="pl_note"></p>
+          <div class="toolbar"><input class="search" type="month" id="pnl-m" style="max-width:180px"></div>
+          <div id="pnl-sum"></div>
+          <details class="add" id="ex-add"><summary><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="ex_add"></span></summary>
+            <form id="ex-form" autocomplete="off"><div class="fgrid">
+              <div class="field"><label for="ex-date" data-i18n="ex_date"></label><input id="ex-date" type="date" required></div>
+              <div class="field"><label for="ex-cat" data-i18n="ex_cat"></label><select id="ex-cat"></select></div>
+              <div class="field"><label for="ex-amt" data-i18n="ex_amt"></label><input id="ex-amt" type="number" min="0.01" step="any" inputmode="decimal" required></div>
+              <div class="field"><label for="ex-note" data-i18n="ex_note"></label><input id="ex-note" maxlength="300"></div>
+            </div><div class="row"><button class="btn" type="submit" data-i18n="ex_save"></button></div></form>
+          </details>
+          <div id="ex-list"></div>
+        </div>
         <div class="card" id="mrep"><h2 data-i18n="mp_h"></h2><p class="note" data-i18n="mp_note"></p>
           <div class="toolbar"><input class="search" type="month" id="mrep-m" style="max-width:180px"><button class="btn sm" type="button" id="mrep-btn" data-i18n="mp_btn"></button></div>
           <div id="mrep-sum"></div></div>
@@ -780,6 +794,7 @@ select.search { appearance: auto; cursor: pointer; }
   var PAGES = ['ov', 'sh', 'co', 'me', 'rp', 'ct', 'tr'];
 
   var store = { shipments: [], couriers: [], merchants: [], zones: [], events: {} };
+  var EX = [], EXCATS = ['rent', 'salaries', 'fuel', 'phones', 'marketing', 'maintenance', 'packaging', 'other'];
   var cfg = Object.assign({}, CFG0);
   var local = false, canWrite = true, loaded = { shipments: false, couriers: false };
   var tab = 'ov', filter = 'all', query = '', signedIn = false;
@@ -844,8 +859,9 @@ select.search { appearance: auto; cursor: pointer; }
     });
     var cpay = 0;
     store.shipments.forEach(function (s) { if (monthKey(s.doneAt) === NOW_MONTH && (s.status === 'delivered' || s.status === 'returned')) cpay += courierPayFor(s); });
-    var vcost = cpay + (D + R) * cfg.other;
-    return { D: D, R: R, created: created, rev: rev, profit: rev - vcost - cfg.fixed, avgCod: D ? codSum / D : 0 };
+    var exr = (typeof exMonth === 'function') ? exMonth(NOW_MONTH) : [], exs = exr.reduce(function (n, x) { return n + (+x.amount); }, 0);
+    var profit = exr.length ? rev - cpay - exs : rev - (cpay + (D + R) * cfg.other) - cfg.fixed;
+    return { D: D, R: R, created: created, rev: rev, profit: profit, avgCod: D ? codSum / D : 0 };
   }
   var FLT = { co: { q: '', from: '', to: '', mode: 'all' }, me: { q: '', from: '', to: '', mode: 'all' }, mr: { q: '', mode: 'all' } };
   function inR(s, f) { if (!f || (!f.from && !f.to)) return true; var d = new Date(s.createdAt); if (isNaN(d)) return true; if (f.from && d < new Date(f.from + 'T00:00:00')) return false; if (f.to && d > new Date(f.to + 'T23:59:59')) return false; return true; }
@@ -1161,7 +1177,7 @@ select.search { appearance: auto; cursor: pointer; }
   });
 
   function renderAll() {
-    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts(); if (typeof renderAreas === "function") renderAreas(); if (typeof renderMreq === "function") renderMreq();
+    renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts(); if (typeof renderPnl === 'function') renderPnl(); if (typeof renderAreas === "function") renderAreas(); if (typeof renderMreq === "function") renderMreq();
     var fee = el('s-fee'); if (!fee.value && document.activeElement !== fee) fee.value = cfg.fee;
     document.querySelectorAll('#add-sh, #add-co').forEach(function (d) { d.hidden = !canWrite; });
     var za = el('zone-add'); if (za) za.hidden = !canWrite;
@@ -1985,8 +2001,68 @@ select.search { appearance: auto; cursor: pointer; }
       toast(t('io_done')); await Promise.all([refresh('shipments'), loadIndOrders()]);
     });
   });
+  /* ---------- expenses & monthly P&L ---------- */
+  Object.assign(I18N.ar, { pl_h: 'الحسبة الشهرية (الفعلية)', pl_note: 'الداخل والخارج بيتحسبوا من الشحنات الحقيقية ومن المصروفات اللي بتسجلها إنت أو المحاسب.', ex_add: 'سجّل مصروف', ex_date: 'التاريخ', ex_cat: 'النوع', ex_amt: 'المبلغ (جنيه)', ex_note: 'ملاحظة (اختياري)', ex_save: 'حفظ المصروف',
+    ex_rent: 'إيجار', ex_salaries: 'مرتبات', ex_fuel: 'بنزين', ex_phones: 'تليفونات وإنترنت', ex_marketing: 'تسويق وإعلانات', ex_maintenance: 'صيانة', ex_packaging: 'تغليف وأدوات', ex_other: 'أخرى',
+    pl_in: 'الداخل', pl_ships: 'أجرة الشحنات المسلّمة', pl_comm: 'عمولة التحصيل', pl_ret: 'رسوم المرتجعات', pl_tin: 'إجمالي الداخل', pl_out: 'الخارج', pl_cour: 'أجور المناديب', pl_exp: 'المصروفات المسجلة', pl_tout: 'إجمالي الخارج', pl_net: 'صافي الربح', pl_loss: 'صافي الخسارة', pl_cnt: 'مسلّمة / مرتجعة', pl_noex: 'لسه مسجلتش مصروفات للشهر ده. سجّلها عشان الحسبة تكتمل.', ex_none: 'مفيش مصروفات في الشهر ده', ex_done: 'تم تسجيل المصروف.', ex_del_q: 'تحذف المصروف ده؟', ex_deld: 'اتحذف.', ex_by_cat: 'المصروفات حسب النوع' });
+  Object.assign(I18N.en, { pl_h: 'Monthly P&L (actual)', pl_note: 'Income and costs are calculated from real shipments and the expenses you or the accountant record.', ex_add: 'Record an expense', ex_date: 'Date', ex_cat: 'Category', ex_amt: 'Amount (EGP)', ex_note: 'Note (optional)', ex_save: 'Save expense',
+    ex_rent: 'Rent', ex_salaries: 'Salaries', ex_fuel: 'Fuel', ex_phones: 'Phones & internet', ex_marketing: 'Marketing & ads', ex_maintenance: 'Maintenance', ex_packaging: 'Packaging & supplies', ex_other: 'Other',
+    pl_in: 'Income', pl_ships: 'Delivered shipment fees', pl_comm: 'COD commission', pl_ret: 'Return fees', pl_tin: 'Total income', pl_out: 'Costs', pl_cour: 'Courier pay', pl_exp: 'Recorded expenses', pl_tout: 'Total costs', pl_net: 'Net profit', pl_loss: 'Net loss', pl_cnt: 'Delivered / returned', pl_noex: 'No expenses recorded for this month yet. Add them to complete the picture.', ex_none: 'No expenses this month', ex_done: 'Expense recorded.', ex_del_q: 'Delete this expense?', ex_deld: 'Deleted.', ex_by_cat: 'Expenses by category' });
+  function exMonth(m) { return (EX || []).filter(function (x) { return String(x.spent_on).slice(0, 7) === m; }); }
+  function exSum(m) { return exMonth(m).reduce(function (n, x) { return n + (+x.amount); }, 0); }
+  async function loadExpenses() {
+    if (local || !sb) return;
+    var r = await sb.from('expenses').select('*').order('spent_on', { ascending: false }).limit(2000);
+    if (r.error) return; EX = r.data || []; renderPnl();
+  }
+  function renderPnl() {
+    var box = el('pnl-sum'); if (!box) return;
+    var mi = el('pnl-m'); if (!mi.value) mi.value = NOW_MONTH; var m = mi.value;
+    var xs = el('ex-cat'); if (xs && xs.getAttribute('data-l') !== lang) { var cv = xs.value; xs.innerHTML = EXCATS.map(function (k) { return '<option value="' + k + '">' + t('ex_' + k) + '</option>'; }).join(''); if (cv) xs.value = cv; xs.setAttribute('data-l', lang); }
+    var D = 0, R = 0, fees = 0, comm = 0, cpay = 0;
+    store.shipments.forEach(function (s) {
+      if (monthKey(s.doneAt) !== m) return;
+      if (s.status === 'delivered') { D++; fees += (+s.fee || 0); comm += commission(s); cpay += courierPayFor(s); }
+      else if (s.status === 'returned') { R++; cpay += courierPayFor(s); }
+    });
+    var retf = R * cfg.returnFee, tin = fees + comm + retf, exp = exSum(m), tout = cpay + exp, net = tin - tout;
+    var row = function (k, v, b) { return '<div class="kv"><span>' + (b ? '<b>' + k + '</b>' : k) + '</span>' + (b ? '<b>' + v + '</b>' : '<span>' + v + '</span>') + '</div>'; };
+    var h = '<div class="card" style="margin:8px 0"><h3>' + t('pl_in') + '</h3>' + row(t('pl_cnt'), D + ' / ' + R) + row(t('pl_ships'), money(fees)) + row(t('pl_comm'), money(comm)) + row(t('pl_ret'), money(retf)) + row(t('pl_tin'), money(tin), 1) +
+      '<h3 style="margin-top:10px">' + t('pl_out') + '</h3>' + row(t('pl_cour'), money(cpay)) + row(t('pl_exp'), money(exp)) + row(t('pl_tout'), money(tout), 1) +
+      '<div class="kv" style="margin-top:10px;font-size:1.15em"><b>' + t(net >= 0 ? 'pl_net' : 'pl_loss') + '</b><b style="color:' + (net >= 0 ? 'var(--good,#1e8e3e)' : 'var(--bad,#c0392b)') + '">' + money(Math.abs(net)) + '</b></div></div>';
+    if (!exMonth(m).length) h += '<p class="note">' + t('pl_noex') + '</p>';
+    box.innerHTML = h;
+    var list = exMonth(m), lb = el('ex-list');
+    if (!list.length) { lb.innerHTML = '<p class="note">' + t('ex_none') + '</p>'; return; }
+    var byc = {}; list.forEach(function (x) { byc[x.category] = (byc[x.category] || 0) + (+x.amount); });
+    lb.innerHTML = '<h3>' + t('ex_by_cat') + '</h3><div class="chips">' + Object.keys(byc).map(function (c) { return '<span class="badge">' + t('ex_' + c) + ': ' + money(byc[c]) + '</span>'; }).join(' ') + '</div>' +
+      '<div class="tablewrap"><table><tbody>' + list.map(function (x) {
+        return '<tr><td>' + esc(String(x.spent_on)) + '</td><td>' + t('ex_' + x.category) + '</td><td><b>' + money(x.amount) + '</b></td><td>' + esc(x.note || '') + '</td><td>' + (canWrite ? '<button class="icon-del" type="button" data-exdel="' + esc(x.id) + '" aria-label="Delete">✕</button>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+  (function () {
+    var sel = el('ex-cat'); if (!sel) return;
+    var fill = function () { var c = sel.value; sel.innerHTML = EXCATS.map(function (k) { return '<option value="' + k + '">' + t('ex_' + k) + '</option>'; }).join(''); if (c) sel.value = c; };
+    fill(); el('ex-date').value = new Date().toISOString().slice(0, 10);
+    el('lang') && el('lang').addEventListener('click', function () { setTimeout(fill, 0); });
+    el('pnl-m').addEventListener('change', renderPnl);
+    el('ex-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var amt = parseFloat(el('ex-amt').value); if (!(amt > 0)) { toast(t('t_err')); return; }
+      var row = { spent_on: el('ex-date').value, category: el('ex-cat').value, amount: Math.round(amt * 100) / 100, note: el('ex-note').value.trim() || null };
+      safe(async function () {
+        var r = await sb.from('expenses').insert(row); if (r.error) throw r.error;
+        el('ex-amt').value = ''; el('ex-note').value = ''; toast(t('ex_done')); await loadExpenses(); renderAll();
+      });
+    });
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-exdel]'); if (!b) return;
+      if (!confirm(t('ex_del_q'))) return;
+      safe(async function () { var r = await sb.from('expenses').delete().eq('id', b.getAttribute('data-exdel')); if (r.error) throw r.error; toast(t('ex_deld')); await loadExpenses(); renderAll(); });
+    });
+  })();
   applyStatic();
-  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders()]); }
+  function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
     if (started) return; started = true;
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
