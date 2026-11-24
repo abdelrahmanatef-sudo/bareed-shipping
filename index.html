@@ -302,15 +302,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     <form id="o-form" style="display:grid;gap:14px">
       <div class="field"><label for="o-sn" data-i18n="o_sn"></label><input id="o-sn" required maxlength="120" autocomplete="name"></div>
       <div class="field"><label for="o-sp" data-i18n="o_sp"></label><input id="o-sp" required inputmode="tel" maxlength="20" dir="ltr" autocomplete="tel"></div>
-      <div class="field"><label for="o-pa" data-i18n="o_pa"></label><input id="o-pa" required maxlength="300"></div>
-      <div class="field"><label for="o-rn" data-i18n="o_rn"></label><input id="o-rn" required maxlength="120"></div>
-      <div class="field"><label for="o-rp" data-i18n="o_rp"></label><input id="o-rp" required inputmode="tel" maxlength="20" dir="ltr"></div>
-      <div class="field"><label for="o-ra" data-i18n="o_ra"></label><input id="o-ra" required maxlength="300"></div>
-      <div class="field"><label for="o-area" data-i18n="o_area"></label><select id="o-area" required style="width:100%;background:var(--nm-bg);border:0;border-radius:16px;padding:14px 16px;color:var(--ink)"></select></div>
-      <div class="field"><label for="o-val" data-i18n="o_val"></label><input id="o-val" inputmode="numeric" maxlength="9" dir="ltr" placeholder="0"></div>
+      <div class="field"><label for="o-pa" data-i18n="o_pa"></label><input id="o-pa" required maxlength="300" autocomplete="street-address"></div>
       <div class="field"><label for="o-nt" data-i18n="o_nt"></label><input id="o-nt" maxlength="500"></div>
       <input id="o-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
-      <p class="nm-sub" id="o-fee" style="text-align:center"></p>
       <button class="btn" type="submit" id="o-submit" data-i18n="o_go"></button>
       <p class="msg" id="o-msg" role="status"></p>
     </form>
@@ -377,21 +371,21 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     }
   };
   Object.assign(D.ar, {
-    send_btn: 'ابعت شحنة (أفراد)', o_t: 'ابعت شحنة', o_s: 'اكتب البيانات وهنتصل بيك نأكد الطلب.',
-    o_sn: 'اسمك', o_sp: 'رقم تليفونك', o_pa: 'عنوان الاستلام منك', o_rn: 'اسم المستلم', o_rp: 'تليفون المستلم', o_ra: 'عنوان المستلم',
-    o_area: 'منطقة التسليم', o_val: 'قيمة الشحنة اللي المستلم يدفعها (لو في، وإلا اتركها فاضية)', o_nt: 'ملاحظات (اختياري)', o_go: 'أرسل الطلب',
+    send_btn: 'اطلب مندوب (أفراد)', o_t: 'اطلب مندوب', o_s: 'سيب بياناتك ومندوب هيتصل بيك ويكمّل معاك.',
+    o_sn: 'اسمك', o_sp: 'رقم تليفونك', o_pa: 'عنوانك (فين المندوب ييجي)', o_rn: 'اسم المستلم', o_rp: 'تليفون المستلم', o_ra: 'عنوان المستلم',
+    o_area: 'منطقة التسليم', o_val: 'قيمة الشحنة اللي المستلم يدفعها (لو في، وإلا اتركها فاضية)', o_nt: 'عايز توصّل إيه وفين؟ (اختياري)', o_go: 'أرسل الطلب',
     o_pick: 'اختار المنطقة', o_fee: 'أجرة الشحن {f} جنيه بتتدفع من المستلم عند التسليم{v}', o_vplus: ' + قيمة الشحنة {v} جنيه',
     o_err: 'اتأكد من البيانات، وتليفون صح.', o_rate: 'وصلنا أكتر من طلب منك النهارده. كلمنا لو محتاج حاجة تانية.', o_fail: 'حصلت مشكلة، جرّب تاني.',
-    o_ok: 'وصل طلبك! كود الشحنة:', o_ok2: 'هنتصل بيك على رقمك نأكد الطلب. تقدر تتابعه بالكود.', o_track: 'تتبّع الشحنة',
+    o_ok: 'وصل طلبك! الكود:', o_ok2: 'مندوب هيتصل بيك قريب. تقدر تتابع بالكود.', o_track: 'تتبّع الشحنة',
     st_pending_confirmation: 'في انتظار تأكيدنا', st_rejected_request: 'الطلب اتلغى'
   });
   Object.assign(D.en, {
-    send_btn: 'Send a parcel (individuals)', o_t: 'Send a parcel', o_s: 'Fill in the details and we will call you to confirm.',
-    o_sn: 'Your name', o_sp: 'Your phone', o_pa: 'Pickup address', o_rn: 'Recipient name', o_rp: 'Recipient phone', o_ra: 'Recipient address',
-    o_area: 'Delivery area', o_val: 'Item value the recipient pays (leave empty if none)', o_nt: 'Notes (optional)', o_go: 'Submit request',
+    send_btn: 'Request a courier (individuals)', o_t: 'Request a courier', o_s: 'Leave your details and a courier will call you.',
+    o_sn: 'Your name', o_sp: 'Your phone', o_pa: 'Your address (where the courier comes)', o_rn: 'Recipient name', o_rp: 'Recipient phone', o_ra: 'Recipient address',
+    o_area: 'Delivery area', o_val: 'Item value the recipient pays (leave empty if none)', o_nt: 'What to send and where? (optional)', o_go: 'Submit request',
     o_pick: 'Choose area', o_fee: 'Delivery fee {f} EGP, paid by the recipient on delivery{v}', o_vplus: ' + item value {v} EGP',
     o_err: 'Check the details and phone numbers.', o_rate: 'Too many requests from you today. Contact us if you need more.', o_fail: 'Something went wrong, try again.',
-    o_ok: 'Request received! Shipment code:', o_ok2: 'We will call you to confirm. You can track it with the code.', o_track: 'Track shipment',
+    o_ok: 'Request received! Code:', o_ok2: 'A courier will call you soon. Track with the code.', o_track: 'Track shipment',
     st_pending_confirmation: 'Awaiting our confirmation', st_rejected_request: 'Request cancelled'
   });
   var lang = 'ar';
@@ -585,31 +579,16 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   /* ---------- individual orders ---------- */
   (function () {
     var form = el('o-form'), amsg = el('o-msg');
-    function fillAreas() {
-      var sel = el('o-area'), cur = sel.value;
-      var act = (areas || []).filter(function (a) { return a.is_active; });
-      sel.innerHTML = '<option value="">' + esc(t('o_pick')) + '</option>' + act.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(gname(a) + ' - ' + cname(a)) + '</option>'; }).join('');
-      sel.value = cur; fee();
-    }
-    function fee() {
-      var a = (areas || []).filter(function (x) { return x.id === el('o-area').value; })[0], v = parseFloat(el('o-val').value) || 0;
-      el('o-fee').textContent = a ? t('o_fee', { f: a.fee, v: v > 0 ? t('o_vplus', { v: v }) : '' }) : '';
-    }
-    function open() { el('o-done').hidden = true; form.hidden = false; amsg.textContent = ''; fillAreas(); el('omodal').hidden = false; }
+    function open() { el('o-done').hidden = true; form.hidden = false; amsg.textContent = ''; el('omodal').hidden = false; }
     el('send-btn').addEventListener('click', open);
     el('o-close').addEventListener('click', function () { el('omodal').hidden = true; });
     el('omodal').addEventListener('click', function (e) { if (e.target === el('omodal')) el('omodal').hidden = true; });
-    el('o-area').addEventListener('change', fee); el('o-val').addEventListener('input', fee);
-    form.addEventListener('submit', function (e) {
+        form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (el('o-hp').value) return;
       if (!sb) { amsg.className = 'msg err'; amsg.textContent = t('no_lib'); return; }
       var btn = el('o-submit'); btn.disabled = true; amsg.textContent = '';
-      sb.rpc('submit_public_order', {
-        p_sender_name: el('o-sn').value, p_sender_phone: el('o-sp').value, p_pickup_address: el('o-pa').value,
-        p_receiver_name: el('o-rn').value, p_receiver_phone: el('o-rp').value, p_receiver_address: el('o-ra').value,
-        p_area_id: el('o-area').value, p_item_value: parseFloat(el('o-val').value) || 0, p_notes: el('o-nt').value
-      }).then(function (r) {
+      sb.rpc('submit_public_order', { p_name: el('o-sn').value, p_phone: el('o-sp').value, p_address: el('o-pa').value, p_notes: el('o-nt').value }).then(function (r) {
         btn.disabled = false;
         if (r.error) { amsg.className = 'msg err'; amsg.textContent = /rate_limited/.test(r.error.message) ? t('o_rate') : /invalid_input|area_not/.test(r.error.message) ? t('o_err') : t('o_fail'); return; }
         var c = r.data && r.data.code; form.hidden = true; form.reset();
