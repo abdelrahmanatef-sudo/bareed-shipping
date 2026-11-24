@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>بريد</title>
+<meta name="theme-color" content="#071B33">
+<link rel="manifest" href="/manifest-app.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><link rel="icon" type="image/png" href="/icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="بريد">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<style>
+:root{--bg:#EEF4FA;--card:#fff;--ink:#0B2540;--mut:#5B7088;--line:#D5E1EE;--brand:#1A9CF0;--bad:#C0392B}
+@media (prefers-color-scheme:dark){:root{--bg:#071B33;--card:#0E2A4A;--ink:#EAF3FF;--mut:#9DB4CC;--line:#1E3F66;--bad:#FF8A7A}}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:Alexandria,Rubik,system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px max(16px,env(safe-area-inset-right)) 20px max(16px,env(safe-area-inset-left))}
+.card{width:min(400px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px 24px;display:grid;gap:16px;box-shadow:0 18px 50px rgba(7,27,51,.18)}
+.logo{display:flex;justify-content:center}h1{margin:0;text-align:center;font-size:24px}.sub{margin:0;text-align:center;color:var(--mut);font-size:14px}
+label{font-size:13px;color:var(--mut);display:block;margin-bottom:5px}
+input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit}
+input:focus{outline:2px solid var(--brand);outline-offset:1px}
+button{width:100%;padding:14px;border:0;border-radius:12px;background:var(--brand);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+button:disabled{opacity:.6}.err{margin:0;min-height:20px;color:var(--bad);font-size:14px;text-align:center}
+.links{display:grid;gap:6px;text-align:center;font-size:13px}.links a{color:var(--brand);text-decoration:none}
+</style></head><body>
+<main class="card" id="box" hidden>
+ <div class="logo"><svg width="60" height="60" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#1A9CF0"/><rect x="13" y="16" width="26" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 19.5 26 27.5l11.5-8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 22h4M7.5 28H10" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg></div>
+ <h1>بريد</h1><p class="sub">سجّل دخولك وهتفتح لك شاشتك: مندوب أو تاجر أو إدارة.</p>
+ <form id="f" style="display:grid;gap:14px">
+  <div><label for="em">الإيميل</label><input id="em" type="email" required autocomplete="username" autocapitalize="none" spellcheck="false" dir="ltr"></div>
+  <div><label for="pw">كلمة المرور</label><input id="pw" type="password" required autocomplete="current-password" dir="ltr"></div>
+  <button id="go" type="submit">دخول</button><p class="err" id="err" role="status"></p>
+ </form>
+ <div class="links"><a href="/">تاجر جديد؟ سجّل حسابك</a><a href="/">تتبّع شحنة أو اطلب مندوب</a></div>
+</main>
+<script>
+(function(){
+var URL0='https://ybkkdjpgkkdnijafsuai.supabase.co',KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU',REF='ybkkdjpgkkdnijafsuai';
+var $=function(i){return document.getElementById(i)};
+// where each role keeps its session (must match the storageKey used by that page)
+var ROLES=[{role:'admin',path:'/admin',key:'bareed-admin-auth',opt:{storageKey:'bareed-admin-auth'}},
+           {role:'courier',path:'/courier',key:'bareed-courier-auth',opt:{storageKey:'bareed-courier-auth'}},
+           {role:'merchant',path:'/merchant',key:'sb-'+REF+'-auth-token',opt:{}}];
+function stored(k){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v&&(v.refresh_token||v.access_token)?v:null}catch(e){return null}}
+// already signed in somewhere? go straight there
+for(var i=0;i<ROLES.length;i++){if(stored(ROLES[i].key)){location.replace(ROLES[i].path);return}}
+$('box').hidden=false;
+if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});
+$('f').addEventListener('submit',async function(e){
+ e.preventDefault();var err=$('err'),b=$('go');err.textContent='';b.disabled=true;
+ try{
+  var tmp=window.supabase.createClient(URL0,KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  var r=await tmp.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
+  if(r.error||!r.data.session){err.textContent='الإيميل أو الباسورد غلط.';b.disabled=false;return}
+  var s=r.data.session,uid=s.user.id,role=null;
+  var a=await tmp.from('admins').select('user_id').maybeSingle();if(a.data)role='admin';
+  if(!role){var c=await tmp.from('couriers').select('id').eq('user_id',uid).maybeSingle();if(c.data)role='courier'}
+  if(!role){var m=await tmp.from('merchants').select('id').eq('user_id',uid).maybeSingle();if(m.data)role='merchant'}
+  if(!role){err.textContent='الحساب ده مش مربوط بمندوب أو تاجر أو إدارة. كلّم الإدارة.';b.disabled=false;return}
+  var R=ROLES.filter(function(x){return x.role===role})[0];
+  var tgt=window.supabase.createClient(URL0,KEY,{auth:R.opt});
+  var ss=await tgt.auth.setSession({access_token:s.access_token,refresh_token:s.refresh_token});
+  if(ss.error){err.textContent='حصلت مشكلة، جرّب تاني.';b.disabled=false;return}
+  location.replace(R.path);
+ }catch(x){err.textContent='حصلت مشكلة في الاتصال، جرّب تاني.';b.disabled=false}
+});
+})();
+</script></body></html>

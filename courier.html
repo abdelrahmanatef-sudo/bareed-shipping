@@ -45,7 +45,7 @@ main{max-width:720px;margin:-46px auto 0;padding:0 14px 90px;display:grid;gap:14
 .sheet-box textarea{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px;resize:none}
 #rs-list{display:grid;gap:8px}
 #rs-d{width:100%;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:11px}
-</style><link rel="manifest" href="/manifest-courier.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="مندوب بريد"><link rel="icon" type="image/png" href="/icons/icon-192.png"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script></head><body>
+</style><link rel="manifest" href="/manifest-app.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="مندوب بريد"><link rel="icon" type="image/png" href="/icons/icon-192.png"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script></head><body>
 <div id="login" class="login" hidden><div class="card">
   <div style="display:flex;justify-content:center"><svg class="logo" width="56" height="56" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#1A9CF0"/><rect x="13" y="16" width="26" height="18" rx="4" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 19.5 26 27.5l11.5-8" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 22h4M7.5 28H10" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></svg></div><h1 id="l-t"></h1><p class="m" id="l-s"></p>
   <div class="field"><label id="l-e"></label><input id="em" type="email" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
@@ -188,7 +188,7 @@ function renderKyc(){$('k-t').textContent=t('k_t');$('k-s').textContent=t('k_s')
 function showKyc(){$('login').hidden=true;$('app').hidden=true;$('kyc').hidden=false;renderKyc()}
 function packImg(file){return new Promise(function(res,rej){var im=new Image(),u=URL.createObjectURL(file);im.onload=function(){var m=1400,w=im.width,h=im.height,k=Math.min(1,m/Math.max(w,h));var c=document.createElement('canvas');c.width=Math.round(w*k);c.height=Math.round(h*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(function(b){b?res(b):rej(new Error('img'))},'image/jpeg',0.82)};im.onerror=function(){rej(new Error('img'))};im.src=u})}
 [['k-f','k-fp'],['k-b','k-bp'],['k-se','k-sp']].forEach(function(p){$(p[0]).addEventListener('change',function(){var f=this.files[0],i=$(p[1]);if(f){i.src=URL.createObjectURL(f);i.style.display='block'}else i.style.display='none'})});
-$('k-out').onclick=async function(){await sb.auth.signOut({scope:'local'});location.reload()};
+$('k-out').onclick=async function(){await sb.auth.signOut({scope:'local'});location.href='/app'};
 $('k-go').onclick=async function(){
  var err=$('k-err');err.textContent='';var n=$('k-n').value.replace(/\s/g,''),fs=[$('k-f').files[0],$('k-b').files[0],$('k-se').files[0]];
  if(!n||!fs[0]||!fs[1]||!fs[2]||!$('k-c').checked){err.textContent=t('k_miss');return}
@@ -213,7 +213,7 @@ $('go').onclick=async function(){
  $('err').textContent='';var r=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value});
  if(r.error){$('err').textContent=t('bad');return}await enter()};
 $('pw').addEventListener('keydown',function(e){if(e.key==='Enter')$('go').click()});
-$('out').onclick=async function(){await sb.auth.signOut({scope:'local'});location.reload()};
+$('out').onclick=async function(){await sb.auth.signOut({scope:'local'});location.href='/app'};
 applyLang();
 sb.auth.getSession().then(function(r){if(r.data&&r.data.session)enter();else $('login').hidden=false});
 })();

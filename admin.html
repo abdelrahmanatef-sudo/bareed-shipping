@@ -437,7 +437,7 @@ select.search { appearance: auto; cursor: pointer; }
 .tb-links { display: none; gap: 6px; }
 @media (max-width: 860px) { .side-links { display: none; } .tb-links { display: inline-flex; } }
 </style>
-<link rel="manifest" href="/manifest-admin.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="إدارة بريد"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script>
+<link rel="manifest" href="/manifest-app.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="إدارة بريد"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script>
 <body>
 
 <!-- ======== sign in ======== -->
@@ -2138,7 +2138,7 @@ select.search { appearance: auto; cursor: pointer; }
       if (r.error) { authMsg('err_login'); return; }
       authMsg(''); el('a-pass').value = ''; enter();
     });
-    el('logout').addEventListener('click', function () { sb.auth.signOut({ scope: 'local' }); });
+    el('logout').addEventListener('click', async function () { await sb.auth.signOut({ scope: 'local' }); location.href = '/app'; });
   })();
 })();
 </script>

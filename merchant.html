@@ -86,7 +86,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   #label-print, #label-print * { visibility: visible; }
   #label-print { display: block !important; position: absolute; inset: 0 auto auto 0; max-width: none; width: 100%; border: 0; border-radius: 0; }
 }
-</style><link rel="manifest" href="/manifest-merchant.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="تاجر بريد"><link rel="icon" type="image/png" href="/icons/icon-192.png"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script></head>
+</style><link rel="manifest" href="/manifest-app.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="تاجر بريد"><link rel="icon" type="image/png" href="/icons/icon-192.png"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script></head>
 <body>
 <div class="load" id="load">…</div>
 <div id="app" hidden>
@@ -420,7 +420,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   function curTheme() { return document.documentElement.getAttribute('data-theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); }
   function paintTheme() { el('theme').innerHTML = ic(curTheme() === 'dark' ? 'sun' : 'moon'); }
   el('theme').addEventListener('click', function () { var n = curTheme() === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', n); try { localStorage.setItem('bareed.theme', n); } catch (e) {} paintTheme(); });
-  el('logout').addEventListener('click', async function () { await sb.auth.signOut({ scope: 'local' }); location.href = './'; });
+  el('logout').addEventListener('click', async function () { await sb.auth.signOut({ scope: 'local' }); location.href = '/app'; });
 
   var SUPABASE_URL = 'https://ybkkdjpgkkdnijafsuai.supabase.co';
   // Public (anon) key: safe in the browser; row-level security limits each merchant to their own rows.
