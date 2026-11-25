@@ -378,7 +378,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     o_pick: 'اختار المنطقة', o_fee: 'أجرة الشحن {f} جنيه بتتدفع من المستلم عند التسليم{v}', o_vplus: ' + قيمة الشحنة {v} جنيه',
     o_err: 'اتأكد من البيانات، وتليفون صح.', o_rate: 'وصلنا أكتر من طلب منك النهارده. كلمنا لو محتاج حاجة تانية.', o_fail: 'حصلت مشكلة، جرّب تاني.',
     o_ok: 'وصل طلبك! الكود:', o_ok2: 'المندوب هيراجع طلبك ويحدد السعر. تابع الكود وهتشوف السعر وتوافق عليه.', o_track: 'تتبّع الشحنة',
-    st_pending_confirmation: 'في انتظار تأكيدنا', st_rejected_request: 'الطلب اتلغى', rq_pending: 'في انتظار مراجعة المندوب لطلبك', rq_accepted: 'المندوب قبل طلبك وهيتواصل معاك لتحديد السعر', rq_quoted: 'السعر المطلوب لطلبك', rq_cur: 'جنيه', rq_phone: 'اكتب رقم تليفونك اللي سجلت بيه للتأكيد', rq_yes: 'موافق', rq_no: 'مش موافق', rq_approved: 'وافقت على السعر، المندوب بيبدأ تنفيذ طلبك', rq_declined: 'الطلب اتلغى', rq_bad: 'الرقم مش مطابق للي سجلت بيه.'
+    st_pending_confirmation: 'في انتظار تأكيدنا', st_rejected_request: 'الطلب اتلغى', rq_pending: 'في انتظار مراجعة المندوب لطلبك', rq_accepted: 'المندوب قبل طلبك وهيتواصل معاك لتحديد السعر', rq_quoted: 'السعر المطلوب لطلبك', rq_cur: 'جنيه', rq_phone: 'اكتب رقم تليفونك اللي سجلت بيه للتأكيد', rq_yes: 'موافق على السعر', rq_neg: 'عايز أتفاوض', rq_no: 'إلغاء الطلب', rq_hint: 'لو عايز تتفاوض، دوس "عايز أتفاوض" والمندوب هيكلمك ويبعتلك سعر جديد.', rq_cconf: 'متأكد إنك عايز تلغي الطلب؟', rq_approved: 'وافقت على السعر، المندوب بيبدأ تنفيذ طلبك', rq_declined: 'الطلب اتلغى', rq_bad: 'الرقم مش مطابق للي سجلت بيه.'
   });
   Object.assign(D.en, {
     send_btn: 'Request a courier (individuals)', o_t: 'Request a courier', o_s: 'Leave your details and describe your request. A courier will review it and set the price.',
@@ -387,7 +387,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     o_pick: 'Choose area', o_fee: 'Delivery fee {f} EGP, paid by the recipient on delivery{v}', o_vplus: ' + item value {v} EGP',
     o_err: 'Check the details and phone numbers.', o_rate: 'Too many requests from you today. Contact us if you need more.', o_fail: 'Something went wrong, try again.',
     o_ok: 'Request received! Code:', o_ok2: 'A courier will review your request and set the price. Track with the code to see the price and approve it.', o_track: 'Track shipment',
-    st_pending_confirmation: 'Awaiting our confirmation', st_rejected_request: 'Request cancelled', rq_pending: 'Waiting for a courier to review your request', rq_accepted: 'A courier accepted and will contact you to agree on the price', rq_quoted: 'Price for your request', rq_cur: 'EGP', rq_phone: 'Enter the phone number you registered with to confirm', rq_yes: 'Approve', rq_no: 'Decline', rq_approved: 'You approved the price. The courier is starting your request', rq_declined: 'Request cancelled', rq_bad: 'The number does not match the one you registered with.'
+    st_pending_confirmation: 'Awaiting our confirmation', st_rejected_request: 'Request cancelled', rq_pending: 'Waiting for a courier to review your request', rq_accepted: 'A courier accepted and will contact you to agree on the price', rq_quoted: 'Price for your request', rq_cur: 'EGP', rq_phone: 'Enter the phone number you registered with to confirm', rq_yes: 'Approve price', rq_neg: 'Negotiate', rq_no: 'Cancel request', rq_hint: 'To negotiate, tap Negotiate and the courier will contact you with a new price.', rq_cconf: 'Are you sure you want to cancel the request?', rq_approved: 'You approved the price. The courier is starting your request', rq_declined: 'Request cancelled', rq_bad: 'The number does not match the one you registered with.'
   });
   var lang = 'ar';
   try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
@@ -539,7 +539,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       var pr = Number(d.quote).toLocaleString(lang === 'ar' ? 'ar-EG' : 'en-GB', { maximumFractionDigits: 2 });
       return h + badge('rq_quoted') + '<div style="font-size:34px;font-family:var(--font-display);margin:12px 0" dir="ltr">' + esc(pr) + ' <small style="font-size:16px">' + esc(t('rq_cur')) + '</small></div>' +
         '<div class="field"><label for="rq-ph">' + esc(t('rq_phone')) + '</label><input id="rq-ph" inputmode="tel" dir="ltr" maxlength="20"></div>' +
-        '<div style="display:flex;gap:8px;margin-top:10px"><button class="btn" type="button" data-rq="1">' + esc(t('rq_yes')) + '</button><button class="btn ghost" type="button" data-rq="0">' + esc(t('rq_no')) + '</button></div><p class="msg" id="rq-msg" role="status"></p></div>';
+        '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn" type="button" data-rq="approve">' + esc(t('rq_yes')) + '</button><button class="btn ghost" type="button" data-rq="negotiate">' + esc(t('rq_neg')) + '</button><button class="btn ghost" type="button" data-rq="cancel">' + esc(t('rq_no')) + '</button></div><p class="nm-sub" style="margin-top:8px">' + esc(t('rq_hint')) + '</p><p class="msg" id="rq-msg" role="status"></p></div>';
     }
     return h + badge('rq_' + d.req_stage) + '</div>';
   }
@@ -552,8 +552,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   el('tr-out').addEventListener('click', function (e) {
     var b = e.target.closest('[data-rq]'); if (!b || !sb) return;
     var code = el('tr-in').value.trim().toUpperCase(), ph = (el('rq-ph') || {}).value || '', msg = el('rq-msg');
+    var act = b.getAttribute('data-rq');
+    if (act === 'cancel' && !confirm(t('rq_cconf'))) return;
     b.disabled = true;
-    sb.rpc('customer_decide_quote', { p_code: code, p_phone: ph, p_approve: b.getAttribute('data-rq') === '1' }).then(function (r) {
+    sb.rpc('customer_respond_quote', { p_code: code, p_phone: ph, p_action: act }).then(function (r) {
       if (r.error) { b.disabled = false; if (msg) { msg.className = 'msg err'; msg.textContent = t('rq_bad'); } return; }
       el('track-form').dispatchEvent(new Event('submit', { cancelable: true }));
     }).catch(function () { b.disabled = false; });
