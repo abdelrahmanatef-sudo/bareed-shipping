@@ -457,6 +457,16 @@ select.search { appearance: auto; cursor: pointer; }
 .sp-m small { display: block; opacity: .6; font-size: 11px; margin-top: 3px; }
 .sp-m.user { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); }
 .sp-m.admin { align-self: flex-end; background: var(--accent); color: #1a1a1a; }
+.kb-form { display: grid; gap: 8px; }
+.kb-form textarea { min-height: 70px; resize: vertical; font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: inherit; }
+.kb-list { display: grid; gap: 8px; }
+.kb-item { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
+.kb-item.off { opacity: .55; }
+.kb-item .kq { font-weight: 700; overflow-wrap: anywhere; }
+.kb-item .ka { color: var(--muted); font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.kb-item .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.kb-item .acts button, .sp-teach { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: inherit; cursor: pointer; }
+.sp-teach { margin-top: 4px; }
 .sp-form { display: flex; gap: 8px; }
 .sp-form textarea { flex: 1; min-height: 44px; max-height: 120px; resize: vertical; font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: inherit; }
 </style>
@@ -676,6 +686,16 @@ select.search { appearance: auto; cursor: pointer; }
               <form class="sp-form" id="sp-form"><textarea id="sp-in" maxlength="1000" data-i18n-ph="sp_ph"></textarea><button class="btn" id="sp-send" type="submit" data-i18n="sp_send"></button></form>
             </div>
           </div>
+        </div>
+        <div class="card" id="kb-card">
+          <h2 data-i18n="kb_title"></h2>
+          <p class="note" data-i18n="kb_hint"></p>
+          <form id="kb-form" class="kb-form">
+            <input id="kb-q" class="search" maxlength="300" data-i18n-ph="kb_q_ph">
+            <textarea id="kb-a" maxlength="1200" data-i18n-ph="kb_a_ph"></textarea>
+            <div class="row"><button class="btn" id="kb-save" type="submit" data-i18n="kb_save"></button><button class="btn" id="kb-cancel" type="button" hidden data-i18n="kb_cancel"></button></div>
+          </form>
+          <div class="kb-list" id="kb-list"></div>
         </div>
       </section>
 
@@ -2212,9 +2232,11 @@ select.search { appearance: auto; cursor: pointer; }
   });
   Object.assign(I18N.ar, { nav_sp: 'الدعم', pg_sp: 'صندوق الدعم', sp_title: 'المحادثات', sp_f_open: 'المفتوحة', sp_f_all: 'الكل', sp_f_closed: 'المغلقة', sp_pick: 'اختار محادثة من القايمة.', sp_ph: 'اكتب ردك...', sp_send: 'إرسال', sp_none: 'مفيش محادثات.', sp_k_merchant: 'تاجر', sp_k_courier: 'مندوب', sp_k_individual: 'فرد', sp_close: 'إغلاق المحادثة', sp_reopen: 'إعادة فتح', sp_err: 'ما اتبعتش الرد، جرّب تاني.' });
   Object.assign(I18N.en, { nav_sp: 'Support', pg_sp: 'Support inbox', sp_title: 'Conversations', sp_f_open: 'Open', sp_f_all: 'All', sp_f_closed: 'Closed', sp_pick: 'Pick a conversation from the list.', sp_ph: 'Type your reply...', sp_send: 'Send', sp_none: 'No conversations.', sp_k_merchant: 'Merchant', sp_k_courier: 'Courier', sp_k_individual: 'Individual', sp_close: 'Close conversation', sp_reopen: 'Reopen', sp_err: 'Reply was not sent, try again.' });
+  Object.assign(I18N.ar, { kb_title: 'تعليم البوت', kb_hint: 'اكتب سؤال وإجابته، والبوت هيستخدمها لما حد يسأل سؤال شبهه. تقدر كمان تدوس "علّم البوت" تحت أي رد كتبته في الشات.', kb_q_ph: 'السؤال (مثلاً: بتشتغلوا لحد امتى؟)', kb_a_ph: 'الإجابة اللي عايز البوت يقولها', kb_save: 'حفظ', kb_cancel: 'إلغاء التعديل', kb_edit: 'تعديل', kb_del: 'حذف', kb_off: 'إيقاف', kb_on: 'تشغيل', kb_none: 'لسه مفيش ردود. أضف أول رد من فوق.', kb_del_q: 'تحذف الرد ده؟', kb_saved: 'اتحفظ. البوت هيستخدمه دلوقتي.', kb_err: 'ما اتحفظش، تأكد إن السؤال والإجابة مكتوبين.', kb_teach: 'علّم البوت', kb_filled: 'اتنقل للأسفل في خانة تعليم البوت. راجعه واضغط حفظ.' });
+  Object.assign(I18N.en, { kb_title: 'Teach the bot', kb_hint: 'Write a question and its answer; the bot will use it when someone asks something similar. You can also tap "Teach bot" under any reply you wrote in a chat.', kb_q_ph: 'Question (e.g. What are your working hours?)', kb_a_ph: 'The answer the bot should give', kb_save: 'Save', kb_cancel: 'Cancel edit', kb_edit: 'Edit', kb_del: 'Delete', kb_off: 'Disable', kb_on: 'Enable', kb_none: 'No answers yet. Add the first one above.', kb_del_q: 'Delete this answer?', kb_saved: 'Saved. The bot will use it now.', kb_err: 'Not saved, make sure both question and answer are filled.', kb_teach: 'Teach bot', kb_filled: 'Moved to the Teach-the-bot box below. Review it and press Save.' });
   applyStatic();
   /* ---------- support inbox ---------- */
-  var SUP = { threads: [], cur: null, last: 0, timer: null, known: {}, busy: false };
+  var SUP = { threads: [], cur: null, last: 0, timer: null, known: {}, busy: false, lu: '', teach: [], kb: [] };
   function spFmt(x) { var d = new Date(x), n = new Date(); var tm = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); return d.toDateString() === n.toDateString() ? tm : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + tm; }
   function spBeep() { try { var C = window.AudioContext || window.webkitAudioContext; if (!C) return; var c = new C(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 880; g.gain.value = 0.08; o.start(); o.stop(c.currentTime + 0.18); } catch (e) {} }
   function spCur() { return SUP.threads.filter(function (x) { return x.id === SUP.cur; })[0]; }
@@ -2237,7 +2259,11 @@ select.search { appearance: auto; cursor: pointer; }
       SUP.threads = r.data; spRenderList(); if (up) spBeep();
     });
   }
-  function spBubble(m) { return '<div class="sp-m ' + (m.sender === 'admin' ? 'admin' : 'user') + '">' + esc(m.body) + '<small>' + esc(spFmt(m.at)) + '</small></div>'; }
+  function spBubble(m) {
+    var tb = '';
+    if (m.sender === 'user') SUP.lu = m.body; else { SUP.teach.push({ q: SUP.lu || '', a: m.body }); tb = '<br><button type="button" class="sp-teach" data-teach="' + (SUP.teach.length - 1) + '">' + esc(t('kb_teach')) + '</button>'; }
+    return '<div class="sp-m ' + (m.sender === 'admin' ? 'admin' : 'user') + '">' + esc(m.body) + '<small>' + esc(spFmt(m.at)) + '</small>' + tb + '</div>';
+  }
   function spLoadMsgs(reset) {
     if (!SUP.cur) return Promise.resolve();
     var id = SUP.cur;
@@ -2250,7 +2276,7 @@ select.search { appearance: auto; cursor: pointer; }
     });
   }
   function spOpen(id) {
-    SUP.cur = id; SUP.last = 0; var th = spCur(); if (!th) return;
+    SUP.cur = id; SUP.last = 0; SUP.lu = ''; SUP.teach = []; var th = spCur(); if (!th) return;
     el('sp-empty').style.display = 'none'; var bx = el('sp-box'); bx.hidden = false; bx.style.display = 'flex';
     el('sp-nm').textContent = th.name; el('sp-kd').textContent = t('sp_k_' + th.kind); el('sp-ph').textContent = th.phone || '';
     spRenderList(); spLoadMsgs(true);
@@ -2260,7 +2286,7 @@ select.search { appearance: auto; cursor: pointer; }
     SUP.busy = true;
     Promise.all([spLoadList(), tab === 'sp' ? spLoadMsgs(false) : null]).catch(function () {}).then(function () { SUP.busy = false; });
   }
-  function spStart() { if (SUP.timer || local) return; spTick(); SUP.timer = setInterval(spTick, 6000); }
+  function spStart() { if (SUP.timer || local) return; kbLoad(); spTick(); SUP.timer = setInterval(spTick, 6000); }
   function spStop() { clearInterval(SUP.timer); SUP.timer = null; SUP.threads = []; SUP.cur = null; SUP.known = {}; var b = el('sp-badge'); if (b) b.hidden = true; }
   el('sp-list').addEventListener('click', function (e) { var b = e.target.closest('[data-sp]'); if (b) spOpen(b.getAttribute('data-sp')); });
   el('sp-f').addEventListener('change', spRenderList);
@@ -2279,6 +2305,38 @@ select.search { appearance: auto; cursor: pointer; }
     });
   });
   el('sp-in').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); el('sp-form').requestSubmit(); } });
+  /* ---------- bot knowledge ---------- */
+  function kbRender() {
+    el('kb-list').innerHTML = SUP.kb.length ? SUP.kb.map(function (k) {
+      return '<div class="kb-item' + (k.active ? '' : ' off') + '"><div class="kq">' + esc(k.question) + '</div><div class="ka">' + esc(k.answer) + '</div><div class="acts"><button type="button" data-kbe="' + k.id + '">' + esc(t('kb_edit')) + '</button><button type="button" data-kbt="' + k.id + '">' + esc(t(k.active ? 'kb_off' : 'kb_on')) + '</button><button type="button" data-kbd="' + k.id + '">' + esc(t('kb_del')) + '</button></div></div>';
+    }).join('') : '<p class="note">' + esc(t('kb_none')) + '</p>';
+  }
+  function kbLoad() { return sb.rpc('admin_bot_kb_list').then(function (r) { if (!r.error && Array.isArray(r.data)) { SUP.kb = r.data; kbRender(); } }); }
+  function kbReset() { el('kb-form').removeAttribute('data-id'); el('kb-q').value = ''; el('kb-a').value = ''; el('kb-cancel').hidden = true; }
+  function kbSaveRow(id, q, a, active) {
+    return sb.rpc('admin_bot_kb_save', { p_id: id || null, p_q: q, p_a: a, p_active: active }).then(function (r) { if (r.error) { toast(t('kb_err')); return false; } return kbLoad().then(function () { return true; }); });
+  }
+  el('kb-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var q = el('kb-q').value.trim(), a = el('kb-a').value.trim(); if (q.length < 2 || a.length < 2) { toast(t('kb_err')); return; }
+    var id = el('kb-form').getAttribute('data-id'), cur = SUP.kb.filter(function (k) { return k.id === id; })[0];
+    kbSaveRow(id, q, a, cur ? cur.active : true).then(function (ok) { if (ok) { kbReset(); toast(t('kb_saved')); } });
+  });
+  el('kb-cancel').addEventListener('click', kbReset);
+  el('kb-list').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var id = b.getAttribute('data-kbe') || b.getAttribute('data-kbt') || b.getAttribute('data-kbd');
+    var k = SUP.kb.filter(function (x) { return x.id === id; })[0]; if (!k) return;
+    if (b.hasAttribute('data-kbe')) { el('kb-form').setAttribute('data-id', k.id); el('kb-q').value = k.question; el('kb-a').value = k.answer; el('kb-cancel').hidden = false; el('kb-q').focus(); el('kb-card').scrollIntoView({ block: 'start' }); }
+    else if (b.hasAttribute('data-kbt')) kbSaveRow(k.id, k.question, k.answer, !k.active);
+    else if (window.confirm(t('kb_del_q'))) sb.rpc('admin_bot_kb_delete', { p_id: k.id }).then(function (r) { if (!r.error) { if (el('kb-form').getAttribute('data-id') === k.id) kbReset(); kbLoad(); } });
+  });
+  el('sp-msgs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-teach]'); if (!b) return;
+    var x = SUP.teach[+b.getAttribute('data-teach')]; if (!x) return;
+    kbReset(); el('kb-q').value = x.q.slice(0, 300); el('kb-a').value = x.a.slice(0, 1200);
+    toast(t('kb_filled')); el('kb-card').scrollIntoView({ block: 'start', behavior: 'smooth' }); el('kb-q').focus();
+  });
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
     if (started) return; started = true; spStart();
