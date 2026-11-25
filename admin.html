@@ -1055,7 +1055,7 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (fm === 'cash' ? shipDetail(mine.filter(function (s) { return s.status === 'delivered' && !s.settled; })) : fm === 'carry' ? shipDetail(mine.filter(function (s) { return s.status === 'out_for_delivery'; })) : fm === 'copen' ? shipDetail(mine.filter(function (s) { return s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'; })) : '') + (shortOf(c.id) > 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b style="color:var(--bad,#c0392b)">' + money(shortOf(c.id)) + '</b></div><div class="row"><button class="btn ghost sm" type="button" data-sp="' + esc(c.id) + '">' + t('sp_btn') + '</button></div>' : '') + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
-        '<div class="row"><button class="btn ghost sm" type="button" data-kyc="' + esc(c.id) + '">' + t('kyc_btn') + '</button><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
+        '<div class="row"><button class="btn ghost sm" type="button" data-acct-c="' + esc(c.id) + '">' + t('ac_btn') + '</button><button class="btn ghost sm" type="button" data-kyc="' + esc(c.id) + '">' + t('kyc_btn') + '</button><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
           '<button class="btn ghost sm" type="button" data-rn="couriers|' + esc(c.id) + '">' + t('rn_btn') + '</button>' +
           (c.status === 'active' ? '<button class="btn ghost sm" type="button" data-cst="' + esc(c.id) + '|suspended">' + t('mr_suspend') + '</button>' : '<button class="btn sm" type="button" data-cst="' + esc(c.id) + '|active">' + t(c.status === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>') +
           (c.status !== 'archived' ? '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button>' : '') + '</div>' : '') + '</div>';
@@ -1087,7 +1087,7 @@ select.search { appearance: auto; cursor: pointer; }
         (mm === 'open' ? shipDetail(store.shipments.filter(function (s) { return s.merchant === k && (s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'); })) : mm === 'owed' ? shipDetail(store.shipments.filter(function (s) { return s.merchant === k && s.status === 'delivered' && !s.paidMerchant; })) : '') +
         (m.open ? '<div class="kv"><span>' + t('m_open') + '</span><b>' + m.open + '</b></div>' : '') + '<div class="sep"></div>' +
         '<div class="kv"><span>' + (m.due >= 0 ? t('m_to') : t('m_from')) + '</span><span class="due">' + money(Math.abs(m.due)) + '</span></div>' +
-        '<div class="row"><button class="btn ghost sm" type="button" data-mstmt="' + esc(k) + '">' + t('ms_btn') + '</button>' + (canWrite ? '<button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button>' : '') + '</div>' + '</div>';
+        '<div class="row"><button class="btn ghost sm" type="button" data-acct-m="' + esc(k) + '">' + t('ac_btn') + '</button><button class="btn ghost sm" type="button" data-mstmt="' + esc(k) + '">' + t('ms_btn') + '</button>' + (canWrite ? '<button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button>' : '') + '</div>' + '</div>';
     }).join('');
   }
 
@@ -1509,7 +1509,7 @@ select.search { appearance: auto; cursor: pointer; }
       if (rc.error) throw rc.error;
       store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active', available: c.available !== false, nid: c.national_id || '', kyc: c.id_status || 'none', bd: c.id_birthdate, gd: c.id_gender, gov: c.id_governorate, kycAt: c.kyc_submitted_at, kycRj: c.kyc_reject_reason }; });
     } else if (name === 'merchants') {
-      var rm = await sb.from('merchants').select('id,name,status');
+      var rm = await sb.from('merchants').select('id,name,status,email,user_id');
       if (rm.error) throw rm.error;
       store.merchants = rm.data;
     }
@@ -2102,6 +2102,57 @@ select.search { appearance: auto; cursor: pointer; }
     var ok = ov.querySelector('#kyc-ok'), no = ov.querySelector('#kyc-no');
     if (ok) ok.onclick = function () { dec(true); }; if (no) no.onclick = function () { dec(false); };
   });
+  /* ---------- edit account (name / e-mail / password) ---------- */
+  Object.assign(I18N.ar, { ac_btn: 'تعديل الحساب', ac_h: 'تعديل الحساب', ac_self: 'حسابي (الأدمن)', ac_name: 'الاسم', ac_email: 'الإيميل', ac_pw: 'باسورد جديد (سيبه فاضي لو مش هتغيره)', ac_save: 'حفظ', ac_cancel: 'إلغاء', ac_ok: 'اتحفظ.', ac_bad_email: 'الإيميل غير صحيح.', ac_weak: 'الباسورد لازم 8 حروف أو أكتر.', ac_exists: 'الإيميل ده مستخدم قبل كده.', ac_nologin: 'الحساب ده ملوش دخول. اعمل له دخول الأول.', ac_fail: 'حصلت مشكلة، جرّب تاني.', ac_note: 'الباسورد بيتحفظ مشفّر ومحدش يقدر يشوفه، ولو نسيته غيّره من هنا.' });
+  Object.assign(I18N.en, { ac_btn: 'Edit account', ac_h: 'Edit account', ac_self: 'My account (admin)', ac_name: 'Name', ac_email: 'E-mail', ac_pw: 'New password (leave empty to keep)', ac_save: 'Save', ac_cancel: 'Cancel', ac_ok: 'Saved.', ac_bad_email: 'Invalid e-mail.', ac_weak: 'Password must be at least 8 characters.', ac_exists: 'This e-mail is already in use.', ac_nologin: 'This account has no login yet. Create one first.', ac_fail: 'Something went wrong, try again.', ac_note: 'Passwords are stored hashed and nobody can read them. If forgotten, set a new one here.' });
+  function openAcct(o) {
+    var old = document.getElementById('ac-ov'); if (old) old.remove();
+    var ov = document.createElement('div'); ov.id = 'ac-ov';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);overflow:auto;padding:16px;display:flex;justify-content:center;align-items:flex-start';
+    ov.innerHTML = '<form class="card" id="ac-f" autocomplete="off" style="max-width:420px;width:100%;margin:auto;background:var(--surface,#fff);display:grid;gap:12px"><h2>' + esc(o.title) + '</h2>' +
+      (o.kind === 'self' ? '' : '<div class="field"><label for="ac-n">' + t('ac_name') + '</label><input id="ac-n" maxlength="120" value="' + esc(o.name || '') + '"></div>') +
+      '<div class="field"><label for="ac-e">' + t('ac_email') + '</label><input id="ac-e" type="email" dir="ltr" autocomplete="off" value="' + esc(o.email || '') + '"></div>' +
+      '<div class="field"><label for="ac-p">' + t('ac_pw') + '</label><input id="ac-p" type="password" dir="ltr" autocomplete="new-password" maxlength="72"></div>' +
+      '<p class="note">' + t('ac_note') + '</p><p class="note" id="ac-m" role="status" style="color:var(--bad,#c0392b)"></p>' +
+      '<div class="row"><button class="btn sm" type="submit" id="ac-go">' + t('ac_save') + '</button><button class="btn ghost sm" type="button" id="ac-x">' + t('ac_cancel') + '</button></div></form>';
+    document.body.appendChild(ov);
+    var close = function () { ov.remove(); };
+    ov.addEventListener('click', function (ev) { if (ev.target === ov) close(); });
+    ov.querySelector('#ac-x').onclick = close;
+    ov.querySelector('#ac-f').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var nm = ov.querySelector('#ac-n'), em = ov.querySelector('#ac-e').value.trim().toLowerCase(), pw = ov.querySelector('#ac-p').value, msg = ov.querySelector('#ac-m'), go = ov.querySelector('#ac-go');
+      var body = { kind: o.kind, id: o.id };
+      if (nm && nm.value.trim() && nm.value.trim() !== (o.name || '')) body.name = nm.value.trim();
+      if (em && em !== (o.email || '').toLowerCase()) body.email = em;
+      if (pw) body.password = pw;
+      if (!body.name && !body.email && !body.password) { close(); return; }
+      go.disabled = true; msg.textContent = '';
+      (async function () {
+        try {
+          var ses = await sb.auth.getSession(); var tok = ses.data && ses.data.session && ses.data.session.access_token;
+          var res = await fetch(SUPABASE_URL + '/functions/v1/admin-update-account', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok, 'apikey': SUPABASE_ANON_KEY }, body: JSON.stringify(body) });
+          var j = await res.json().catch(function () { return {}; });
+          if (!res.ok || !j.ok) { var er = j.error || ''; msg.textContent = er === 'bad_email' ? t('ac_bad_email') : er === 'weak_password' ? t('ac_weak') : er === 'email_exists' ? t('ac_exists') : er === 'no_login' ? t('ac_nologin') : t('ac_fail'); go.disabled = false; return; }
+          toast(t('ac_ok')); close();
+          if (o.kind !== 'self') { await Promise.all([refresh('couriers'), refresh('merchants')]).catch(function () {}); }
+        } catch (x) { msg.textContent = t('ac_fail'); go.disabled = false; }
+      })();
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var bc = e.target.closest && e.target.closest('[data-acct-c]'), bm = e.target.closest && e.target.closest('[data-acct-m]');
+    if (bc) { var c = store.couriers.filter(function (x) { return x.id === bc.getAttribute('data-acct-c'); })[0]; if (c) openAcct({ kind: 'courier', id: c.id, name: c.name, email: c.email, title: t('ac_h') + ' · ' + c.name }); }
+    if (bm) { var m = store.merchants.filter(function (x) { return x.name === bm.getAttribute('data-acct-m'); })[0]; if (m) openAcct({ kind: 'merchant', id: m.id, name: m.name, email: m.email, title: t('ac_h') + ' · ' + m.name }); }
+  });
+  (function () {
+    var lo = el('logout'); if (!lo || document.getElementById('myacct')) return;
+    var b = document.createElement('button'); b.className = 'icon-btn'; b.id = 'myacct'; b.type = 'button'; b.title = t('ac_self'); b.setAttribute('aria-label', t('ac_self'));
+    b.innerHTML = '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
+    b.hidden = lo.hidden; lo.parentNode.insertBefore(b, lo);
+    b.addEventListener('click', function () { sb.auth.getSession().then(function (r) { var u = r.data && r.data.session && r.data.session.user; openAcct({ kind: 'self', title: t('ac_self'), email: (u && u.email) || '' }); }); });
+    new MutationObserver(function () { b.hidden = lo.hidden; }).observe(lo, { attributes: true, attributeFilter: ['hidden'] });
+  })();
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
