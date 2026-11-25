@@ -2246,7 +2246,7 @@ select.search { appearance: auto; cursor: pointer; }
     var b = el('sp-badge'); b.textContent = tot; b.hidden = !tot;
     var rows = SUP.threads.filter(function (x) { return f === 'all' || x.status === f; });
     el('sp-list').innerHTML = rows.length ? rows.map(function (x) {
-      return '<button class="sp-item' + (x.status === 'closed' ? ' closed' : '') + '" type="button" data-sp="' + x.id + '"' + (x.id === SUP.cur ? ' aria-current="true"' : '') + '><div class="top"><span class="nm">' + esc(x.name) + '</span><span class="sp-kind">' + esc(t('sp_k_' + x.kind)) + '</span>' + (x.unread_admin ? '<span class="sp-un">' + x.unread_admin + '</span>' : '') + '</div><div class="pv">' + esc(x.last_preview || '') + '</div><div class="mt"><span dir="ltr">' + esc(x.phone || '') + '</span><span>' + esc(spFmt(x.last_msg_at)) + '</span></div></button>';
+      return '<button class="sp-item' + (x.status === 'closed' ? ' closed' : '') + '" type="button" data-supt="' + x.id + '"' + (x.id === SUP.cur ? ' aria-current="true"' : '') + '><div class="top"><span class="nm">' + esc(x.name) + '</span><span class="sp-kind">' + esc(t('sp_k_' + x.kind)) + '</span>' + (x.unread_admin ? '<span class="sp-un">' + x.unread_admin + '</span>' : '') + '</div><div class="pv">' + esc(x.last_preview || '') + '</div><div class="mt"><span dir="ltr">' + esc(x.phone || '') + '</span><span>' + esc(spFmt(x.last_msg_at)) + '</span></div></button>';
     }).join('') : '<p class="note">' + esc(t('sp_none')) + '</p>';
     var th = spCur();
     if (th) { el('sp-close').textContent = t(th.status === 'closed' ? 'sp_reopen' : 'sp_close'); }
@@ -2288,7 +2288,7 @@ select.search { appearance: auto; cursor: pointer; }
   }
   function spStart() { if (SUP.timer || local) return; kbLoad(); spTick(); SUP.timer = setInterval(spTick, 6000); }
   function spStop() { clearInterval(SUP.timer); SUP.timer = null; SUP.threads = []; SUP.cur = null; SUP.known = {}; var b = el('sp-badge'); if (b) b.hidden = true; }
-  el('sp-list').addEventListener('click', function (e) { var b = e.target.closest('[data-sp]'); if (b) spOpen(b.getAttribute('data-sp')); });
+  el('sp-list').addEventListener('click', function (e) { var b = e.target.closest('[data-supt]'); if (b) spOpen(b.getAttribute('data-supt')); });
   el('sp-f').addEventListener('change', spRenderList);
   el('sp-close').addEventListener('click', function () {
     var th = spCur(); if (!th) return;
