@@ -218,4 +218,5 @@ $('out').onclick=async function(){await sb.auth.signOut({scope:'local'});locatio
 applyLang();
 sb.auth.getSession().then(function(r){if(r.data&&r.data.session)enter();else $('login').hidden=false});
 })();
-</script></body></html>
+</script><script src="/support-chat.js" data-key="bareed-courier-auth" data-mode="auth" defer></script>
+</body></html>
