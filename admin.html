@@ -607,6 +607,7 @@ select.search { appearance: auto; cursor: pointer; }
         <div class="card"><h2 data-i18n="rp_merchants"></h2><div class="tablewrap" id="rp-me"></div></div>
       </section>
       <section id="p-ct" class="stack" hidden>
+        <div class="card"><h2 data-i18n="ac_self"></h2><p class="note" data-i18n="ac_self_p"></p><div class="row"><button class="btn sm" type="button" id="myacct2" data-i18n="ac_self_btn"></button></div></div>
         <div class="card">
           <h2 data-i18n="h_assume"></h2>
           <p class="note" data-i18n="assume_note"></p>
@@ -1080,7 +1081,7 @@ select.search { appearance: auto; cursor: pointer; }
     keys.sort(function (a, b) { return md[b].due - md[a].due; });
     el('me-list').innerHTML = keys.map(function (k) {
       var m = md[k];
-      return '<div class="card"><div class="person"><span class="avatar">' + initial(k) + '</span><div><b>' + esc(k) + '</b></div></div>' +
+      return '<div class="card"><div class="person"><span class="avatar">' + initial(k) + '</span><div><b>' + esc(k) + '</b>' + (function () { var mm = store.merchants.filter(function (x) { return x.name === k; })[0]; return mm && mm.user_id ? ' <span class="dot ' + (mm.status === 'active' ? 'c-delivered' : 'c-out_for_delivery') + '">' + t(mm.status === 'active' ? 'mv_ok' : 'mv_pend') + '</span>' : ''; })() + '</div></div>' +
         '<div class="kv"><span>' + t('m_dr') + '</span><b>' + m.delivered + ' / ' + m.returned + '</b></div>' +
         '<div class="kv"><span>' + t('m_cod') + '</span><b>' + fmt(m.cod) + '</b></div>' +
         '<div class="kv"><span>' + t('m_fees') + '</span><b>' + fmt(m.fees) + '</b></div>' +
@@ -2103,8 +2104,8 @@ select.search { appearance: auto; cursor: pointer; }
     if (ok) ok.onclick = function () { dec(true); }; if (no) no.onclick = function () { dec(false); };
   });
   /* ---------- edit account (name / e-mail / password) ---------- */
-  Object.assign(I18N.ar, { ac_btn: 'تعديل الحساب', ac_h: 'تعديل الحساب', ac_self: 'حسابي (الأدمن)', ac_name: 'الاسم', ac_email: 'الإيميل', ac_pw: 'باسورد جديد (سيبه فاضي لو مش هتغيره)', ac_save: 'حفظ', ac_cancel: 'إلغاء', ac_ok: 'اتحفظ.', ac_bad_email: 'الإيميل غير صحيح.', ac_weak: 'الباسورد لازم 8 حروف أو أكتر.', ac_exists: 'الإيميل ده مستخدم قبل كده.', ac_nologin: 'الحساب ده ملوش دخول. اعمل له دخول الأول.', ac_fail: 'حصلت مشكلة، جرّب تاني.', ac_note: 'الباسورد بيتحفظ مشفّر ومحدش يقدر يشوفه، ولو نسيته غيّره من هنا.' });
-  Object.assign(I18N.en, { ac_btn: 'Edit account', ac_h: 'Edit account', ac_self: 'My account (admin)', ac_name: 'Name', ac_email: 'E-mail', ac_pw: 'New password (leave empty to keep)', ac_save: 'Save', ac_cancel: 'Cancel', ac_ok: 'Saved.', ac_bad_email: 'Invalid e-mail.', ac_weak: 'Password must be at least 8 characters.', ac_exists: 'This e-mail is already in use.', ac_nologin: 'This account has no login yet. Create one first.', ac_fail: 'Something went wrong, try again.', ac_note: 'Passwords are stored hashed and nobody can read them. If forgotten, set a new one here.' });
+  Object.assign(I18N.ar, { ac_btn: 'تعديل الحساب', ac_h: 'تعديل الحساب', ac_self: 'حسابي (الأدمن)', ac_self_p: 'غيّر إيميل الدخول والباسورد بتوعك من هنا.', ac_self_btn: 'تغيير الإيميل والباسورد', mv_ok: 'حساب موثّق', mv_pend: 'قيد المراجعة', ac_name: 'الاسم', ac_email: 'الإيميل', ac_pw: 'باسورد جديد (سيبه فاضي لو مش هتغيره)', ac_save: 'حفظ', ac_cancel: 'إلغاء', ac_ok: 'اتحفظ.', ac_bad_email: 'الإيميل غير صحيح.', ac_weak: 'الباسورد لازم 8 حروف أو أكتر.', ac_exists: 'الإيميل ده مستخدم قبل كده.', ac_nologin: 'الحساب ده ملوش دخول. اعمل له دخول الأول.', ac_fail: 'حصلت مشكلة، جرّب تاني.', ac_note: 'الباسورد بيتحفظ مشفّر ومحدش يقدر يشوفه، ولو نسيته غيّره من هنا.' });
+  Object.assign(I18N.en, { ac_btn: 'Edit account', ac_h: 'Edit account', ac_self: 'My account (admin)', ac_self_p: 'Change your own login e-mail and password here.', ac_self_btn: 'Change e-mail and password', mv_ok: 'Verified account', mv_pend: 'Pending review', ac_name: 'Name', ac_email: 'E-mail', ac_pw: 'New password (leave empty to keep)', ac_save: 'Save', ac_cancel: 'Cancel', ac_ok: 'Saved.', ac_bad_email: 'Invalid e-mail.', ac_weak: 'Password must be at least 8 characters.', ac_exists: 'This e-mail is already in use.', ac_nologin: 'This account has no login yet. Create one first.', ac_fail: 'Something went wrong, try again.', ac_note: 'Passwords are stored hashed and nobody can read them. If forgotten, set a new one here.' });
   function openAcct(o) {
     var old = document.getElementById('ac-ov'); if (old) old.remove();
     var ov = document.createElement('div'); ov.id = 'ac-ov';
@@ -2152,6 +2153,7 @@ select.search { appearance: auto; cursor: pointer; }
     b.hidden = lo.hidden; lo.parentNode.insertBefore(b, lo);
     b.addEventListener('click', function () { sb.auth.getSession().then(function (r) { var u = r.data && r.data.session && r.data.session.user; openAcct({ kind: 'self', title: t('ac_self'), email: (u && u.email) || '' }); }); });
     new MutationObserver(function () { b.hidden = lo.hidden; }).observe(lo, { attributes: true, attributeFilter: ['hidden'] });
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#myacct2')) b.click(); });
   })();
   applyStatic();
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
