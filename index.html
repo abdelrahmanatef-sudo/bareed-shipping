@@ -396,9 +396,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     st_pending_confirmation: 'Awaiting our confirmation', st_rejected_request: 'Request cancelled', rq_pending: 'Waiting for a courier to review your request', rq_accepted: 'A courier accepted and will contact you to agree on the price', rq_quoted: 'Price for your request', rq_cur: 'EGP', rq_phone: 'Enter the phone number you registered with to confirm', rq_yes: 'Approve price', rq_neg: 'Negotiate', rq_no: 'Cancel request', rq_hint: 'To negotiate, tap Negotiate and the courier will contact you with a new price.', rq_cconf: 'Are you sure you want to cancel the request?', rq_approved: 'You approved the price. The courier is starting your request', rq_declined: 'Request cancelled', rq_bad: 'The number does not match the one you registered with.'
   });
   Object.assign(D.ar, { app_h: 'حمّل تطبيق بريد', app_p: 'للمناديب والتجار والإدارة. بيتثبّت على موبايلك في ثواني ومن غير متجر.', app_and: 'تحميل لأندرويد', app_ios: 'تحميل للآيفون',
-    app_and_s: 'في Chrome: اضغط ⋮ (القايمة) ثم "تثبيت التطبيق" أو "إضافة إلى الشاشة الرئيسية"، وافتحه من الأيقونة.', app_ios_s: 'في Safari: اضغط زرار المشاركة ثم "إضافة إلى الشاشة الرئيسية" ثم "إضافة"، وافتحه من الأيقونة. لازم Safari مش Chrome.', app_done: 'اتثبّت! افتح أيقونة بريد من شاشتك.' });
+    app_and_s: 'في Chrome: اضغط ⋮ (القايمة) ثم "تثبيت التطبيق" أو "إضافة إلى الشاشة الرئيسية"، وافتحه من الأيقونة.', app_ios_s: 'في Safari: اضغط زرار المشاركة ثم "إضافة إلى الشاشة الرئيسية" ثم "إضافة"، وافتحه من الأيقونة. لازم Safari مش Chrome.', app_done: 'اتثبّت! افتح أيقونة بريد من شاشتك.', app_ios_h: 'اختار "إضافة إلى الشاشة الرئيسية" من القايمة اللي فتحت.' });
   Object.assign(D.en, { app_h: 'Get the Bareed app', app_p: 'For couriers, merchants and admins. Installs on your phone in seconds, no app store.', app_and: 'Download for Android', app_ios: 'Download for iPhone',
-    app_and_s: 'In Chrome: tap ⋮ (menu), then "Install app" or "Add to Home screen", and open it from the icon.', app_ios_s: 'In Safari: tap the Share button, then "Add to Home Screen", then "Add", and open it from the icon. It must be Safari, not Chrome.', app_done: 'Installed! Open the Bareed icon on your screen.' });
+    app_and_s: 'In Chrome: tap ⋮ (menu), then "Install app" or "Add to Home screen", and open it from the icon.', app_ios_s: 'In Safari: tap the Share button, then "Add to Home Screen", then "Add", and open it from the icon. It must be Safari, not Chrome.', app_done: 'Installed! Open the Bareed icon on your screen.', app_ios_h: 'Choose "Add to Home Screen" from the menu that opened.' });
   var lang = 'ar';
   try { var sl = localStorage.getItem('bareed.lang'); if (sl === 'ar' || sl === 'en') lang = sl; } catch (e) {}
   function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
@@ -650,7 +650,13 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     el('app-and').addEventListener('click', function () {
       if (dp) { dp.prompt(); dp.userChoice.finally(function () { dp = null; }); } else show('app_and_s');
     });
-    el('app-ios').addEventListener('click', function () { show('app_ios_s'); });
+    el('app-ios').addEventListener('click', function () {
+      // iOS cannot install a web app silently: open the share sheet, where "Add to Home Screen" is one tap away
+      if (navigator.share) {
+        show('app_ios_h');
+        navigator.share({ title: t('brand'), url: location.origin + '/app' }).catch(function (e) { if (!e || e.name !== 'AbortError') show('app_ios_s'); });
+      } else show('app_ios_s');
+    });
   })();
 
   /* ---------- boot ---------- */
