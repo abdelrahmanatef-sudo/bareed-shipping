@@ -311,6 +311,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <div class="field"><label for="o-sp" data-i18n="o_sp"></label><input id="o-sp" required inputmode="tel" maxlength="20" dir="ltr" autocomplete="tel"></div>
       <div class="field"><label for="o-pa" data-i18n="o_pa"></label><input id="o-pa" required maxlength="300" autocomplete="street-address"></div>
       <div class="field"><label for="o-nt" data-i18n="o_nt"></label><textarea id="o-nt" required rows="4" minlength="5" maxlength="500"></textarea></div>
+      <div><button type="button" class="btn ghost" id="o-map-tg" style="width:100%"></button><div id="o-mapbox" hidden style="margin-top:8px"></div></div>
       <input id="o-hp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
       <button class="btn" type="submit" id="o-submit" data-i18n="o_go"></button>
       <p class="msg" id="o-msg" role="status"></p>
@@ -618,6 +619,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   /* ---------- individual orders ---------- */
   (function () {
     var form = el('o-form'), amsg = el('o-msg');
+    var OMP = null, mtg = el('o-map-tg'); mtg.textContent = '📍 ' + (lang === 'ar' ? 'حدد نقطة البداية والنهاية على الخريطة' : 'Set start and end points on the map');
+    mtg.addEventListener('click', function () { var b = el('o-mapbox'); b.hidden = !b.hidden; if (!b.hidden && !OMP && window.BareedMap) OMP = BareedMap.picker(b, {}); });
     function open() { el('o-done').hidden = true; form.hidden = false; amsg.textContent = ''; el('omodal').hidden = false; }
     el('send-btn').addEventListener('click', open);
     el('o-close').addEventListener('click', function () { el('omodal').hidden = true; });
@@ -628,7 +631,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       if (!sb) { amsg.className = 'msg err'; amsg.textContent = t('no_lib'); return; }
       var btn = el('o-submit'); btn.disabled = true; amsg.textContent = '';
       var ntk = null; try { ntk = localStorage.getItem('bareed-chat-token'); if (!ntk) { ntk = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var q = Math.random() * 16 | 0; return (c === 'x' ? q : (q & 3 | 8)).toString(16); }); localStorage.setItem('bareed-chat-token', ntk); } localStorage.setItem('bareed-notify-offer', '1'); } catch (e) {}
-      sb.rpc('submit_public_order', { p_name: el('o-sn').value, p_phone: el('o-sp').value, p_address: el('o-pa').value, p_notes: el('o-nt').value, p_token: ntk }).then(function (r) {
+      var opt = OMP && OMP.get(); sb.rpc('submit_public_order_v2', { p_name: el('o-sn').value, p_phone: el('o-sp').value, p_address: el('o-pa').value, p_notes: el('o-nt').value, p_token: ntk, p_pickup_lat: opt ? opt.a.lat : null, p_pickup_lng: opt ? opt.a.lng : null, p_drop_lat: opt ? opt.b.lat : null, p_drop_lng: opt ? opt.b.lng : null, p_km: opt ? opt.km : null }).then(function (r) {
         btn.disabled = false;
         if (r.error) { amsg.className = 'msg err'; amsg.textContent = /rate_limited/.test(r.error.message) ? t('o_rate') : /invalid_input|area_not/.test(r.error.message) ? t('o_err') : t('o_fail'); return; }
         var c = r.data && r.data.code; form.hidden = true; form.reset();
@@ -671,6 +674,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 })();
 </script>
+<script src="/map-picker.js" defer></script>
 <script src="/support-chat.js" data-mode="auto" defer></script>
 <script src="/push.js" data-mode="auto" defer></script>
 </body></html>
