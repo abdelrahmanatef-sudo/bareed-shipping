@@ -2339,7 +2339,7 @@ select.search { appearance: auto; cursor: pointer; }
   });
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
-    if (started) return; started = true; spStart();
+    if (started) return; started = true; spStart(); if (location.hash === '#support') { try { setTab('sp'); } catch (e) {} }
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
     channel = sb.channel('bareed').on('postgres_changes', { event: '*', schema: 'public' }, function () {
       clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncAll().catch(function () {}); }, 400);
@@ -2376,4 +2376,5 @@ select.search { appearance: auto; cursor: pointer; }
   })();
 })();
 </script>
+<script src="/push.js" data-key="bareed-admin-auth" data-mode="auth" data-pos="top" defer></script>
 </body></html>

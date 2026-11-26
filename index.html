@@ -627,7 +627,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       if (el('o-hp').value) return;
       if (!sb) { amsg.className = 'msg err'; amsg.textContent = t('no_lib'); return; }
       var btn = el('o-submit'); btn.disabled = true; amsg.textContent = '';
-      sb.rpc('submit_public_order', { p_name: el('o-sn').value, p_phone: el('o-sp').value, p_address: el('o-pa').value, p_notes: el('o-nt').value }).then(function (r) {
+      var ntk = null; try { ntk = localStorage.getItem('bareed-chat-token'); if (!ntk) { ntk = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var q = Math.random() * 16 | 0; return (c === 'x' ? q : (q & 3 | 8)).toString(16); }); localStorage.setItem('bareed-chat-token', ntk); } localStorage.setItem('bareed-notify-offer', '1'); } catch (e) {}
+      sb.rpc('submit_public_order', { p_name: el('o-sn').value, p_phone: el('o-sp').value, p_address: el('o-pa').value, p_notes: el('o-nt').value, p_token: ntk }).then(function (r) {
         btn.disabled = false;
         if (r.error) { amsg.className = 'msg err'; amsg.textContent = /rate_limited/.test(r.error.message) ? t('o_rate') : /invalid_input|area_not/.test(r.error.message) ? t('o_err') : t('o_fail'); return; }
         var c = r.data && r.data.code; form.hidden = true; form.reset();
@@ -768,4 +769,5 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 })();
 </script>
 <script src="/support-chat.js" data-mode="auto" defer></script>
+<script src="/push.js" data-mode="auto" defer></script>
 </body></html>

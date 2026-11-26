@@ -69,7 +69,7 @@
         if (MODE === 'auto' && !useGuest() && (m === 'no_profile' || r.j.code === 'PGRST301' || /JWT/i.test(m))) { st.guest = true; st.tid = null; return fetchMsgs(true).then(function () { err('e_gen'); }); }
         err(m === 'rate_limited' ? 'e_rate' : m === 'name_required' ? 'e_name' : m === 'phone_required' ? 'e_phone' : 'e_gen'); return;
       }
-      q('bc-i').value = ''; st.tid = r.j.thread_id || st.tid; fetchMsgs(false);
+      q('bc-i').value = ''; st.tid = r.j.thread_id || st.tid; if (useGuest()) ls('bareed-notify-offer', '1'); fetchMsgs(false);
     }).catch(function () { err('e_gen'); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
