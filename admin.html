@@ -1045,7 +1045,7 @@ select.search { appearance: auto; cursor: pointer; }
       var u = location.origin + q[2];
       return '<div class="tile"><div class="top"><span class="ic">' + ic(q[0]) + '</span>' + t(q[1]) + '</div><div class="row" style="margin-top:10px"><a class="btn sm" target="_blank" rel="noopener" href="' + q[2] + '">' + t('ql_open') + '</a><button class="btn ghost sm" type="button" data-qcopy="' + esc(u) + '">' + t('ql_copy') + '</button></div></div>';
     }).join('') + '</div></div>' + backupCard() + h;
-    el('p-ov').innerHTML = h;
+    el('p-ov').innerHTML = h + '<div id="vis-card">' + visHtml() + '</div>';
   }
 
   function renderShipments() {
@@ -1249,6 +1249,18 @@ select.search { appearance: auto; cursor: pointer; }
     renderReports();
   });
 
+  var VIS = null;
+  function visHtml() {
+    if (!VIS) return '';
+    var v = VIS, mx = Math.max.apply(null, (v.days || []).map(function (d) { return d.v; }).concat([1]));
+    var tl = function (k, o) { return '<div class="tile"><div class="top">' + t(k) + '</div><div class="v">' + o.u + '</div><div class="note">' + o.v + ' ' + t('vs_views') + '</div></div>'; };
+    var rl = function (k, o) { return '<div class="tile"><div class="top">' + t(k) + '</div><div class="v">' + o.h24 + '</div><div class="note">' + t('vs_24') + ' · ' + o.d7 + ' ' + t('vs_7') + ' · ' + o.total + ' ' + t('vs_tot') + '</div></div>'; };
+    return '<div class="card"><h2>' + t('vs_h') + '</h2><div class="tiles">' + tl('vs_today', v.today) + tl('vs_7d', v.d7) + tl('vs_30d', v.d30) + '</div>' +
+      '<h3 style="margin:12px 0 6px">' + t('vs_login') + '</h3><div class="tiles">' + rl('vs_mer', v.roles.merchants) + rl('vs_cou', v.roles.couriers) + rl('vs_adm', v.roles.admins) + '</div>' +
+      '<h3 style="margin:12px 0 6px">' + t('vs_days') + '</h3>' + (v.days || []).map(function (d) { return '<div class="bar rev"><span dir="ltr">' + String(d.d).slice(5) + '</span><span class="track"><i style="width:' + (d.v / mx * 100) + '%"></i></span><span class="num">' + d.u + ' / ' + d.v + '</span></div>'; }).join('') +
+      ((v.pages || []).length ? '<h3 style="margin:12px 0 6px">' + t('vs_pages') + '</h3>' + v.pages.map(function (p) { return '<div class="kv"><span dir="ltr">' + esc(p.path) + '</span><b>' + p.v + '</b></div>'; }).join('') : '') + '</div>';
+  }
+  async function visLoad() { var r = await sb.rpc('admin_visit_stats'); if (r.error || !r.data) return; VIS = r.data; var c = el('vis-card'); if (c) c.innerHTML = visHtml(); }
   function renderAll() {
     renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts(); if (typeof renderPnl === 'function') renderPnl(); if (typeof renderAreas === "function") renderAreas(); if (typeof renderMreq === "function") renderMreq();
     var fee = el('s-fee'); if (!fee.value && document.activeElement !== fee) fee.value = cfg.fee;
@@ -1706,6 +1718,8 @@ select.search { appearance: auto; cursor: pointer; }
     });
   });
 
+  Object.assign(I18N.ar, { vs_h: 'الزوار وتسجيلات الدخول', vs_today: 'زوار النهارده', vs_7d: 'آخر 7 أيام', vs_30d: 'آخر 30 يوم', vs_views: 'مشاهدة', vs_login: 'مين دخل حسابه', vs_mer: 'التجار', vs_cou: 'المناديب', vs_adm: 'الأدمن', vs_24: 'آخر 24 ساعة', vs_7: 'آخر 7 أيام', vs_tot: 'حساب', vs_days: 'آخر 14 يوم (زوار مختلفين / مشاهدات)', vs_pages: 'أكتر الصفحات زيارة (7 أيام)' });
+  Object.assign(I18N.en, { vs_h: 'Visitors and logins', vs_today: 'Visitors today', vs_7d: 'Last 7 days', vs_30d: 'Last 30 days', vs_views: 'views', vs_login: 'Who signed in', vs_mer: 'Merchants', vs_cou: 'Couriers', vs_adm: 'Admins', vs_24: 'last 24h', vs_7: 'last 7 days', vs_tot: 'accounts', vs_days: 'Last 14 days (unique visitors / views)', vs_pages: 'Top pages (7 days)' });
   Object.assign(I18N.ar, { km_u: 'كم', setfee: 'حدد السعر', setfee_p: 'سعر الشحن (جنيه) للشحنة', setfee_ok: 'تم تحديد السعر وإسنادها للمندوب', mfee_btn: 'سعر ثابت', mfee_p: 'سعر ثابت لكل شحنات التاجر ده (جنيه). سيبه فاضي لإلغاء السعر الثابت:', sug_merchant_fixed: 'سعر التاجر الثابت', sug_merchant: 'الأكثر تكراراً لنفس التاجر', sug_zone: 'الأكثر تكراراً لنفس المنطقة' });
   Object.assign(I18N.en, { km_u: 'km', setfee: 'Set price', setfee_p: 'Shipping price (EGP) for', setfee_ok: 'Price set and assigned to a courier', mfee_btn: 'Fixed price', mfee_p: 'Fixed price for all this merchant shipments (EGP). Leave empty to remove:', sug_merchant_fixed: 'merchant fixed price', sug_merchant: 'most common for this merchant', sug_zone: 'most common for this area' });
   Object.assign(I18N.ar, { cs_btn: 'كشف الحساب', cs_h: 'كشف حساب المندوب', cs_cash: 'فلوس معاه لازم يسلمها', cs_cnt: 'شحنات مسلّمة لسه متحاسبش عليها', cs_comm: 'مستحقات المندوب (عمولة)', cs_net: 'الصافي اللي يسلّمه لك', cs_open: 'شحنات معاه دلوقتي', cs_open_cod: 'COD متوقع تحصيله', cs_none: 'مفيش شحنات غير محاسبة', cs_close: 'إغلاق', cs_print: 'طباعة', cs_code: 'الكود', cs_cust: 'العميل', cs_cod: 'COD', cs_ret: 'مرتجعات' });
@@ -2363,7 +2377,7 @@ select.search { appearance: auto; cursor: pointer; }
   });
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
-    if (started) return; started = true; spStart(); if (location.hash === '#support') { try { setTab('sp'); } catch (e) {} }
+    if (started) return; started = true; spStart(); visLoad(); setInterval(function () { if (document.visibilityState === 'visible') visLoad(); }, 60000); if (location.hash === '#support') { try { setTab('sp'); } catch (e) {} }
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
     channel = sb.channel('bareed').on('postgres_changes', { event: '*', schema: 'public' }, function () {
       clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncAll().catch(function () {}); }, 400);
