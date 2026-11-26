@@ -1969,6 +1969,8 @@ select.search { appearance: auto; cursor: pointer; }
   });
 
   /* ---- courier cash handovers + availability ---- */
+  Object.assign(I18N.ar, { cur_s: 'ج' });
+  Object.assign(I18N.en, { cur_s: 'EGP' });
   Object.assign(I18N.ar, { av_on: 'متاح', av_off: 'مش متاح', ho_h: 'تسليمات فلوس المناديب', ho_claim: 'المندوب بيقول إنه سلّم', ho_recv: 'المبلغ اللي استلمته فعلاً', ho_note: 'ملاحظة (اختياري)', ho_ok: 'تأكيد الاستلام', ho_rej: 'رفض', ho_short: 'عجز', ho_surp: 'زيادة', ho_none: 'مفيش طلبات تسليم معلّقة', ho_hist: 'آخر التسليمات', ho_cnt: 'شحنة', ho_done: 'تم تسجيل الاستلام', ho_rejd: 'مرفوض', ho_pend: 'معلّق', ho_tot_short: 'إجمالي العجز المسجّل' });
   Object.assign(I18N.en, { av_on: 'Available', av_off: 'Unavailable', ho_h: 'Courier cash handovers', ho_claim: 'Courier says he handed over', ho_recv: 'Amount you actually received', ho_note: 'Note (optional)', ho_ok: 'Confirm receipt', ho_rej: 'Reject', ho_short: 'Shortage', ho_surp: 'Surplus', ho_none: 'No pending handovers', ho_hist: 'Recent handovers', ho_cnt: 'shipments', ho_done: 'Receipt recorded', ho_rejd: 'Rejected', ho_pend: 'Pending', ho_tot_short: 'Total recorded shortage' });
   var HO = [];
@@ -1995,10 +1997,12 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="row"><label class="note">' + t('ho_recv') + '</label><input class="search" type="number" min="0" step="0.01" inputmode="decimal" data-hr="' + esc(p.id) + '" value="' + (+p.claimed_amount) + '" style="max-width:140px"><input class="search" data-hn="' + esc(p.id) + '" placeholder="' + t('ho_note') + '" maxlength="300" style="max-width:220px"></div>' +
         '<div class="row"><button class="btn sm" type="button" data-hok="' + esc(p.id) + '">' + t('ho_ok') + '</button><button class="btn danger sm" type="button" data-hrj="' + esc(p.id) + '">' + t('ho_rej') + '</button></div></div>';
     }).join('') : '<p class="note">' + t('ho_none') + '</p>';
-    if (done.length) h += '<h3 style="margin-top:8px">' + t('ho_hist') + '</h3><div class="tablewrap"><table><tbody>' + done.map(function (d) {
+    if (done.length) h += '<h3 style="margin:8px 0 4px">' + t('ho_hist') + '</h3><div style="font-size:13px">' + done.map(function (d) {
       var sh = d.status === 'confirmed' ? (+d.claimed_amount - (+d.received_amount)) : 0;
-      return '<tr><td>' + esc(nm(d.courier_id)) + '</td><td>' + fmtDT(d.created_at) + '</td><td>' + (d.status === 'confirmed' ? money(d.received_amount) + ' / ' + money(d.claimed_amount) : t('ho_rejd')) + '</td><td>' + (sh > 0 ? '<b style="color:var(--bad,#c0392b)">' + t('ho_short') + ' ' + money(sh) + '</b>' : sh < 0 ? t('ho_surp') + ' ' + money(-sh) : '') + (d.admin_note ? '<small>' + esc(d.admin_note) + '</small>' : '') + '</td></tr>';
-    }).join('') + '</tbody></table></div>';
+      var amt = d.status === 'confirmed' ? fmt(d.received_amount) + (sh !== 0 ? ' / ' + fmt(d.claimed_amount) : '') + ' ' + t('cur_s') : t('ho_rejd');
+      var ex = sh > 0 ? '<b style="color:var(--bad,#c0392b)">' + t('ho_short') + ' ' + fmt(sh) + '</b>' : sh < 0 ? t('ho_surp') + ' ' + fmt(-sh) : '';
+      return '<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line,#ffffff14);white-space:nowrap;overflow:hidden"><span style="overflow:hidden;text-overflow:ellipsis">' + esc(nm(d.courier_id)) + '</span><span class="note" style="font-size:12px">' + fmtDT(d.created_at) + '</span><b>' + amt + '</b>' + (ex ? '<span>' + ex + '</span>' : '') + '</div>';
+    }).join('') + '</div>';
     box.innerHTML = h + '</div>';
   }
   document.addEventListener('click', function (e) {
