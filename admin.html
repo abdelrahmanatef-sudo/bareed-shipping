@@ -1065,7 +1065,7 @@ select.search { appearance: auto; cursor: pointer; }
       var sopts = STATUSES.map(function (k) { return '<option value="' + k + '"' + (k === s.status ? ' selected' : '') + '>' + t('st_' + k) + '</option>'; }).join('');
       return '<tr><td class="code">' + esc(s.code) + '</td><td class="m">' + esc(s.merchant) + '</td><td>' + esc(s.customer) +
         ((s.phone || s.address || s.zone) ? '<small>' + esc([s.phone, s.address, s.zone].filter(Boolean).join(' · ')) + '</small>' : '') + '</td>' +
-        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td>' +
+        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + ((store.km && store.km[s.id]) ? '<small>📏 ' + esc(store.km[s.id]) + ' ' + t('km_u') + '</small>' : '') + '</td>' +
         '<td><select class="mini" data-courier="' + id + '" aria-label="' + t('th_courier') + '"' + dis + '>' + copts(s.courierId) + '</select></td>' +
         '<td><select class="mini st-' + s.status + '" data-status="' + id + '" aria-label="' + t('th_status') + '"' + dis + '>' + sopts + '</select></td>' +
         '<td><span style="display:inline-flex;gap:2px">' + '<button class="icon-del" type="button" data-wa="' + id + '" aria-label="WhatsApp"' + (s.phone ? '' : ' disabled') + '>' + ic('wa') + '</button>' + '<button class="icon-del" type="button" data-copy="' + id + '" aria-label="link">' + ic('copy') + '</button>' + '<button class="icon-del" type="button" data-label="' + id + '" aria-label="' + t('l_print') + '">' + ic('printer') + '</button>' + (canWrite ? '<button class="icon-del" type="button" data-del="' + id + '" aria-label="' + t('del') + '">' + ic('trash') + '</button>' : '') + '</span></td></tr>';
@@ -1226,11 +1226,12 @@ select.search { appearance: auto; cursor: pointer; }
     }).join('');
     var empty = '<div class="empty"><b>' + t('rp_empty') + '</b></div>';
     var cname = {}; store.couriers.forEach(function (c) { cname[c.id] = c.name; });
+    var ckm = {}; store.shipments.forEach(function (s) { if (s.courierId && store.km && store.km[s.id]) ckm[s.courierId] = (ckm[s.courierId] || 0) + (+store.km[s.id]); });
     var crow = Object.keys(co).sort(function (a, b) { return co[b].D - co[a].D; }).map(function (k) {
       var c = co[k];
-      return '<tr><td>' + esc(cname[k] || '-') + '</td><td>' + fmt(c.D) + '</td><td>' + fmt(c.R) + '</td><td>' + pct(c.D, c.D + c.R) + '</td><td>' + fmt(c.cod) + '</td><td>' + (c.hn ? fmt1(c.h / c.hn) : '-') + '</td></tr>';
+      return '<tr><td>' + esc(cname[k] || '-') + '</td><td>' + fmt(c.D) + '</td><td>' + fmt(c.R) + '</td><td>' + pct(c.D, c.D + c.R) + '</td><td>' + fmt(c.cod) + '</td><td>' + (c.hn ? fmt1(c.h / c.hn) : '-') + '</td><td>' + (ckm[k] ? fmt1(ckm[k]) : '-') + '</td></tr>';
     }).join('');
-    el('rp-co').innerHTML = crow ? '<table><thead><tr><th>' + t('th_courier') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_hours') + '</th></tr></thead><tbody>' + crow + '</tbody></table>' : empty;
+    el('rp-co').innerHTML = crow ? '<table><thead><tr><th>' + t('th_courier') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_hours') + '</th><th>' + t('km_u') + '</th></tr></thead><tbody>' + crow + '</tbody></table>' : empty;
     var mrow = Object.keys(me).filter(function (k) { return me[k].n + me[k].D + me[k].R > 0; }).sort(function (a, b) { return (me[b].D + me[b].R + me[b].n) - (me[a].D + me[a].R + me[a].n); }).slice(0, 10).map(function (k) {
       var x = me[k];
       return '<tr><td>' + esc(k) + '</td><td>' + fmt(x.n) + '</td><td>' + fmt(x.D) + '</td><td>' + fmt(x.R) + '</td><td>' + pct(x.D, x.D + x.R) + '</td><td>' + fmt(x.cod) + '</td><td>' + fmt(x.rev) + '</td></tr>';
@@ -1568,6 +1569,7 @@ select.search { appearance: auto; cursor: pointer; }
         (store.events[ev.shipment_id] = store.events[ev.shipment_id] || []).push({ status: ev.status, at: ev.created_at });
         if (ev.status === 'delivered' || ev.status === 'returned') done[ev.shipment_id + '|' + ev.status] = ev.created_at;
       });
+      var kmr = await sb.rpc('admin_shipment_km'); store.km = (!kmr.error && kmr.data) ? kmr.data : (store.km || {});
       store.shipments = rs.data.map(function (r) {
         return { id: r.id, code: r.code, merchant: r.merchants ? r.merchants.name : '', merchantId: r.merchant_id, customer: r.customer_name, phone: r.customer_phone,
           address: r.address, zone: r.zone || '', cod: +r.cod, fee: +r.fee, courierId: r.courier_id || '', status: r.status, settled: r.courier_settled, paidMerchant: r.merchant_settled,
@@ -1688,6 +1690,8 @@ select.search { appearance: auto; cursor: pointer; }
     });
   });
 
+  Object.assign(I18N.ar, { km_u: 'كم' });
+  Object.assign(I18N.en, { km_u: 'km' });
   Object.assign(I18N.ar, { cs_btn: 'كشف الحساب', cs_h: 'كشف حساب المندوب', cs_cash: 'فلوس معاه لازم يسلمها', cs_cnt: 'شحنات مسلّمة لسه متحاسبش عليها', cs_comm: 'مستحقات المندوب (عمولة)', cs_net: 'الصافي اللي يسلّمه لك', cs_open: 'شحنات معاه دلوقتي', cs_open_cod: 'COD متوقع تحصيله', cs_none: 'مفيش شحنات غير محاسبة', cs_close: 'إغلاق', cs_print: 'طباعة', cs_code: 'الكود', cs_cust: 'العميل', cs_cod: 'COD', cs_ret: 'مرتجعات' });
   Object.assign(I18N.en, { cs_btn: 'Statement', cs_h: 'Delivery Representative statement', cs_cash: 'Cash he must hand over', cs_cnt: 'Delivered, not yet settled', cs_comm: 'Delivery Representative earnings (commission)', cs_net: 'Net he hands to you', cs_open: 'Currently carrying', cs_open_cod: 'COD expected', cs_none: 'No unsettled shipments', cs_close: 'Close', cs_print: 'Print', cs_code: 'Code', cs_cust: 'Customer', cs_cod: 'COD', cs_ret: 'Returns' });
   function showCourierStmt(cid) {
