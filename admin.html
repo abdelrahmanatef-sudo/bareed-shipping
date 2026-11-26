@@ -1065,7 +1065,7 @@ select.search { appearance: auto; cursor: pointer; }
       var sopts = STATUSES.map(function (k) { return '<option value="' + k + '"' + (k === s.status ? ' selected' : '') + '>' + t('st_' + k) + '</option>'; }).join('');
       return '<tr><td class="code">' + esc(s.code) + '</td><td class="m">' + esc(s.merchant) + '</td><td>' + esc(s.customer) +
         ((s.phone || s.address || s.zone) ? '<small>' + esc([s.phone, s.address, s.zone].filter(Boolean).join(' · ')) + '</small>' : '') + '</td>' +
-        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + ((store.km && store.km[s.id]) ? '<small>📏 ' + esc(store.km[s.id]) + ' ' + t('km_u') + '</small>' : '') + '</td>' +
+        '<td>' + fmt(s.cod) + '</td><td>' + (s.pp ? '<button class="btn sm" type="button" data-setfee="' + id + '"' + dis + '>' + t('setfee') + '</button>' : fmt(s.fee)) + ((store.km && store.km[s.id]) ? '<small>📏 ' + esc(store.km[s.id]) + ' ' + t('km_u') + '</small>' : '') + '</td>' +
         '<td><select class="mini" data-courier="' + id + '" aria-label="' + t('th_courier') + '"' + dis + '>' + copts(s.courierId) + '</select></td>' +
         '<td><select class="mini st-' + s.status + '" data-status="' + id + '" aria-label="' + t('th_status') + '"' + dis + '>' + sopts + '</select></td>' +
         '<td><span style="display:inline-flex;gap:2px">' + '<button class="icon-del" type="button" data-wa="' + id + '" aria-label="WhatsApp"' + (s.phone ? '' : ' disabled') + '>' + ic('wa') + '</button>' + '<button class="icon-del" type="button" data-copy="' + id + '" aria-label="link">' + ic('copy') + '</button>' + '<button class="icon-del" type="button" data-label="' + id + '" aria-label="' + t('l_print') + '">' + ic('printer') + '</button>' + (canWrite ? '<button class="icon-del" type="button" data-del="' + id + '" aria-label="' + t('del') + '">' + ic('trash') + '</button>' : '') + '</span></td></tr>';
@@ -1345,6 +1345,8 @@ select.search { appearance: auto; cursor: pointer; }
     safe(function () { return put('shipments', id, next); });
   });
   el('sh-rows').addEventListener('click', function (e) {
+    var sf = e.target.closest('[data-setfee]');
+    if (sf) { var sfs = store.shipments.filter(function (x) { return x.id === sf.getAttribute('data-setfee'); })[0]; var fv = prompt(t('setfee_p') + ' ' + (sfs ? sfs.code : ''), '50'); if (fv === null) return; var fn = parseFloat(String(fv).replace(/[^0-9.]/g, '')); if (!(fn >= 0)) return; safe(async function () { var r = await sb.rpc('admin_set_shipment_fee', { p_id: sf.getAttribute('data-setfee'), p_fee: fn }); if (r.error) throw r.error; toast(t('setfee_ok')); await refresh('shipments'); }); return; }
     var d = e.target.closest('[data-del]'), w = e.target.closest('[data-wa]'), c = e.target.closest('[data-copy]'), l = e.target.closest('[data-label]');
     if (w) { var sw = store.shipments.filter(function (x) { return x.id === w.getAttribute('data-wa'); })[0]; if (sw && sw.phone) window.open('https://wa.me/' + waPhone(sw.phone) + '?text=' + encodeURIComponent('شحنتك ' + sw.code + ' مع ' + t('brand') + ' — ' + t('st_' + sw.status) + '. ' + t('tr_title') + ': ' + trackLink(sw.code)), '_blank'); }
     else if (c) { var sc = store.shipments.filter(function (x) { return x.id === c.getAttribute('data-copy'); })[0]; if (sc && navigator.clipboard) { navigator.clipboard.writeText(trackLink(sc.code)).then(function () { toast(t('t_copy')); }); } }
@@ -1573,7 +1575,7 @@ select.search { appearance: auto; cursor: pointer; }
       store.shipments = rs.data.map(function (r) {
         return { id: r.id, code: r.code, merchant: r.merchants ? r.merchants.name : '', merchantId: r.merchant_id, customer: r.customer_name, phone: r.customer_phone,
           address: r.address, zone: r.zone || '', cod: +r.cod, fee: +r.fee, courierId: r.courier_id || '', status: r.status, settled: r.courier_settled, paidMerchant: r.merchant_settled,
-          attempts: +r.attempts || 0, nextAttempt: r.next_attempt || '', createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
+          pp: !!r.price_pending, attempts: +r.attempts || 0, nextAttempt: r.next_attempt || '', createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
       });
     } else if (name === 'couriers') {
       var rc = await sb.from('couriers').select('id,name,phone,email,status,available,national_id,id_status,id_birthdate,id_gender,id_governorate,kyc_submitted_at,kyc_decided_at,kyc_reject_reason').order('created_at', { ascending: true });
@@ -1690,8 +1692,8 @@ select.search { appearance: auto; cursor: pointer; }
     });
   });
 
-  Object.assign(I18N.ar, { km_u: 'كم' });
-  Object.assign(I18N.en, { km_u: 'km' });
+  Object.assign(I18N.ar, { km_u: 'كم', setfee: 'حدد السعر', setfee_p: 'سعر الشحن (جنيه) للشحنة', setfee_ok: 'تم تحديد السعر وإسنادها للمندوب' });
+  Object.assign(I18N.en, { km_u: 'km', setfee: 'Set price', setfee_p: 'Shipping price (EGP) for', setfee_ok: 'Price set and assigned to a courier' });
   Object.assign(I18N.ar, { cs_btn: 'كشف الحساب', cs_h: 'كشف حساب المندوب', cs_cash: 'فلوس معاه لازم يسلمها', cs_cnt: 'شحنات مسلّمة لسه متحاسبش عليها', cs_comm: 'مستحقات المندوب (عمولة)', cs_net: 'الصافي اللي يسلّمه لك', cs_open: 'شحنات معاه دلوقتي', cs_open_cod: 'COD متوقع تحصيله', cs_none: 'مفيش شحنات غير محاسبة', cs_close: 'إغلاق', cs_print: 'طباعة', cs_code: 'الكود', cs_cust: 'العميل', cs_cod: 'COD', cs_ret: 'مرتجعات' });
   Object.assign(I18N.en, { cs_btn: 'Statement', cs_h: 'Delivery Representative statement', cs_cash: 'Cash he must hand over', cs_cnt: 'Delivered, not yet settled', cs_comm: 'Delivery Representative earnings (commission)', cs_net: 'Net he hands to you', cs_open: 'Currently carrying', cs_open_cod: 'COD expected', cs_none: 'No unsettled shipments', cs_close: 'Close', cs_print: 'Print', cs_code: 'Code', cs_cust: 'Customer', cs_cod: 'COD', cs_ret: 'Returns' });
   function showCourierStmt(cid) {

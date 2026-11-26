@@ -141,6 +141,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
       isadmin: 'إنت داخل بحساب الأدمن، والصفحة دي للتجار بس. افتح لوحة الأدمن من /admin، أو اضغط خروج وادخل بحساب التاجر.', pending: 'حسابك قيد المراجعة. هنفعّله قريباً وتقدر تضيف شحنات بعدها.', suspended: 'حسابك موقوف. تواصل مع بريد.', nomerchant: 'مفيش حساب تاجر مرتبط بالإيميل ده.',
       k_all: 'كل الشحنات', k_open: 'شحنات شغّالة', k_del: 'اتسلّمت', k_ret: 'مرتجعة', k_cod: 'COD اتحصّل', k_due: 'مستحقاتك عند بريد', cur: 'جنيه',
       h_status: 'شحناتك حسب الحالة', h_new: 'شحنة جديدة', h_ships: 'شحناتك', f_customer: 'اسم العميل', f_phone: 'تليفون العميل', f_gov: 'المحافظة', f_city: 'المدينة', f_addr: 'العنوان بالتفصيل', f_cod: 'قيمة الـ COD (جنيه)', f_save: 'سجّل الشحنة',
+      pp: 'بانتظار التسعير', quote2: 'الإدارة هتحدد سعر الشحن وتبلّغك، وبعدها الشحنة بتتسند لمندوب.',
       f_note: 'المدن اللي مكتوب جنبها «قريباً» لسه مش مفتوحة للتوصيل.', soon: 'قريباً', pick: 'اختار المدينة', quote: 'أجرة الشحن لـ {c}: {f} جنيه',
       search: 'ابحث بالكود أو اسم العميل', export: 'تصدير Excel', th_code: 'الكود', th_area: 'المنطقة', th_cod: 'COD', th_fee: 'الأجرة', th_status: 'الحالة', th_date: 'التاريخ', track: 'تتبع', close: 'قفل',
       fl_all: 'الكل', fl_new: 'جديدة', fl_picked_up: 'اتاخدت من التاجر', fl_out_for_delivery: 'مع المندوب', fl_delivered: 'تم التسليم للعميل', fl_returned: 'مرتجعة',
@@ -150,6 +151,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
       isadmin: 'You are signed in as admin, and this page is for merchants only. Open the admin dashboard at /admin, or sign out and sign in with a merchant account.', pending: 'Your account is under review. We will activate it soon, then you can add shipments.', suspended: 'Your account is suspended. Please contact Bareed.', nomerchant: 'No merchant account is linked to this email.',
       k_all: 'All shipments', k_open: 'In progress', k_del: 'Delivered', k_ret: 'Returned', k_cod: 'COD collected', k_due: 'Balance owed to you', cur: 'EGP',
       h_status: 'Your shipments by status', h_new: 'New shipment', h_ships: 'Your shipments', f_customer: 'Customer name', f_phone: 'Customer phone', f_gov: 'Governorate', f_city: 'City', f_addr: 'Full address', f_cod: 'COD amount (EGP)', f_save: 'Create shipment',
+      pp: 'Pending price', quote2: 'The admin will set the shipping price and notify you, then a courier is assigned.',
       f_note: 'Cities marked “Soon” are not open for delivery yet.', soon: 'Soon', pick: 'Choose a city', quote: 'Shipping fee to {c}: {f} EGP',
       search: 'Search by code or customer', export: 'Export Excel', th_code: 'Code', th_area: 'Area', th_cod: 'COD', th_fee: 'Fee', th_status: 'Status', th_date: 'Date', track: 'Track', close: 'Close',
       fl_all: 'All', fl_new: 'New', fl_picked_up: 'Picked up', fl_out_for_delivery: 'Out', fl_delivered: 'Delivered', fl_returned: 'Returned',
@@ -215,7 +217,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     var list = visible();
     el('rows').innerHTML = list.map(function (s) {
       return '<tr><td class="code">' + esc(s.code) + '</td><td>' + esc(s.customer_name) + '<small dir="ltr" style="text-align:start">' + esc(s.customer_phone) + '</small></td><td>' + esc(s.zone || '') + '<small>' + esc(s.address) + '</small></td>' +
-        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td><td><span class="badge s-' + s.status + '">' + t('st_' + s.status) + '</span></td><td>' + esc(dt(s.created_at)) + '</td>' +
+        '<td>' + fmt(s.cod) + '</td><td>' + (s.price_pending ? '<small>' + t('pp') + '</small>' : fmt(s.fee)) + '</td><td><span class="badge s-' + s.status + '">' + t('st_' + s.status) + '</span></td><td>' + esc(dt(s.created_at)) + '</td>' +
         '<td><button class="btn ghost sm" type="button" data-track="' + esc(s.id) + '">' + t('track') + '</button> <button class="btn ghost sm" type="button" data-label="' + esc(s.id) + '">' + t('lb') + '</button></td></tr>'; }).join('');
     var em = el('empty'); em.hidden = !!list.length;
     if (!list.length) em.innerHTML = ships.length ? '<b>' + t('e_res') + '</b>' : '<b>' + t('e_none') + '</b>' + t('e_none_h');
@@ -240,13 +242,13 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   }
   function showQuote() {
     var a = areas.filter(function (x) { return x.id === el('f-city').value; })[0], q = el('quote');
-    q.hidden = !a; if (a) q.textContent = t('quote', { c: cname(a), f: fmt(a.fee) });
+    q.hidden = !a; if (a) q.textContent = t('quote2');
   }
   function renderAll() { renderStatic(); if (me && me.status === 'active') { renderTiles(); renderRows(); renderForm(); if (typeof renderPayouts === 'function') renderPayouts(); } }
 
   /* data */
   async function load() {
-    var r = await sb.from('shipments').select('id,code,customer_name,customer_phone,address,cod,fee,status,zone,merchant_settled,created_at').order('created_at', { ascending: false }).limit(1000);
+    var r = await sb.from('shipments').select('id,code,customer_name,customer_phone,address,cod,fee,price_pending,status,zone,merchant_settled,created_at').order('created_at', { ascending: false }).limit(1000);
     if (r.error) { toast('err', t('e_load')); return; }
     ships = r.data; renderAll();
   }
