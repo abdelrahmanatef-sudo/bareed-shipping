@@ -436,6 +436,41 @@ select.search { appearance: auto; cursor: pointer; }
 .side-links .nav-item { text-decoration: none; font-size: 14px; }
 .tb-links { display: none; gap: 6px; }
 @media (max-width: 860px) { .side-links { display: none; } .tb-links { display: inline-flex; } }
+
+.sp-badge { background: #e5484d; color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 7px; margin-inline-start: auto; font-weight: 700; }
+.sp-wrap { display: grid; grid-template-columns: 320px 1fr; gap: 14px; align-items: start; }
+@media (max-width: 800px) { .sp-wrap { grid-template-columns: 1fr; } }
+.sp-list { display: flex; flex-direction: column; gap: 6px; max-height: 70vh; overflow-y: auto; }
+.sp-item { text-align: start; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; cursor: pointer; display: grid; gap: 3px; color: inherit; font: inherit; }
+.sp-item[aria-current="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(245,183,0,.25); }
+.sp-item.closed { opacity: .6; }
+.sp-item .top { display: flex; gap: 8px; align-items: center; }
+.sp-item .nm { font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-item .pv { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-item .mt { color: var(--muted); font-size: 12px; display: flex; gap: 8px; justify-content: space-between; }
+.sp-kind { font-size: 11px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.sp-un { background: #e5484d; color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 7px; font-weight: 700; }
+.sp-chat { display: flex; flex-direction: column; gap: 10px; min-height: 320px; }
+.sp-head { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.sp-msgs { display: flex; flex-direction: column; gap: 8px; max-height: 52vh; overflow-y: auto; padding: 4px; }
+.sp-m { max-width: 82%; padding: 8px 12px; border-radius: 14px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; }
+.sp-m small { display: block; opacity: .6; font-size: 11px; margin-top: 3px; }
+.sp-m.user { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); }
+.sp-m.admin { align-self: flex-end; background: var(--accent); color: #1a1a1a; }
+.kb-form { display: grid; gap: 8px; }
+.kb-form textarea { min-height: 70px; resize: vertical; font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: inherit; }
+.kb-list { display: grid; gap: 8px; }
+.kb-item { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
+.kb-item.off { opacity: .55; }
+.kb-item .kq { font-weight: 700; overflow-wrap: anywhere; }
+.kb-item .ka { color: var(--muted); font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.kb-item .acts { display: flex; gap: 6px; flex-wrap: wrap; }
+.kb-item .acts button, .sp-teach { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: inherit; cursor: pointer; }
+.sp-teach { margin-top: 4px; }
+.sp-form { display: flex; gap: 8px; }
+.sp-form textarea { flex: 1; min-height: 44px; max-height: 120px; resize: vertical; font: inherit; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: inherit; }
+@media (min-width:861px){.side{overflow-y:auto!important}}
+@media (max-width:860px){.nav{overflow-x:auto}}
 </style>
 <link rel="manifest" href="/manifest-app.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="إدارة بريد"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script>
 <body>
@@ -469,6 +504,7 @@ select.search { appearance: auto; cursor: pointer; }
     <div class="brand"><span data-logo="40"></span><div><b data-i18n="brand"></b><small data-i18n="brand_sub"></small></div></div>
     <nav class="nav" id="tabs">
       <button class="nav-item" data-tab="ov" aria-current="page"><svg class="i" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-i18n="nav_ov"></span></button>
+      <button class="nav-item" data-tab="sp"><svg class="i" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.3A8 8 0 1 1 21 12Z"/></svg><span data-i18n="nav_sp"></span><b id="sp-badge" class="sp-badge" hidden></b></button>
       <button class="nav-item" data-tab="sh"><svg class="i" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg><span data-i18n="nav_sh"></span></button>
       <button class="nav-item" data-tab="co"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg><span data-i18n="nav_co"></span></button>
       <button class="nav-item" data-tab="me"><svg class="i" viewBox="0 0 24 24"><path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/></svg><span data-i18n="nav_me"></span></button>
@@ -562,6 +598,7 @@ select.search { appearance: auto; cursor: pointer; }
       </section>
 
       <section id="p-me" class="stack" hidden>
+        <div class="chips" id="me-sw" role="group"><button class="chip" type="button" data-mev="m" aria-pressed="true" data-i18n="mev_m"></button><button class="chip" type="button" data-mev="i" aria-pressed="false" data-i18n="mev_i"></button></div>
         <div class="card" id="nm-card"><h2 data-i18n="nm_h"></h2><p class="note" data-i18n="nm_note"></p>
           <div class="row" style="flex-wrap:wrap;gap:8px">
             <input class="search" id="nm-name" data-i18n-ph="nm_name" style="max-width:200px" autocomplete="off">
@@ -607,6 +644,7 @@ select.search { appearance: auto; cursor: pointer; }
         <div class="card"><h2 data-i18n="rp_merchants"></h2><div class="tablewrap" id="rp-me"></div></div>
       </section>
       <section id="p-ct" class="stack" hidden>
+        <div class="card"><h2 data-i18n="ac_self"></h2><p class="note" data-i18n="ac_self_p"></p><div class="row"><button class="btn sm" type="button" id="myacct2" data-i18n="ac_self_btn"></button></div></div>
         <div class="card">
           <h2 data-i18n="h_assume"></h2>
           <p class="note" data-i18n="assume_note"></p>
@@ -632,6 +670,34 @@ select.search { appearance: auto; cursor: pointer; }
             <input class="search" id="ar-n1" data-i18n-ph="a_city_ar" style="max-width:170px"><input class="search" id="ar-n2" data-i18n-ph="a_city_en" style="max-width:170px" dir="ltr">
             <input class="search" id="ar-fee" type="number" min="0" inputmode="numeric" data-i18n-ph="a_fee" style="max-width:110px"><button class="btn sm" id="ar-btn" type="button" data-i18n="a_add"></button>
           </div>
+        </div>
+      </section>
+
+      <section id="p-sp" class="stack" hidden>
+        <div class="sp-wrap">
+          <div class="card">
+            <h2 data-i18n="sp_title"></h2>
+            <select id="sp-f" class="search"><option value="open" data-i18n="sp_f_open"></option><option value="all" data-i18n="sp_f_all"></option><option value="closed" data-i18n="sp_f_closed"></option></select>
+            <div class="sp-list" id="sp-list"></div>
+          </div>
+          <div class="card sp-chat" id="sp-chat">
+            <p class="note" id="sp-empty" data-i18n="sp_pick"></p>
+            <div id="sp-box" hidden style="display:none;flex-direction:column;gap:10px">
+              <div class="sp-head"><div><b id="sp-nm"></b> <span class="sp-kind" id="sp-kd"></span><div class="note" id="sp-ph" dir="ltr" style="text-align:start"></div></div><button class="btn" id="sp-close" type="button"></button></div>
+              <div class="sp-msgs" id="sp-msgs"></div>
+              <form class="sp-form" id="sp-form"><textarea id="sp-in" maxlength="1000" data-i18n-ph="sp_ph"></textarea><button class="btn" id="sp-send" type="submit" data-i18n="sp_send"></button></form>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="kb-card">
+          <h2 data-i18n="kb_title"></h2>
+          <p class="note" data-i18n="kb_hint"></p>
+          <form id="kb-form" class="kb-form">
+            <input id="kb-q" class="search" maxlength="300" data-i18n-ph="kb_q_ph">
+            <textarea id="kb-a" maxlength="1200" data-i18n-ph="kb_a_ph"></textarea>
+            <div class="row"><button class="btn" id="kb-save" type="submit" data-i18n="kb_save"></button><button class="btn" id="kb-cancel" type="button" hidden data-i18n="kb_cancel"></button></div>
+          </form>
+          <div class="kb-list" id="kb-list"></div>
         </div>
       </section>
 
@@ -711,7 +777,7 @@ select.search { appearance: auto; cursor: pointer; }
       e_merchant: 'لسه مفيش تجار', e_merchant_h: 'التجار بيظهروا هنا لما تضيف شحنات باسمهم.',
       h_assume: 'افتراضات التكلفة', assume_note: 'الأرقام دي تقديرية. غيّرها لأرقام شركتك الحقيقية، والحساب كله بيتحدّث.',
       cfg_fee: 'أجرة الشحن الافتراضية على التاجر', cfg_returnFee: 'رسوم المرتجع على التاجر', cfg_commissionPct: 'عمولة تحصيل الـ COD',
-      cfg_courierSharePct: 'نسبة المندوب من أجرة الشحن (الباقي لبريد)', cs_fee: 'الأجرة', cs_mine: 'نصيب المندوب', cs_bareed: 'نصيب بريد', cs_btot: 'نصيب بريد من الشحنات دي', cfg_courierDelivered: 'أجر المندوب للشحنة المسلّمة', cfg_courierReturned: 'أجر المندوب للشحنة المرتجعة', cfg_other: 'بنزين وتغليف وأدوات للشحنة',
+      cfg_courierSharePct: 'نسبة المندوب من أجرة الشحنة (الباقي ليك)', cfg_courierReturned: 'أجر المندوب للشحنة المرتجعة', cfg_other: 'بنزين وتغليف وأدوات للشحنة',
       cfg_fixed: 'مصاريف ثابتة شهرية (إيجار، تليفونات، إنترنت)', cfg_rate: 'نسبة التسليم المتوقعة', cfg_avgCod: 'متوسط قيمة الـ COD المتوقع', cfg_volume: 'عدد الشحنات المتوقع في الشهر',
       u_egp: 'جنيه', u_pctcod: '% من القيمة', u_month: 'جنيه/شهر', u_pct: '%', u_ship: 'شحنة',
       h_unit: 'تكلفة وربح الشحنة الواحدة', b_rev: 'إيراد الشحنة', b_courier: 'أجر المندوب', b_fuel: 'بنزين وتغليف', b_left: 'الباقي للشحنة',
@@ -766,7 +832,7 @@ select.search { appearance: auto; cursor: pointer; }
       e_merchant: 'No merchants yet', e_merchant_h: 'Merchants appear here once you add shipments for them.',
       h_assume: 'Cost assumptions', assume_note: 'These numbers are estimates. Change them to your real figures and everything recalculates.',
       cfg_fee: 'Default shipping fee to merchant', cfg_returnFee: 'Return fee to merchant', cfg_commissionPct: 'COD collection commission',
-      cfg_courierSharePct: 'Delivery Representative share of the shipping fee (the rest is Bareed\'s)', cs_fee: 'Fee', cs_mine: 'Rep. share', cs_bareed: 'Bareed share', cs_btot: 'Bareed share of these shipments', cfg_courierDelivered: 'Delivery Representative pay per delivered shipment', cfg_courierReturned: 'Delivery Representative pay per returned shipment', cfg_other: 'Fuel, packaging and supplies per shipment',
+      cfg_courierSharePct: 'Courier share of the shipping fee (the rest is yours)', cfg_courierReturned: 'Delivery Representative pay per returned shipment', cfg_other: 'Fuel, packaging and supplies per shipment',
       cfg_fixed: 'Monthly fixed costs (rent, phones, internet)', cfg_rate: 'Expected delivery rate', cfg_avgCod: 'Expected average COD', cfg_volume: 'Expected shipments per month',
       u_egp: 'EGP', u_pctcod: '% of COD value', u_month: 'EGP / month', u_pct: '%', u_ship: 'shipments',
       h_unit: 'Cost and profit per shipment', b_rev: 'Revenue', b_courier: 'Delivery Representative pay', b_fuel: 'Fuel & packaging', b_left: 'Left per shipment',
@@ -788,13 +854,14 @@ select.search { appearance: auto; cursor: pointer; }
 
   /* ---------- config ---------- */
   var CFG0 = { fee: 45, returnFee: 20, commissionPct: 1, courierSharePct: 80, courierDelivered: 20, courierReturned: 8, other: 6, fixed: 4000, rate: 90, avgCod: 450, volume: 300 };
-  var CFG_FIELDS = [['fee', 'u_egp'], ['returnFee', 'u_egp'], ['commissionPct', 'u_pctcod'], ['courierSharePct', 'u_pct'],
+  var CFG_FIELDS = [['fee', 'u_egp'], ['returnFee', 'u_egp'], ['commissionPct', 'u_pctcod'], ['courierSharePct', 'u_pct'], ['courierReturned', 'u_egp'],
     ['other', 'u_egp'], ['fixed', 'u_month'], ['rate', 'u_pct'], ['avgCod', 'u_egp'], ['volume', 'u_ship']];
   var STATUSES = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'];
   var FILTER_KEYS = { all: 'fl_all', new: 'fl_new', picked_up: 'fl_picked', out_for_delivery: 'fl_out', delivered: 'fl_del', returned: 'fl_ret', late: 'fl_late', unassigned: 'fl_unas' };
-  var PAGES = ['ov', 'sh', 'co', 'me', 'rp', 'ct', 'tr'];
+  var PAGES = ['ov', 'sh', 'co', 'me', 'rp', 'ct', 'tr', 'sp'];
 
   var store = { shipments: [], couriers: [], merchants: [], zones: [], events: {} };
+  var MEV = 'm';
   var EX = [], EXCATS = ['rent', 'salaries', 'fuel', 'phones', 'marketing', 'maintenance', 'packaging', 'other'];
   var cfg = Object.assign({}, CFG0);
   var local = false, canWrite = true, loaded = { shipments: false, couriers: false };
@@ -845,7 +912,8 @@ select.search { appearance: auto; cursor: pointer; }
   /* ---------- calculations ---------- */
   function commission(s) { return (+s.cod || 0) * cfg.commissionPct / 100; }
   function zoneOf(name) { var n = String(name || '').trim(); if (!n) return null; return (store.zones || []).filter(function (x) { return String(x.name).trim() === n; })[0] || null; }
-  function courierPayFor(s) { var sh = Math.min(100, Math.max(0, +cfg.courierSharePct)); if (isNaN(sh)) sh = 80; var base = s.status === 'delivered' ? (+s.fee || 0) : (+cfg.returnFee || 0); return Math.round(base * sh) / 100; }
+  function courierDel(s) { return Math.round((+s.fee || 0) * (+cfg.courierSharePct || 0)) / 100; }
+  function courierPayFor(s) { if (s.status === 'delivered') return courierDel(s); return cfg.courierReturned; }
   function fillZoneSelect() { var sel = el('s-zone'); if (!sel) return; var cur = sel.value; sel.innerHTML = '<option value="">' + t('no_zone') + '</option>' + (store.zones || []).map(function (z) { return '<option value="' + esc(z.name) + '">' + esc(z.name) + ' — ' + fmt(z.fee) + '</option>'; }).join(''); sel.value = cur; }
   function renderZones() { var box = el('zones-list'); if (!box) return; var zs = store.zones || []; box.innerHTML = zs.map(function (z, i) { return '<div class="zone-row"><b>' + esc(z.name) + '</b><span class="kv"><span>' + t('z_fee') + '</span><b>' + fmt(z.fee) + ' ' + t('cur') + '</b></span><span class="kv"><span>' + t('z_courier') + '</span><b>' + fmt(z.courier) + ' ' + t('cur') + '</b></span>' + (canWrite ? '<button class="icon-del" type="button" data-zdel="' + i + '" aria-label="' + t('del') + '">' + ic('trash') + '</button>' : '') + '</div>'; }).join('') || '<p class="note">' + t('e_none') + '</p>'; }
   function saveZones() { if (local) { renderAll(); return; } return sb.from('settings').upsert({ key: 'zones', data: store.zones || [], updated_at: new Date().toISOString() }).then(function (r) { if (r.error) throw r.error; }); }
@@ -891,7 +959,7 @@ select.search { appearance: auto; cursor: pointer; }
     var r = Math.min(100, cfg.rate) / 100;
     var revD = cfg.fee + avgCod * cfg.commissionPct / 100;
     var rev = r * revD + (1 - r) * cfg.returnFee;
-    var sh = Math.min(100, Math.max(0, +cfg.courierSharePct)) / 100, courier = r * cfg.fee * sh + (1 - r) * cfg.returnFee * sh;
+    var courier = r * (cfg.fee * cfg.courierSharePct / 100) + (1 - r) * cfg.courierReturned;
     var margin = rev - courier - cfg.other;
     return { rev: rev, courier: courier, other: cfg.other, margin: margin, be: margin > 0 ? Math.ceil(cfg.fixed / margin) : null };
   }
@@ -999,7 +1067,7 @@ select.search { appearance: auto; cursor: pointer; }
       var sopts = STATUSES.map(function (k) { return '<option value="' + k + '"' + (k === s.status ? ' selected' : '') + '>' + t('st_' + k) + '</option>'; }).join('');
       return '<tr><td class="code">' + esc(s.code) + '</td><td class="m">' + esc(s.merchant) + '</td><td>' + esc(s.customer) +
         ((s.phone || s.address || s.zone) ? '<small>' + esc([s.phone, s.address, s.zone].filter(Boolean).join(' · ')) + '</small>' : '') + '</td>' +
-        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td>' +
+        '<td>' + fmt(s.cod) + '</td><td>' + (s.pp ? '<button class="btn sm" type="button" data-setfee="' + id + '"' + dis + '>' + t('setfee') + '</button>' : fmt(s.fee)) + ((store.km && store.km[s.id]) ? '<small>📏 ' + esc(store.km[s.id]) + ' ' + t('km_u') + '</small>' : '') + '</td>' +
         '<td><select class="mini" data-courier="' + id + '" aria-label="' + t('th_courier') + '"' + dis + '>' + copts(s.courierId) + '</select></td>' +
         '<td><select class="mini st-' + s.status + '" data-status="' + id + '" aria-label="' + t('th_status') + '"' + dis + '>' + sopts + '</select></td>' +
         '<td><span style="display:inline-flex;gap:2px">' + '<button class="icon-del" type="button" data-wa="' + id + '" aria-label="WhatsApp"' + (s.phone ? '' : ' disabled') + '>' + ic('wa') + '</button>' + '<button class="icon-del" type="button" data-copy="' + id + '" aria-label="link">' + ic('copy') + '</button>' + '<button class="icon-del" type="button" data-label="' + id + '" aria-label="' + t('l_print') + '">' + ic('printer') + '</button>' + (canWrite ? '<button class="icon-del" type="button" data-del="' + id + '" aria-label="' + t('del') + '">' + ic('trash') + '</button>' : '') + '</span></td></tr>';
@@ -1055,7 +1123,7 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="kv"><span>' + t('c_now') + '</span><b>' + t('c_ship', { n: out }) + '</b></div>' +
         '<div class="kv"><span>' + t('c_done') + '</span><b>' + dl + ' / ' + rt + '</b></div><div class="sep"></div>' +
         '<div class="kv"><span>' + t('c_owes') + '</span><span class="due">' + money(hd.cod) + '</span></div>' + (fm === 'cash' ? shipDetail(mine.filter(function (s) { return s.status === 'delivered' && !s.settled; })) : fm === 'carry' ? shipDetail(mine.filter(function (s) { return s.status === 'out_for_delivery'; })) : fm === 'copen' ? shipDetail(mine.filter(function (s) { return s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'; })) : '') + (shortOf(c.id) > 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b style="color:var(--bad,#c0392b)">' + money(shortOf(c.id)) + '</b></div><div class="row"><button class="btn ghost sm" type="button" data-sp="' + esc(c.id) + '">' + t('sp_btn') + '</button></div>' : '') + (function(){ var rate = (dl + rt) ? Math.round(dl / (dl + rt) * 100) : 0; var days = avgDays(mine.filter(function (s) { return s.status === 'delivered'; })); return '<div class="kv"><span>' + t('c_perf') + '</span><b>' + rate + '%</b></div>' + (days !== null ? '<div class="kv"><span>' + t('c_days') + '</span><b>' + days + '</b></div>' : ''); })() +
-        '<div class="row"><button class="btn ghost sm" type="button" data-kyc="' + esc(c.id) + '">' + t('kyc_btn') + '</button><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
+        '<div class="row"><button class="btn ghost sm" type="button" data-acct-c="' + esc(c.id) + '">' + t('ac_btn') + '</button><button class="btn ghost sm" type="button" data-kyc="' + esc(c.id) + '">' + t('kyc_btn') + '</button><button class="btn ghost sm" type="button" data-cstmt="' + esc(c.id) + '">' + t('cs_btn') + '</button>' + (c.email ? '<span class="note" dir="ltr">' + esc(c.email) + '</span>' : '<button class="btn ghost sm" type="button" data-cacc="' + esc(c.id) + '">' + t('ca_btn') + '</button>') + '</div>' + (canWrite ? '<div class="row"><button class="btn sm" type="button" data-settle="' + esc(c.id) + '"' + (hd.n ? '' : ' disabled') + '>' + t('c_settle') + '</button>' +
           '<button class="btn ghost sm" type="button" data-rn="couriers|' + esc(c.id) + '">' + t('rn_btn') + '</button>' +
           (c.status === 'active' ? '<button class="btn ghost sm" type="button" data-cst="' + esc(c.id) + '|suspended">' + t('mr_suspend') + '</button>' : '<button class="btn sm" type="button" data-cst="' + esc(c.id) + '|active">' + t(c.status === 'archived' ? 'mr_restore' : 'mr_reactivate') + '</button>') +
           (c.status !== 'archived' ? '<button class="btn danger sm" type="button" data-delc="' + esc(c.id) + '">' + t('del') + '</button>' : '') + '</div>' : '') + '</div>';
@@ -1063,7 +1131,10 @@ select.search { appearance: auto; cursor: pointer; }
   }
 
   function renderMerchants() {
-    var md = merchantDue(FLT.me), keys = Object.keys(md).filter(function (k) { return k !== '-'; });
+    var md = merchantDue(FLT.me);
+    var indRows = (store.merchants || []).filter(function (x) { return x.is_individuals; });
+    if (MEV === 'i') indRows.forEach(function (x) { if (!md[x.name]) md[x.name] = { due: 0, delivered: 0, returned: 0, cod: 0, fees: 0, open: 0, unpaid: 0 }; });
+    var keys = Object.keys(md).filter(function (k) { return k !== '-'; }).filter(function (k) { var isInd = indRows.some(function (x) { return x.name === k; }); return MEV === 'i' ? isInd : !isInd; });
     var mq = FLT.me.q.trim().toLowerCase(), mm = FLT.me.mode, allKeys = keys.length;
     keys = keys.filter(function (k) {
       if (mq && k.toLowerCase().indexOf(mq) < 0) return false;
@@ -1080,14 +1151,14 @@ select.search { appearance: auto; cursor: pointer; }
     keys.sort(function (a, b) { return md[b].due - md[a].due; });
     el('me-list').innerHTML = keys.map(function (k) {
       var m = md[k];
-      return '<div class="card"><div class="person"><span class="avatar">' + initial(k) + '</span><div><b>' + esc(k) + '</b></div></div>' +
+      return '<div class="card"><div class="person"><span class="avatar">' + initial(k) + '</span><div><b>' + esc(k) + '</b>' + (function () { var mm = store.merchants.filter(function (x) { return x.name === k; })[0]; if (mm && mm.is_individuals) return ' <span class="dot c-out_for_delivery">' + t('mv_ind') + '</span>'; return mm && mm.user_id ? ' <span class="dot ' + (mm.status === 'active' ? 'c-delivered' : 'c-out_for_delivery') + '">' + t(mm.status === 'active' ? 'mv_ok' : 'mv_pend') + '</span>' : ''; })() + '</div></div>' +
         '<div class="kv"><span>' + t('m_dr') + '</span><b>' + m.delivered + ' / ' + m.returned + '</b></div>' +
         '<div class="kv"><span>' + t('m_cod') + '</span><b>' + fmt(m.cod) + '</b></div>' +
         '<div class="kv"><span>' + t('m_fees') + '</span><b>' + fmt(m.fees) + '</b></div>' +
         (mm === 'open' ? shipDetail(store.shipments.filter(function (s) { return s.merchant === k && (s.status === 'new' || s.status === 'picked_up' || s.status === 'out_for_delivery'); })) : mm === 'owed' ? shipDetail(store.shipments.filter(function (s) { return s.merchant === k && s.status === 'delivered' && !s.paidMerchant; })) : '') +
         (m.open ? '<div class="kv"><span>' + t('m_open') + '</span><b>' + m.open + '</b></div>' : '') + '<div class="sep"></div>' +
         '<div class="kv"><span>' + (m.due >= 0 ? t('m_to') : t('m_from')) + '</span><span class="due">' + money(Math.abs(m.due)) + '</span></div>' +
-        '<div class="row"><button class="btn ghost sm" type="button" data-mstmt="' + esc(k) + '">' + t('ms_btn') + '</button>' + (canWrite ? '<button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button>' : '') + '</div>' + '</div>';
+        '<div class="row">' + (function () { var mm = store.merchants.filter(function (x) { return x.name === k; })[0]; return mm && mm.is_individuals ? '' : '<button class="btn ghost sm" type="button" data-acct-m="' + esc(k) + '">' + t('ac_btn') + '</button>'; })() + '<button class="btn ghost sm" type="button" data-mstmt="' + esc(k) + '">' + t('ms_btn') + '</button>' + (canWrite ? '<button class="btn sm" type="button" data-pay="' + esc(k) + '"' + (m.unpaid ? '' : ' disabled') + '>' + t('m_settle') + '</button>' : '') + '</div>' + '</div>';
     }).join('');
   }
 
@@ -1157,11 +1228,12 @@ select.search { appearance: auto; cursor: pointer; }
     }).join('');
     var empty = '<div class="empty"><b>' + t('rp_empty') + '</b></div>';
     var cname = {}; store.couriers.forEach(function (c) { cname[c.id] = c.name; });
+    var ckm = {}; store.shipments.forEach(function (s) { if (s.courierId && store.km && store.km[s.id]) ckm[s.courierId] = (ckm[s.courierId] || 0) + (+store.km[s.id]); });
     var crow = Object.keys(co).sort(function (a, b) { return co[b].D - co[a].D; }).map(function (k) {
       var c = co[k];
-      return '<tr><td>' + esc(cname[k] || '-') + '</td><td>' + fmt(c.D) + '</td><td>' + fmt(c.R) + '</td><td>' + pct(c.D, c.D + c.R) + '</td><td>' + fmt(c.cod) + '</td><td>' + (c.hn ? fmt1(c.h / c.hn) : '-') + '</td></tr>';
+      return '<tr><td>' + esc(cname[k] || '-') + '</td><td>' + fmt(c.D) + '</td><td>' + fmt(c.R) + '</td><td>' + pct(c.D, c.D + c.R) + '</td><td>' + fmt(c.cod) + '</td><td>' + (c.hn ? fmt1(c.h / c.hn) : '-') + '</td><td>' + (ckm[k] ? fmt1(ckm[k]) : '-') + '</td></tr>';
     }).join('');
-    el('rp-co').innerHTML = crow ? '<table><thead><tr><th>' + t('th_courier') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_hours') + '</th></tr></thead><tbody>' + crow + '</tbody></table>' : empty;
+    el('rp-co').innerHTML = crow ? '<table><thead><tr><th>' + t('th_courier') + '</th><th>' + t('rp_deliv') + '</th><th>' + t('rp_ret') + '</th><th>' + t('th_rate') + '</th><th>' + t('th_cod') + '</th><th>' + t('th_hours') + '</th><th>' + t('km_u') + '</th></tr></thead><tbody>' + crow + '</tbody></table>' : empty;
     var mrow = Object.keys(me).filter(function (k) { return me[k].n + me[k].D + me[k].R > 0; }).sort(function (a, b) { return (me[b].D + me[b].R + me[b].n) - (me[a].D + me[a].R + me[a].n); }).slice(0, 10).map(function (k) {
       var x = me[k];
       return '<tr><td>' + esc(k) + '</td><td>' + fmt(x.n) + '</td><td>' + fmt(x.D) + '</td><td>' + fmt(x.R) + '</td><td>' + pct(x.D, x.D + x.R) + '</td><td>' + fmt(x.cod) + '</td><td>' + fmt(x.rev) + '</td></tr>';
@@ -1275,6 +1347,8 @@ select.search { appearance: auto; cursor: pointer; }
     safe(function () { return put('shipments', id, next); });
   });
   el('sh-rows').addEventListener('click', function (e) {
+    var sf = e.target.closest('[data-setfee]');
+    if (sf) { var sfs = store.shipments.filter(function (x) { return x.id === sf.getAttribute('data-setfee'); })[0]; var fv = prompt(t('setfee_p') + ' ' + (sfs ? sfs.code : ''), '50'); if (fv === null) return; var fn = parseFloat(String(fv).replace(/[^0-9.]/g, '')); if (!(fn >= 0)) return; safe(async function () { var r = await sb.rpc('admin_set_shipment_fee', { p_id: sf.getAttribute('data-setfee'), p_fee: fn }); if (r.error) throw r.error; toast(t('setfee_ok')); await refresh('shipments'); }); return; }
     var d = e.target.closest('[data-del]'), w = e.target.closest('[data-wa]'), c = e.target.closest('[data-copy]'), l = e.target.closest('[data-label]');
     if (w) { var sw = store.shipments.filter(function (x) { return x.id === w.getAttribute('data-wa'); })[0]; if (sw && sw.phone) window.open('https://wa.me/' + waPhone(sw.phone) + '?text=' + encodeURIComponent('شحنتك ' + sw.code + ' مع ' + t('brand') + ' — ' + t('st_' + sw.status) + '. ' + t('tr_title') + ': ' + trackLink(sw.code)), '_blank'); }
     else if (c) { var sc = store.shipments.filter(function (x) { return x.id === c.getAttribute('data-copy'); })[0]; if (sc && navigator.clipboard) { navigator.clipboard.writeText(trackLink(sc.code)).then(function () { toast(t('t_copy')); }); } }
@@ -1499,17 +1573,18 @@ select.search { appearance: auto; cursor: pointer; }
         (store.events[ev.shipment_id] = store.events[ev.shipment_id] || []).push({ status: ev.status, at: ev.created_at });
         if (ev.status === 'delivered' || ev.status === 'returned') done[ev.shipment_id + '|' + ev.status] = ev.created_at;
       });
-      store.shipments = rs.data.filter(function (r) { return r.req_stage !== 'declined'; }).map(function (r) {
+      var kmr = await sb.rpc('admin_shipment_km'); store.km = (!kmr.error && kmr.data) ? kmr.data : (store.km || {});
+      store.shipments = rs.data.map(function (r) {
         return { id: r.id, code: r.code, merchant: r.merchants ? r.merchants.name : '', merchantId: r.merchant_id, customer: r.customer_name, phone: r.customer_phone,
           address: r.address, zone: r.zone || '', cod: +r.cod, fee: +r.fee, courierId: r.courier_id || '', status: r.status, settled: r.courier_settled, paidMerchant: r.merchant_settled,
-          attempts: +r.attempts || 0, nextAttempt: r.next_attempt || '', createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
+          pp: !!r.price_pending, attempts: +r.attempts || 0, nextAttempt: r.next_attempt || '', createdAt: r.created_at, doneAt: done[r.id + '|' + r.status] || null };
       });
     } else if (name === 'couriers') {
       var rc = await sb.from('couriers').select('id,name,phone,email,status,available,national_id,id_status,id_birthdate,id_gender,id_governorate,kyc_submitted_at,kyc_decided_at,kyc_reject_reason').order('created_at', { ascending: true });
       if (rc.error) throw rc.error;
       store.couriers = rc.data.map(function (c) { return { id: c.id, name: c.name, phone: c.phone || '', email: c.email || '', status: c.status || 'active', available: c.available !== false, nid: c.national_id || '', kyc: c.id_status || 'none', bd: c.id_birthdate, gd: c.id_gender, gov: c.id_governorate, kycAt: c.kyc_submitted_at, kycRj: c.kyc_reject_reason }; });
     } else if (name === 'merchants') {
-      var rm = await sb.from('merchants').select('id,name,status');
+      var rm = await sb.from('merchants').select('id,name,status,email,user_id,is_individuals');
       if (rm.error) throw rm.error;
       store.merchants = rm.data;
     }
@@ -1619,6 +1694,8 @@ select.search { appearance: auto; cursor: pointer; }
     });
   });
 
+  Object.assign(I18N.ar, { km_u: 'كم', setfee: 'حدد السعر', setfee_p: 'سعر الشحن (جنيه) للشحنة', setfee_ok: 'تم تحديد السعر وإسنادها للمندوب' });
+  Object.assign(I18N.en, { km_u: 'km', setfee: 'Set price', setfee_p: 'Shipping price (EGP) for', setfee_ok: 'Price set and assigned to a courier' });
   Object.assign(I18N.ar, { cs_btn: 'كشف الحساب', cs_h: 'كشف حساب المندوب', cs_cash: 'فلوس معاه لازم يسلمها', cs_cnt: 'شحنات مسلّمة لسه متحاسبش عليها', cs_comm: 'مستحقات المندوب (عمولة)', cs_net: 'الصافي اللي يسلّمه لك', cs_open: 'شحنات معاه دلوقتي', cs_open_cod: 'COD متوقع تحصيله', cs_none: 'مفيش شحنات غير محاسبة', cs_close: 'إغلاق', cs_print: 'طباعة', cs_code: 'الكود', cs_cust: 'العميل', cs_cod: 'COD', cs_ret: 'مرتجعات' });
   Object.assign(I18N.en, { cs_btn: 'Statement', cs_h: 'Delivery Representative statement', cs_cash: 'Cash he must hand over', cs_cnt: 'Delivered, not yet settled', cs_comm: 'Delivery Representative earnings (commission)', cs_net: 'Net he hands to you', cs_open: 'Currently carrying', cs_open_cod: 'COD expected', cs_none: 'No unsettled shipments', cs_close: 'Close', cs_print: 'Print', cs_code: 'Code', cs_cust: 'Customer', cs_cod: 'COD', cs_ret: 'Returns' });
   function showCourierStmt(cid) {
@@ -1628,20 +1705,18 @@ select.search { appearance: auto; cursor: pointer; }
     var rt = mine.filter(function (x) { return x.status === 'returned' && !x.settled; });
     var op = mine.filter(function (x) { return x.status === 'out_for_delivery'; });
     var sum = function (a) { return a.reduce(function (n, x) { return n + (+x.cod || 0); }, 0); };
-    var cash = sum(dl), comm = dl.concat(rt).reduce(function (n, x) { return n + courierPayFor(x); }, 0), net = cash - comm;
-    var rows = dl.map(function (x) { var cp = courierPayFor(x); return '<tr><td>' + esc(x.code) + '</td><td>' + esc(x.customer) + '</td><td>' + fmt(x.cod) + '</td><td>' + fmt(x.fee) + '</td><td>' + fmt(cp) + '</td><td>' + fmt((+x.fee || 0) - cp) + '</td></tr>'; }).join('');
-    var bshare = dl.reduce(function (n, x) { return n + (+x.fee || 0) - courierPayFor(x); }, 0) + rt.length * (+cfg.returnFee || 0) - rt.reduce(function (n, x) { return n + courierPayFor(x); }, 0);
+    var cash = sum(dl), comm = dl.reduce(function (n, x) { return n + courierDel(x); }, 0) + rt.length * (cfg.courierReturned || 0), net = cash - comm;
+    var rows = dl.map(function (x) { return '<tr><td>' + esc(x.code) + '</td><td>' + esc(x.customer) + '</td><td>' + fmt(x.cod) + '</td></tr>'; }).join('');
     el('co-stmt').innerHTML = '<div class="card" id="co-stmt-card"><h2>' + t('cs_h') + ': ' + esc(c.name) + '</h2>' +
       '<div class="kv"><span>' + t('cs_cnt') + '</span><b>' + dl.length + '</b></div>' +
       '<div class="kv"><span>' + t('cs_cash') + '</span><b>' + money(cash) + '</b></div>' +
       '<div class="kv"><span>' + t('cs_comm') + '</span><b>' + money(comm) + '</b></div>' +
-      '<div class="kv"><span>' + t('cs_btot') + '</span><b>' + money(bshare) + '</b></div>' +
       (shortOf(cid) !== 0 ? '<div class="kv"><span>' + t('ho_tot_short') + '</span><b>' + money(shortOf(cid)) + '</b></div>' : '') +
       '<div class="kv"><span>' + t('cs_ret') + '</span><b>' + rt.length + '</b></div><div class="sep"></div>' +
       '<div class="kv"><span>' + t('cs_net') + '</span><span class="due">' + money(net) + '</span></div>' +
       (function () { var fa = op.filter(function (x) { return x.attempts > 0; }); return fa.length ? '<div class="kv"><span>' + t('cs_att') + '</span><b>' + fa.map(function (x) { return esc(x.code) + ' (' + x.attempts + '/3' + (x.nextAttempt ? ' → ' + esc(x.nextAttempt) : '') + ')'; }).join(' · ') + '</b></div>' : ''; })() +
       '<div class="kv"><span>' + t('cs_open') + '</span><b>' + op.length + ' · ' + t('cs_open_cod') + ' ' + money(sum(op)) + '</b></div>' +
-      (rows ? '<div class="tablewrap"><table><thead><tr><th>' + t('cs_code') + '</th><th>' + t('cs_cust') + '</th><th>' + t('cs_cod') + '</th><th>' + t('cs_fee') + '</th><th>' + t('cs_mine') + '</th><th>' + t('cs_bareed') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="note">' + t('cs_none') + '</p>') +
+      (rows ? '<div class="tablewrap"><table><thead><tr><th>' + t('cs_code') + '</th><th>' + t('cs_cust') + '</th><th>' + t('cs_cod') + '</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<p class="note">' + t('cs_none') + '</p>') +
       (function () { var hl = clog.filter(function (l) { return l.courier_id === cid; }).slice(0, 40); return hl.length ? '<h3 style="margin-top:6px">' + t('lg_hist') + '</h3><div class="tablewrap"><table><tbody>' + hl.map(function (l) { return logLine(l, false); }).join('') + '</tbody></table></div>' : ''; })() +
       '<div class="row">' + (canWrite && dl.length ? '<button class="btn sm" type="button" data-settle="' + esc(cid) + '">' + t('c_settle') + '</button>' : '') +
       '<button class="btn ghost sm" type="button" onclick="window.print()">' + t('cs_print') + '</button><button class="btn ghost sm" type="button" id="cs-close">' + t('cs_close') + '</button></div></div>';
@@ -1859,8 +1934,8 @@ select.search { appearance: auto; cursor: pointer; }
       if (inD) {
         var cname = (store.couriers.filter(function (c) { return c.id === s.courierId; })[0] || {}).name || '-';
         var c = co[cname] = co[cname] || { D: 0, R: 0, cod: 0, pay: 0 };
-        if (s.status === 'delivered') { T.D++; T.cod += +s.cod || 0; me[m].D++; me[m].cod += +s.cod || 0; me[m].fees += +s.fee || 0; me[m].comm += commission(s); T.rev += (+s.fee || 0) + commission(s); c.D++; c.cod += +s.cod || 0; c.pay += courierPayFor(s); T.cour += courierPayFor(s); }
-        else { T.R++; me[m].R++; me[m].retf += cfg.returnFee; T.rev += cfg.returnFee; c.R++; c.pay += courierPayFor(s); T.cour += courierPayFor(s); }
+        if (s.status === 'delivered') { T.D++; T.cod += +s.cod || 0; me[m].D++; me[m].cod += +s.cod || 0; me[m].fees += +s.fee || 0; me[m].comm += commission(s); T.rev += (+s.fee || 0) + commission(s); c.D++; c.cod += +s.cod || 0; c.pay += courierDel(s); T.cour += courierDel(s); }
+        else { T.R++; me[m].R++; me[m].retf += cfg.returnFee; T.rev += cfg.returnFee; c.R++; c.pay += cfg.courierReturned; T.cour += cfg.courierReturned; }
       }
       ships.push(s);
     });
@@ -1898,6 +1973,8 @@ select.search { appearance: auto; cursor: pointer; }
   });
 
   /* ---- courier cash handovers + availability ---- */
+  Object.assign(I18N.ar, { cur_s: 'ج' });
+  Object.assign(I18N.en, { cur_s: 'EGP' });
   Object.assign(I18N.ar, { av_on: 'متاح', av_off: 'مش متاح', ho_h: 'تسليمات فلوس المناديب', ho_claim: 'المندوب بيقول إنه سلّم', ho_recv: 'المبلغ اللي استلمته فعلاً', ho_note: 'ملاحظة (اختياري)', ho_ok: 'تأكيد الاستلام', ho_rej: 'رفض', ho_short: 'عجز', ho_surp: 'زيادة', ho_none: 'مفيش طلبات تسليم معلّقة', ho_hist: 'آخر التسليمات', ho_cnt: 'شحنة', ho_done: 'تم تسجيل الاستلام', ho_rejd: 'مرفوض', ho_pend: 'معلّق', ho_tot_short: 'إجمالي العجز المسجّل' });
   Object.assign(I18N.en, { av_on: 'Available', av_off: 'Unavailable', ho_h: 'Courier cash handovers', ho_claim: 'Courier says he handed over', ho_recv: 'Amount you actually received', ho_note: 'Note (optional)', ho_ok: 'Confirm receipt', ho_rej: 'Reject', ho_short: 'Shortage', ho_surp: 'Surplus', ho_none: 'No pending handovers', ho_hist: 'Recent handovers', ho_cnt: 'shipments', ho_done: 'Receipt recorded', ho_rejd: 'Rejected', ho_pend: 'Pending', ho_tot_short: 'Total recorded shortage' });
   var HO = [];
@@ -1924,10 +2001,12 @@ select.search { appearance: auto; cursor: pointer; }
         '<div class="row"><label class="note">' + t('ho_recv') + '</label><input class="search" type="number" min="0" step="0.01" inputmode="decimal" data-hr="' + esc(p.id) + '" value="' + (+p.claimed_amount) + '" style="max-width:140px"><input class="search" data-hn="' + esc(p.id) + '" placeholder="' + t('ho_note') + '" maxlength="300" style="max-width:220px"></div>' +
         '<div class="row"><button class="btn sm" type="button" data-hok="' + esc(p.id) + '">' + t('ho_ok') + '</button><button class="btn danger sm" type="button" data-hrj="' + esc(p.id) + '">' + t('ho_rej') + '</button></div></div>';
     }).join('') : '<p class="note">' + t('ho_none') + '</p>';
-    if (done.length) h += '<h3 style="margin-top:8px">' + t('ho_hist') + '</h3><div class="tablewrap"><table><tbody>' + done.map(function (d) {
+    if (done.length) h += '<h3 style="margin:8px 0 4px">' + t('ho_hist') + '</h3><div style="font-size:13px">' + done.map(function (d) {
       var sh = d.status === 'confirmed' ? (+d.claimed_amount - (+d.received_amount)) : 0;
-      return '<tr><td>' + esc(nm(d.courier_id)) + '</td><td>' + fmtDT(d.created_at) + '</td><td>' + (d.status === 'confirmed' ? money(d.received_amount) + ' / ' + money(d.claimed_amount) : t('ho_rejd')) + '</td><td>' + (sh > 0 ? '<b style="color:var(--bad,#c0392b)">' + t('ho_short') + ' ' + money(sh) + '</b>' : sh < 0 ? t('ho_surp') + ' ' + money(-sh) : '') + (d.admin_note ? '<small>' + esc(d.admin_note) + '</small>' : '') + '</td></tr>';
-    }).join('') + '</tbody></table></div>';
+      var amt = d.status === 'confirmed' ? fmt(d.received_amount) + (sh !== 0 ? ' / ' + fmt(d.claimed_amount) : '') + ' ' + t('cur_s') : t('ho_rejd');
+      var ex = sh > 0 ? '<b style="color:var(--bad,#c0392b)">' + t('ho_short') + ' ' + fmt(sh) + '</b>' : sh < 0 ? t('ho_surp') + ' ' + fmt(-sh) : '';
+      return '<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:5px 0;border-top:1px solid var(--line,#ffffff14);white-space:nowrap;overflow:hidden"><span style="overflow:hidden;text-overflow:ellipsis">' + esc(nm(d.courier_id)) + '</span><span class="note" style="font-size:12px">' + fmtDT(d.created_at) + '</span><b>' + amt + '</b>' + (ex ? '<span>' + ex + '</span>' : '') + '</div>';
+    }).join('') + '</div>';
     box.innerHTML = h + '</div>';
   }
   document.addEventListener('click', function (e) {
@@ -2104,10 +2183,175 @@ select.search { appearance: auto; cursor: pointer; }
     var ok = ov.querySelector('#kyc-ok'), no = ov.querySelector('#kyc-no');
     if (ok) ok.onclick = function () { dec(true); }; if (no) no.onclick = function () { dec(false); };
   });
+  /* ---------- edit account (name / e-mail / password) ---------- */
+  Object.assign(I18N.ar, { ac_btn: 'تعديل الحساب', ac_h: 'تعديل الحساب', ac_self: 'حسابي (الأدمن)', ac_self_p: 'غيّر إيميل الدخول والباسورد بتوعك من هنا.', ac_self_btn: 'تغيير الإيميل والباسورد', mv_ok: 'حساب موثّق', mev_m: 'التجار', mev_i: 'الأفراد', mv_ind: 'طلبات الأفراد (مش تاجر)', mv_pend: 'قيد المراجعة', ac_name: 'الاسم', ac_email: 'الإيميل', ac_pw: 'باسورد جديد (سيبه فاضي لو مش هتغيره)', ac_save: 'حفظ', ac_cancel: 'إلغاء', ac_ok: 'اتحفظ.', ac_bad_email: 'الإيميل غير صحيح.', ac_weak: 'الباسورد لازم 8 حروف أو أكتر.', ac_exists: 'الإيميل ده مستخدم قبل كده.', ac_nologin: 'الحساب ده ملوش دخول. اعمل له دخول الأول.', ac_fail: 'حصلت مشكلة، جرّب تاني.', ac_note: 'الباسورد بيتحفظ مشفّر ومحدش يقدر يشوفه، ولو نسيته غيّره من هنا.' });
+  Object.assign(I18N.en, { ac_btn: 'Edit account', ac_h: 'Edit account', ac_self: 'My account (admin)', ac_self_p: 'Change your own login e-mail and password here.', ac_self_btn: 'Change e-mail and password', mv_ok: 'Verified account', mev_m: 'Merchants', mev_i: 'Individuals', mv_ind: 'Individuals (not a merchant)', mv_pend: 'Pending review', ac_name: 'Name', ac_email: 'E-mail', ac_pw: 'New password (leave empty to keep)', ac_save: 'Save', ac_cancel: 'Cancel', ac_ok: 'Saved.', ac_bad_email: 'Invalid e-mail.', ac_weak: 'Password must be at least 8 characters.', ac_exists: 'This e-mail is already in use.', ac_nologin: 'This account has no login yet. Create one first.', ac_fail: 'Something went wrong, try again.', ac_note: 'Passwords are stored hashed and nobody can read them. If forgotten, set a new one here.' });
+  function openAcct(o) {
+    var old = document.getElementById('ac-ov'); if (old) old.remove();
+    var ov = document.createElement('div'); ov.id = 'ac-ov';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);overflow:auto;padding:16px;display:flex;justify-content:center;align-items:flex-start';
+    ov.innerHTML = '<form class="card" id="ac-f" autocomplete="off" style="max-width:420px;width:100%;margin:auto;background:var(--surface,#fff);display:grid;gap:12px"><h2>' + esc(o.title) + '</h2>' +
+      (o.kind === 'self' ? '' : '<div class="field"><label for="ac-n">' + t('ac_name') + '</label><input id="ac-n" maxlength="120" value="' + esc(o.name || '') + '"></div>') +
+      '<div class="field"><label for="ac-e">' + t('ac_email') + '</label><input id="ac-e" type="email" dir="ltr" autocomplete="off" value="' + esc(o.email || '') + '"></div>' +
+      '<div class="field"><label for="ac-p">' + t('ac_pw') + '</label><input id="ac-p" type="password" dir="ltr" autocomplete="new-password" maxlength="72"></div>' +
+      '<p class="note">' + t('ac_note') + '</p><p class="note" id="ac-m" role="status" style="color:var(--bad,#c0392b)"></p>' +
+      '<div class="row"><button class="btn sm" type="submit" id="ac-go">' + t('ac_save') + '</button><button class="btn ghost sm" type="button" id="ac-x">' + t('ac_cancel') + '</button></div></form>';
+    document.body.appendChild(ov);
+    var close = function () { ov.remove(); };
+    ov.addEventListener('click', function (ev) { if (ev.target === ov) close(); });
+    ov.querySelector('#ac-x').onclick = close;
+    ov.querySelector('#ac-f').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var nm = ov.querySelector('#ac-n'), em = ov.querySelector('#ac-e').value.trim().toLowerCase(), pw = ov.querySelector('#ac-p').value, msg = ov.querySelector('#ac-m'), go = ov.querySelector('#ac-go');
+      var body = { kind: o.kind, id: o.id };
+      if (nm && nm.value.trim() && nm.value.trim() !== (o.name || '')) body.name = nm.value.trim();
+      if (em && em !== (o.email || '').toLowerCase()) body.email = em;
+      if (pw) body.password = pw;
+      if (!body.name && !body.email && !body.password) { close(); return; }
+      go.disabled = true; msg.textContent = '';
+      (async function () {
+        try {
+          var ses = await sb.auth.getSession(); var tok = ses.data && ses.data.session && ses.data.session.access_token;
+          var res = await fetch(SUPABASE_URL + '/functions/v1/admin-update-account', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok, 'apikey': SUPABASE_ANON_KEY }, body: JSON.stringify(body) });
+          var j = await res.json().catch(function () { return {}; });
+          if (!res.ok || !j.ok) { var er = j.error || ''; msg.textContent = er === 'bad_email' ? t('ac_bad_email') : er === 'weak_password' ? t('ac_weak') : er === 'email_exists' ? t('ac_exists') : er === 'no_login' ? t('ac_nologin') : t('ac_fail'); go.disabled = false; return; }
+          toast(t('ac_ok')); close();
+          if (o.kind !== 'self') { await Promise.all([refresh('couriers'), refresh('merchants')]).catch(function () {}); }
+        } catch (x) { msg.textContent = t('ac_fail'); go.disabled = false; }
+      })();
+    });
+  }
+  document.addEventListener('click', function (e) {
+    var bc = e.target.closest && e.target.closest('[data-acct-c]'), bm = e.target.closest && e.target.closest('[data-acct-m]');
+    if (bc) { var c = store.couriers.filter(function (x) { return x.id === bc.getAttribute('data-acct-c'); })[0]; if (c) openAcct({ kind: 'courier', id: c.id, name: c.name, email: c.email, title: t('ac_h') + ' · ' + c.name }); }
+    if (bm) { var m = store.merchants.filter(function (x) { return x.name === bm.getAttribute('data-acct-m'); })[0]; if (m) openAcct({ kind: 'merchant', id: m.id, name: m.name, email: m.email, title: t('ac_h') + ' · ' + m.name }); }
+  });
+  (function () {
+    var lo = el('logout'); if (!lo || document.getElementById('myacct')) return;
+    var b = document.createElement('button'); b.className = 'icon-btn'; b.id = 'myacct'; b.type = 'button'; b.title = t('ac_self'); b.setAttribute('aria-label', t('ac_self'));
+    b.innerHTML = '<svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
+    b.hidden = lo.hidden; lo.parentNode.insertBefore(b, lo);
+    b.addEventListener('click', function () { sb.auth.getSession().then(function (r) { var u = r.data && r.data.session && r.data.session.user; openAcct({ kind: 'self', title: t('ac_self'), email: (u && u.email) || '' }); }); });
+    new MutationObserver(function () { b.hidden = lo.hidden; }).observe(lo, { attributes: true, attributeFilter: ['hidden'] });
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#myacct2')) b.click(); });
+  })();
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-mev]'); if (!b) return;
+    MEV = b.getAttribute('data-mev');
+    document.querySelectorAll('#me-sw .chip').forEach(function (c) { c.setAttribute('aria-pressed', c.getAttribute('data-mev') === MEV ? 'true' : 'false'); });
+    var nc = el('nm-card'); if (nc) nc.hidden = MEV === 'i';
+    renderMerchants();
+  });
+  Object.assign(I18N.ar, { nav_sp: 'الدعم', pg_sp: 'صندوق الدعم', sp_title: 'المحادثات', sp_f_open: 'المفتوحة', sp_f_all: 'الكل', sp_f_closed: 'المغلقة', sp_pick: 'اختار محادثة من القايمة.', sp_ph: 'اكتب ردك...', sp_send: 'إرسال', sp_none: 'مفيش محادثات.', sp_k_merchant: 'تاجر', sp_k_courier: 'مندوب', sp_k_individual: 'فرد', sp_close: 'إغلاق المحادثة', sp_reopen: 'إعادة فتح', sp_err: 'ما اتبعتش الرد، جرّب تاني.' });
+  Object.assign(I18N.en, { nav_sp: 'Support', pg_sp: 'Support inbox', sp_title: 'Conversations', sp_f_open: 'Open', sp_f_all: 'All', sp_f_closed: 'Closed', sp_pick: 'Pick a conversation from the list.', sp_ph: 'Type your reply...', sp_send: 'Send', sp_none: 'No conversations.', sp_k_merchant: 'Merchant', sp_k_courier: 'Courier', sp_k_individual: 'Individual', sp_close: 'Close conversation', sp_reopen: 'Reopen', sp_err: 'Reply was not sent, try again.' });
+  Object.assign(I18N.ar, { kb_title: 'تعليم البوت', kb_hint: 'اكتب سؤال وإجابته، والبوت هيستخدمها لما حد يسأل سؤال شبهه. تقدر كمان تدوس "علّم البوت" تحت أي رد كتبته في الشات.', kb_q_ph: 'السؤال (مثلاً: بتشتغلوا لحد امتى؟)', kb_a_ph: 'الإجابة اللي عايز البوت يقولها', kb_save: 'حفظ', kb_cancel: 'إلغاء التعديل', kb_edit: 'تعديل', kb_del: 'حذف', kb_off: 'إيقاف', kb_on: 'تشغيل', kb_none: 'لسه مفيش ردود. أضف أول رد من فوق.', kb_del_q: 'تحذف الرد ده؟', kb_saved: 'اتحفظ. البوت هيستخدمه دلوقتي.', kb_err: 'ما اتحفظش، تأكد إن السؤال والإجابة مكتوبين.', kb_teach: 'علّم البوت', kb_filled: 'اتنقل للأسفل في خانة تعليم البوت. راجعه واضغط حفظ.' });
+  Object.assign(I18N.en, { kb_title: 'Teach the bot', kb_hint: 'Write a question and its answer; the bot will use it when someone asks something similar. You can also tap "Teach bot" under any reply you wrote in a chat.', kb_q_ph: 'Question (e.g. What are your working hours?)', kb_a_ph: 'The answer the bot should give', kb_save: 'Save', kb_cancel: 'Cancel edit', kb_edit: 'Edit', kb_del: 'Delete', kb_off: 'Disable', kb_on: 'Enable', kb_none: 'No answers yet. Add the first one above.', kb_del_q: 'Delete this answer?', kb_saved: 'Saved. The bot will use it now.', kb_err: 'Not saved, make sure both question and answer are filled.', kb_teach: 'Teach bot', kb_filled: 'Moved to the Teach-the-bot box below. Review it and press Save.' });
   applyStatic();
+  /* ---------- support inbox ---------- */
+  var SUP = { threads: [], cur: null, last: 0, timer: null, known: {}, busy: false, lu: '', teach: [], kb: [] };
+  function spFmt(x) { var d = new Date(x), n = new Date(); var tm = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); return d.toDateString() === n.toDateString() ? tm : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + tm; }
+  function spBeep() { try { var C = window.AudioContext || window.webkitAudioContext; if (!C) return; var c = new C(), o = c.createOscillator(), g = c.createGain(); o.connect(g); g.connect(c.destination); o.frequency.value = 880; g.gain.value = 0.08; o.start(); o.stop(c.currentTime + 0.18); } catch (e) {} }
+  function spCur() { return SUP.threads.filter(function (x) { return x.id === SUP.cur; })[0]; }
+  function spRenderList() {
+    var f = el('sp-f').value, tot = 0;
+    SUP.threads.forEach(function (x) { tot += x.unread_admin; });
+    var b = el('sp-badge'); b.textContent = tot; b.hidden = !tot;
+    var rows = SUP.threads.filter(function (x) { return f === 'all' || x.status === f; });
+    el('sp-list').innerHTML = rows.length ? rows.map(function (x) {
+      return '<button class="sp-item' + (x.status === 'closed' ? ' closed' : '') + '" type="button" data-supt="' + x.id + '"' + (x.id === SUP.cur ? ' aria-current="true"' : '') + '><div class="top"><span class="nm">' + esc(x.name) + '</span><span class="sp-kind">' + esc(t('sp_k_' + x.kind)) + '</span>' + (x.unread_admin ? '<span class="sp-un">' + x.unread_admin + '</span>' : '') + '</div><div class="pv">' + esc(x.last_preview || '') + '</div><div class="mt"><span dir="ltr">' + esc(x.phone || '') + '</span><span>' + esc(spFmt(x.last_msg_at)) + '</span></div></button>';
+    }).join('') : '<p class="note">' + esc(t('sp_none')) + '</p>';
+    var th = spCur();
+    if (th) { el('sp-close').textContent = t(th.status === 'closed' ? 'sp_reopen' : 'sp_close'); }
+  }
+  function spLoadList() {
+    return sb.rpc('admin_support_list').then(function (r) {
+      if (r.error || !Array.isArray(r.data)) return;
+      var up = false;
+      r.data.forEach(function (x) { var k = SUP.known[x.id]; if (k !== undefined && x.unread_admin > k && !(tab === 'sp' && x.id === SUP.cur)) up = true; SUP.known[x.id] = x.unread_admin; });
+      SUP.threads = r.data; spRenderList(); if (up) spBeep();
+    });
+  }
+  function spBubble(m) {
+    var tb = '';
+    if (m.sender === 'user') SUP.lu = m.body; else { SUP.teach.push({ q: SUP.lu || '', a: m.body }); tb = '<br><button type="button" class="sp-teach" data-teach="' + (SUP.teach.length - 1) + '">' + esc(t('kb_teach')) + '</button>'; }
+    return '<div class="sp-m ' + (m.sender === 'admin' ? 'admin' : 'user') + '">' + esc(m.body) + '<small>' + esc(spFmt(m.at)) + '</small>' + tb + '</div>';
+  }
+  function spLoadMsgs(reset) {
+    if (!SUP.cur) return Promise.resolve();
+    var id = SUP.cur;
+    return sb.rpc('admin_support_messages', { p_thread: id, p_after: reset ? 0 : SUP.last }).then(function (r) {
+      if (r.error || id !== SUP.cur || !Array.isArray(r.data)) return;
+      var box = el('sp-msgs'), near = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+      if (reset) box.innerHTML = '';
+      if (r.data.length) { box.insertAdjacentHTML('beforeend', r.data.map(spBubble).join('')); SUP.last = r.data[r.data.length - 1].id; if (reset || near) box.scrollTop = box.scrollHeight; }
+      var th = spCur(); if (th && th.unread_admin) { th.unread_admin = 0; SUP.known[id] = 0; spRenderList(); }
+    });
+  }
+  function spOpen(id) {
+    SUP.cur = id; SUP.last = 0; SUP.lu = ''; SUP.teach = []; var th = spCur(); if (!th) return;
+    el('sp-empty').style.display = 'none'; var bx = el('sp-box'); bx.hidden = false; bx.style.display = 'flex';
+    el('sp-nm').textContent = th.name; el('sp-kd').textContent = t('sp_k_' + th.kind); el('sp-ph').textContent = th.phone || '';
+    spRenderList(); spLoadMsgs(true);
+  }
+  function spTick() {
+    if (!started || SUP.busy || document.visibilityState !== 'visible') return;
+    SUP.busy = true;
+    Promise.all([spLoadList(), tab === 'sp' ? spLoadMsgs(false) : null]).catch(function () {}).then(function () { SUP.busy = false; });
+  }
+  function spStart() { if (SUP.timer || local) return; kbLoad(); spTick(); SUP.timer = setInterval(spTick, 6000); }
+  function spStop() { clearInterval(SUP.timer); SUP.timer = null; SUP.threads = []; SUP.cur = null; SUP.known = {}; var b = el('sp-badge'); if (b) b.hidden = true; }
+  el('sp-list').addEventListener('click', function (e) { var b = e.target.closest('[data-supt]'); if (b) spOpen(b.getAttribute('data-supt')); });
+  el('sp-f').addEventListener('change', spRenderList);
+  el('sp-close').addEventListener('click', function () {
+    var th = spCur(); if (!th) return;
+    sb.rpc('admin_support_close', { p_thread: th.id, p_closed: th.status !== 'closed' }).then(function (r) { if (!r.error) spLoadList(); });
+  });
+  el('sp-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var th = spCur(), inp = el('sp-in'), v = inp.value.trim(); if (!th || !v) return;
+    el('sp-send').disabled = true;
+    sb.rpc('admin_support_reply', { p_thread: th.id, p_body: v }).then(function (r) {
+      el('sp-send').disabled = false;
+      if (r.error) { toast(t('sp_err')); return; }
+      inp.value = ''; spLoadMsgs(false); spLoadList();
+    });
+  });
+  el('sp-in').addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); el('sp-form').requestSubmit(); } });
+  /* ---------- bot knowledge ---------- */
+  function kbRender() {
+    el('kb-list').innerHTML = SUP.kb.length ? SUP.kb.map(function (k) {
+      return '<div class="kb-item' + (k.active ? '' : ' off') + '"><div class="kq">' + esc(k.question) + '</div><div class="ka">' + esc(k.answer) + '</div><div class="acts"><button type="button" data-kbe="' + k.id + '">' + esc(t('kb_edit')) + '</button><button type="button" data-kbt="' + k.id + '">' + esc(t(k.active ? 'kb_off' : 'kb_on')) + '</button><button type="button" data-kbd="' + k.id + '">' + esc(t('kb_del')) + '</button></div></div>';
+    }).join('') : '<p class="note">' + esc(t('kb_none')) + '</p>';
+  }
+  function kbLoad() { return sb.rpc('admin_bot_kb_list').then(function (r) { if (!r.error && Array.isArray(r.data)) { SUP.kb = r.data; kbRender(); } }); }
+  function kbReset() { el('kb-form').removeAttribute('data-id'); el('kb-q').value = ''; el('kb-a').value = ''; el('kb-cancel').hidden = true; }
+  function kbSaveRow(id, q, a, active) {
+    return sb.rpc('admin_bot_kb_save', { p_id: id || null, p_q: q, p_a: a, p_active: active }).then(function (r) { if (r.error) { toast(t('kb_err')); return false; } return kbLoad().then(function () { return true; }); });
+  }
+  el('kb-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var q = el('kb-q').value.trim(), a = el('kb-a').value.trim(); if (q.length < 2 || a.length < 2) { toast(t('kb_err')); return; }
+    var id = el('kb-form').getAttribute('data-id'), cur = SUP.kb.filter(function (k) { return k.id === id; })[0];
+    kbSaveRow(id, q, a, cur ? cur.active : true).then(function (ok) { if (ok) { kbReset(); toast(t('kb_saved')); } });
+  });
+  el('kb-cancel').addEventListener('click', kbReset);
+  el('kb-list').addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    var id = b.getAttribute('data-kbe') || b.getAttribute('data-kbt') || b.getAttribute('data-kbd');
+    var k = SUP.kb.filter(function (x) { return x.id === id; })[0]; if (!k) return;
+    if (b.hasAttribute('data-kbe')) { el('kb-form').setAttribute('data-id', k.id); el('kb-q').value = k.question; el('kb-a').value = k.answer; el('kb-cancel').hidden = false; el('kb-q').focus(); el('kb-card').scrollIntoView({ block: 'start' }); }
+    else if (b.hasAttribute('data-kbt')) kbSaveRow(k.id, k.question, k.answer, !k.active);
+    else if (window.confirm(t('kb_del_q'))) sb.rpc('admin_bot_kb_delete', { p_id: k.id }).then(function (r) { if (!r.error) { if (el('kb-form').getAttribute('data-id') === k.id) kbReset(); kbLoad(); } });
+  });
+  el('sp-msgs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-teach]'); if (!b) return;
+    var x = SUP.teach[+b.getAttribute('data-teach')]; if (!x) return;
+    kbReset(); el('kb-q').value = x.q.slice(0, 300); el('kb-a').value = x.a.slice(0, 1200);
+    toast(t('kb_filled')); el('kb-card').scrollIntoView({ block: 'start', behavior: 'smooth' }); el('kb-q').focus();
+  });
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
-    if (started) return; started = true;
+    if (started) return; started = true; spStart(); if (location.hash === '#support') { try { setTab('sp'); } catch (e) {} }
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
     channel = sb.channel('bareed').on('postgres_changes', { event: '*', schema: 'public' }, function () {
       clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncAll().catch(function () {}); }, 400);
@@ -2115,7 +2359,7 @@ select.search { appearance: auto; cursor: pointer; }
     if (!window._ap) { window._ap = setInterval(function () { if (started && document.visibilityState === 'visible') syncAll().catch(function () {}); }, 30000); document.addEventListener('visibilitychange', function () { if (started && document.visibilityState === 'visible') syncAll().catch(function () {}); }); }
   }
   function stopData() {
-    started = false; store.shipments = []; store.couriers = []; store.merchants = []; loaded.shipments = loaded.couriers = false;
+    started = false; spStop(); store.shipments = []; store.couriers = []; store.merchants = []; loaded.shipments = loaded.couriers = false;
     if (channel) { sb.removeChannel(channel); channel = null; }
     renderAll();
   }
@@ -2144,4 +2388,5 @@ select.search { appearance: auto; cursor: pointer; }
   })();
 })();
 </script>
+<script src="/push.js" data-key="bareed-admin-auth" data-mode="auth" data-pos="top" defer></script>
 </body></html>
