@@ -111,13 +111,13 @@
   /* Full-screen, Uber-style picker: search on top, fixed pin in the centre, move the map under it, confirm A then B. */
   function pickFull(opts) {
     opts = opts || {};
-    var X = ar ? { t: 'حدد على الخريطة', ta: 'نقطة الاستلام (من)', tb: 'نقطة التسليم (إلى)', ca: 'تأكيد نقطة الاستلام', cb: 'تأكيد نقطة التسليم', done: 'تم ✓', ea: 'تعديل الاستلام', eb: 'تعديل التسليم', ph: 'ابحث عن شارع أو مكان…', me: '📍 موقعي', hint: 'حرّك الخريطة وخلّي الدبوس على المكان بالظبط', load: 'جاري تحميل الخريطة…', fail: 'الخريطة مفتحتش. اتأكد من النت.', retry: 'حاول تاني', sf: 'البحث مش شغال دلوقتي، حرّك الخريطة بإيدك.', nf: 'مفيش نتايج، جرّب كلمة تانية.', route: 'جاري حساب المسافة…' }
-      : { t: 'Set on map', ta: 'Pickup point (from)', tb: 'Drop-off point (to)', ca: 'Confirm pickup', cb: 'Confirm drop-off', done: 'Done ✓', ea: 'Edit pickup', eb: 'Edit drop-off', ph: 'Search a street or place…', me: '📍 My location', hint: 'Move the map so the pin is exactly on the spot', load: 'Loading map…', fail: 'Map did not load. Check your connection.', retry: 'Retry', sf: 'Search is unavailable, move the map by hand.', nf: 'No results, try another word.', route: 'Calculating distance…' };
+    var X = ar ? { t: 'حدد على الخريطة', ta: 'نقطة الاستلام (من)', tb: 'نقطة التسليم (إلى)', ca: 'تأكيد نقطة الاستلام', cb: 'تأكيد نقطة التسليم', done: 'تم ✓', ea: 'تعديل الاستلام', eb: 'تعديل التسليم', ph: 'ابحث عن شارع أو مكان…', me: '📍 موقعي', hint: 'حرّك الخريطة وخلّي الدبوس على المكان بالظبط', load: 'جاري تحميل الخريطة…', fail: 'الخريطة مفتحتش. اتأكد من النت.', retry: 'حاول تاني', sf: 'البحث مش شغال دلوقتي، حرّك الخريطة بإيدك.', nf: 'مفيش نتايج، جرّب كلمة تانية.', route: 'جاري حساب المسافة…', srch: 'جاري البحث…' }
+      : { t: 'Set on map', ta: 'Pickup point (from)', tb: 'Drop-off point (to)', ca: 'Confirm pickup', cb: 'Confirm drop-off', done: 'Done ✓', ea: 'Edit pickup', eb: 'Edit drop-off', ph: 'Search a street or place…', me: '📍 My location', hint: 'Move the map so the pin is exactly on the spot', load: 'Loading map…', fail: 'Map did not load. Check your connection.', retry: 'Retry', sf: 'Search is unavailable, move the map by hand.', nf: 'No results, try another word.', route: 'Calculating distance…', srch: 'Searching…' };
     var v = opts.value || {}, st = { a: v.a || null, b: v.b || null, km: v.km || null, step: v.a && v.b ? 'review' : (v.a ? 'b' : 'a') };
     var ov = document.createElement('div');
     ov.setAttribute('dir', ar ? 'rtl' : 'ltr');
     ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:#fff;color:#0B1B2B;display:flex;flex-direction:column;font-family:inherit';
-    ov.innerHTML = '<div style="padding:10px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #DAE6F0"><button type="button" class="pf-x" style="width:40px;height:40px;border-radius:12px;border:1px solid #DAE6F0;background:#fff;font-size:20px;cursor:pointer">×</button><b class="pf-t" style="flex:1;font-size:16px"></b></div>' +
+    ov.innerHTML = '<style>.pf-q{background:#fff!important;color:#0B1B2B!important;-webkit-text-fill-color:#0B1B2B!important;color-scheme:light;opacity:1!important}.pf-q::placeholder{color:#6B7C8C!important;-webkit-text-fill-color:#6B7C8C!important;opacity:1}</style><div style="padding:10px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #DAE6F0"><button type="button" class="pf-x" style="width:40px;height:40px;border-radius:12px;border:1px solid #DAE6F0;background:#fff;font-size:20px;cursor:pointer">×</button><b class="pf-t" style="flex:1;font-size:16px"></b></div>' +
       '<div style="padding:8px 12px;position:relative"><div style="display:flex;gap:6px"><input class="pf-q" style="flex:1;min-width:0;height:44px;border-radius:12px;border:1px solid #DAE6F0;padding:0 12px;font:inherit;font-size:16px" maxlength="120" autocomplete="off"><button type="button" class="pf-go" style="height:44px;padding:0 14px;border-radius:12px;border:0;background:#0A8BE0;color:#fff;font:inherit;cursor:pointer">🔍</button></div><div class="pf-res" style="display:none;position:absolute;left:12px;right:12px;top:56px;z-index:1000;background:#fff;border:1px solid #DAE6F0;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:220px;overflow:auto"></div></div>' +
       '<div style="flex:1;position:relative;min-height:0"><div class="pf-map" style="position:absolute;inset:0"></div><div class="pf-pin" style="position:absolute;left:50%;top:50%;width:0;height:0;z-index:600;pointer-events:none"><div class="pf-pc" style="position:absolute;left:-18px;top:-46px;width:36px;height:46px;display:flex;flex-direction:column;align-items:center"><div class="pf-pl" style="width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#0A8BE0;border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.4)"></div></div><div style="position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:rgba(0,0,0,.35)"></div></div><div class="pf-msg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:#fff;z-index:700;text-align:center;padding:20px"></div></div>' +
       '<div style="padding:10px 12px 14px;border-top:1px solid #DAE6F0;background:#fff"><div class="pf-info" style="font-size:14px;margin-bottom:8px;min-height:20px"></div><div class="pf-btns" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>';
@@ -187,13 +187,28 @@
         r.appendChild(d);
       });
     }
+    function getJ(url) {
+      var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 8000);
+      return fetch(url, { signal: ctl ? ctl.signal : undefined }).then(function (r) { clearTimeout(tm); if (!r.ok) throw new Error('http'); return r.json(); }).catch(function (e) { clearTimeout(tm); throw e; });
+    }
+    function nom(v) { return getJ('https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=eg&accept-language=ar&viewbox=31.0,30.1,31.5,29.7&q=' + encodeURIComponent(v)); }
+    function pho(v) {
+      return getJ('https://photon.komoot.io/api/?limit=6&lat=29.9&lon=31.25&q=' + encodeURIComponent(v)).then(function (j) {
+        return ((j && j.features) || []).filter(function (f) { var c = f.properties && f.properties.countrycode; return !c || c === 'EG'; }).map(function (f) { var p = f.properties || {}; return { display_name: [p.name, p.street, p.district, p.city || p.county, p.state].filter(Boolean).join('، '), lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0] }; });
+      });
+    }
+    var sTok = 0;
     function search() {
       var val = q('.pf-q').value.trim(); if (!val || !map) return;
-      var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
-      fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=eg&accept-language=ar&viewbox=31.0,30.1,31.5,29.7&q=' + encodeURIComponent(val), { signal: ctl ? ctl.signal : undefined })
-        .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); showRes(j || []); })
-        .catch(function () { clearTimeout(tm); showRes([], X.sf); });
+      var my = ++sTok, r0 = q('.pf-res'); r0.style.display = 'block'; r0.innerHTML = '<div style="padding:12px;font-size:14px">' + esc(X.srch) + '</div>';
+      var anyOk = false;
+      function step(fn) { return fn().then(function (l) { anyOk = true; return l; }).catch(function () { return []; }); }
+      step(function () { return nom(val); })
+        .then(function (l) { return l.length ? l : step(function () { return nom(val + ' الحوامدية'); }); })
+        .then(function (l) { return l.length ? l : step(function () { return pho(val); }); })
+        .then(function (l) { if (my !== sTok) return; showRes(l, anyOk ? X.nf : X.sf); });
     }
+    var dbT = 0; q('.pf-q').addEventListener('input', function () { clearTimeout(dbT); if (q('.pf-q').value.trim().length < 3) return; dbT = setTimeout(search, 900); });
     q('.pf-go').onclick = search;
     q('.pf-q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); search(); } });
     function boot() {
