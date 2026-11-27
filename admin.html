@@ -1285,10 +1285,19 @@ select.search { appearance: auto; cursor: pointer; }
     h += '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="pl-name" maxlength="120" placeholder="اسم المكان، مثلاً: ملعب باريس" style="flex:1;min-width:160px"><button type="button" class="btn" id="pl-add">📍 حدد على الخريطة وأضف</button></div><div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><label class="btn ghost sm" style="cursor:pointer">📥 استيراد من Excel / CSV<input type="file" id="pl-file" accept=".xlsx,.xls,.csv" hidden></label><button type="button" class="btn ghost sm" id="pl-tpl">نموذج Excel</button><button type="button" class="btn ghost sm" id="pl-exp">📤 تصدير الأماكن</button></div><div class="muted" style="font-size:12px;margin-top:6px">الملف: العمود الأول اسم المكان، والتاني رابط جوجل ماب (الرابط الطويل) أو الإحداثيات مثل 29.9,31.25</div>';
     if (PLC && PLC.length) h += '<div style="margin-top:10px;display:grid;gap:6px">' + PLC.map(function (p) { return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.08)"><span>' + esc(p.name) + '</span><button type="button" class="btn ghost sm" data-pldel="' + esc(p.id) + '">حذف</button></div>'; }).join('') + '</div>';
     else if (PLC) h += '<div class="muted" style="margin-top:10px;font-size:13px">لسه مفيش أماكن. اكتب اسم مكان واضغط الزرار.</div>';
+    if (PLS && PLS.length) h += '<div style="margin-top:14px"><b>💡 أماكن مقترحة من الطلبات</b><div class="muted" style="font-size:12px;margin:2px 0 6px">عناوين اتحددت على الخريطة في طلبات حقيقية. اعتمد اللي يستاهل، واكتب له اسم مكان عام (من غير اسم العميل أو رقم الشقة).</div><div style="display:grid;gap:6px">' + PLS.map(function (p, i) { return '<div style="padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.08)"><div style="font-size:13px">' + esc(p.addr) + ' <span class="muted">· ' + esc(p.n) + ' طلب</span></div><div style="display:flex;gap:6px;margin-top:6px"><button type="button" class="btn sm" data-plok="' + i + '">اعتمد</button><button type="button" class="btn ghost sm" data-plno="' + i + '">تجاهل</button></div></div>'; }).join('') + '</div></div>';
     return h + '</div>';
   }
-  async function plLoad() { var r = await sb.rpc('admin_places_list'); if (r.error) return; PLC = r.data || []; var c = el('pl-card'); if (c) c.innerHTML = plHtml(); }
+  var PLS = null;
+  async function plLoad() { var r2 = await sb.rpc('admin_place_suggestions'); if (!r2.error) PLS = r2.data || []; var r = await sb.rpc('admin_places_list'); if (r.error) return; PLC = r.data || []; var c = el('pl-card'); if (c) c.innerHTML = plHtml(); }
   document.addEventListener('click', async function (e) {
+    var ok = e.target.closest && e.target.closest('[data-plok]'), no = e.target.closest && e.target.closest('[data-plno]');
+    if (ok || no) {
+      var it = PLS && PLS[+(ok || no).getAttribute(ok ? 'data-plok' : 'data-plno')]; if (!it) return;
+      if (ok) { var nm = prompt('اسم المكان (عام، من غير بيانات العميل):', String(it.addr || '').slice(0, 40)); if (!nm || nm.trim().length < 2) return; var r1 = await sb.rpc('admin_place_save', { p_name: nm.trim(), p_lat: it.lat, p_lng: it.lng }); if (r1.error) { toast('تعذّر الحفظ'); return; } toast('اتضاف ✓'); }
+      else { var r3 = await sb.rpc('admin_place_dismiss', { p_lat: it.lat, p_lng: it.lng }); if (r3.error) { toast('تعذّر التجاهل'); return; } }
+      plLoad(); return;
+    }
     var d = e.target.closest && e.target.closest('[data-pldel]');
     if (d) { if (!confirm('تحذف المكان ده؟')) return; var r = await sb.rpc('admin_place_delete', { p_id: d.getAttribute('data-pldel') }); if (r.error) toast('تعذّر الحذف'); else plLoad(); return; }
     if (e.target.closest && e.target.closest('#pl-add')) {
