@@ -437,6 +437,15 @@ select.search { appearance: auto; cursor: pointer; }
 .side-links .nav-item { text-decoration: none; font-size: 14px; }
 .tb-links { display: none; gap: 6px; }
 @media (max-width: 860px) { .side-links { display: none; } .tb-links { display: inline-flex; } }
+@media (max-width: 860px) { .tb-links { display: none !important; } .nav { overflow-x: auto; justify-content: flex-start; scrollbar-width: none; -webkit-overflow-scrolling: touch; } .nav::-webkit-scrollbar { display: none; } .nav-item { flex: 0 0 auto; min-width: 60px; padding: 7px 6px; } .nav-item span { overflow: visible; text-overflow: clip; } }
+@media (max-width: 700px) {
+  .tablewrap table.cardify { min-width: 0; display: block; } table.cardify thead { display: none; } table.cardify tbody { display: block; }
+  table.cardify tbody tr { display: block; margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line, #dae6f0); border-radius: 14px; }
+  table.cardify td { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 5px 0; border: 0 !important; text-align: end; white-space: normal; }
+  table.cardify td::before { content: attr(data-label); color: var(--muted, #536a82); font-size: 12px; flex: none; text-align: start; }
+  table.cardify td:empty { display: none; }
+}
+@media (max-width: 860px) { .shell { overflow-x: clip; max-width: 100vw; } .topbar { padding: 10px 12px; gap: 8px; } .topbar > * { min-width: 0; } .tb-actions { gap: 6px; flex: 0 1 auto; } .tb-actions .icon-btn { padding: 8px; } .tb-actions .icon-btn span:not(.tb-links) { display: none; } .mini-brand { font-size: 16px; gap: 8px; } }
 
 .sp-badge { background: #e5484d; color: #fff; border-radius: 999px; font-size: 11px; padding: 1px 7px; margin-inline-start: auto; font-weight: 700; }
 .sp-wrap { display: grid; grid-template-columns: 320px 1fr; gap: 14px; align-items: start; }
@@ -1269,7 +1278,7 @@ select.search { appearance: auto; cursor: pointer; }
       '<h3 style="margin:12px 0 6px">' + t('vs_days') + '</h3>' + (v.days || []).map(function (d) { return '<div class="bar rev"><span dir="ltr">' + String(d.d).slice(5) + '</span><span class="track"><i style="width:' + (d.v / mx * 100) + '%"></i></span><span class="num">' + d.u + ' / ' + d.v + '</span></div>'; }).join('') +
       ((v.pages || []).length ? '<h3 style="margin:12px 0 6px">' + t('vs_pages') + '</h3>' + v.pages.map(function (p) { return '<div class="kv"><span dir="ltr">' + esc(p.path) + '</span><b>' + p.v + '</b></div>'; }).join('') : '') + '</div>';
   }
-  async function visLoad() { var r = await sb.rpc('admin_visit_stats'); if (r.error || !r.data) return; VIS = r.data; var c = el('vis-card'); if (c) c.innerHTML = visHtml(); }
+  async function visLoad() { var r = await sb.rpc('admin_visit_stats'); if (r.error || !r.data || !r.data.today || !r.data.roles) return; VIS = r.data; var c = el('vis-card'); if (c) c.innerHTML = visHtml(); }
   function renderAll() {
     renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts(); if (typeof renderPnl === 'function') renderPnl(); if (typeof renderAreas === "function") renderAreas(); if (typeof renderMreq === "function") renderMreq();
     var fee = el('s-fee'); if (!fee.value && document.activeElement !== fee) fee.value = cfg.fee;
@@ -2439,6 +2448,20 @@ select.search { appearance: auto; cursor: pointer; }
     });
     el('logout').addEventListener('click', async function () { await sb.auth.signOut({ scope: 'local' }); location.href = '/app'; });
   })();
+})();
+</script>
+<script>
+(function () {
+  function run() {
+    document.querySelectorAll('.tablewrap table').forEach(function (tb) {
+      var ths = [].map.call(tb.querySelectorAll('thead th'), function (h) { return h.textContent.trim(); });
+      if (!ths.length) return; tb.classList.add('cardify');
+      tb.querySelectorAll('tbody tr').forEach(function (tr) { [].forEach.call(tr.children, function (td, i) { if (ths[i] && td.getAttribute('data-label') !== ths[i]) td.setAttribute('data-label', ths[i]); }); });
+    });
+  }
+  var tm = 0; new MutationObserver(function () { if (tm) return; tm = setTimeout(function () { tm = 0; run(); }, 60); }).observe(document.body, { childList: true, subtree: true });
+  run();
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('.nav-item'); if (b && b.scrollIntoView) { try { b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); } catch (x) {} } });
 })();
 </script>
 <script src="/push.js" data-key="bareed-admin-auth" data-mode="auth" data-pos="top" defer></script>

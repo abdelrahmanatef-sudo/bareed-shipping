@@ -88,6 +88,15 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   #label-print, #label-print * { visibility: visible; }
   #label-print { display: block !important; position: absolute; inset: 0 auto auto 0; max-width: none; width: 100%; border: 0; border-radius: 0; }
 }
+
+@media (max-width: 860px) { .tb-links { display: none !important; } .nav { overflow-x: auto; justify-content: flex-start; scrollbar-width: none; -webkit-overflow-scrolling: touch; } .nav::-webkit-scrollbar { display: none; } .nav-item { flex: 0 0 auto; min-width: 66px; padding: 7px 8px; } .nav-item span { overflow: visible; text-overflow: clip; } }
+@media (max-width: 700px) {
+  .tablewrap table.cardify { min-width: 0; display: block; } table.cardify thead { display: none; } table.cardify tbody { display: block; }
+  table.cardify tbody tr { display: block; margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line, #dae6f0); border-radius: 14px; }
+  table.cardify td { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 5px 0; border: 0 !important; text-align: end; white-space: normal; }
+  table.cardify td::before { content: attr(data-label); color: var(--muted, #536a82); font-size: 12px; flex: none; text-align: start; }
+  table.cardify td:empty { display: none; }
+}
 </style><link rel="manifest" href="/manifest-app.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="تاجر بريد"><link rel="icon" type="image/png" href="/icons/icon-192.png"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script></head>
 <body>
 <div class="load" id="load">…</div>
@@ -456,5 +465,18 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
 </script>
 <script src="/support-chat.js" data-mode="auth" defer></script>
 <script src="/track.js" defer></script>
+<script>
+(function () {
+  function run() {
+    document.querySelectorAll('.tablewrap table').forEach(function (tb) {
+      var ths = [].map.call(tb.querySelectorAll('thead th'), function (h) { return h.textContent.trim(); });
+      if (!ths.length) return; tb.classList.add('cardify');
+      tb.querySelectorAll('tbody tr').forEach(function (tr) { [].forEach.call(tr.children, function (td, i) { if (ths[i] && td.getAttribute('data-label') !== ths[i]) td.setAttribute('data-label', ths[i]); }); });
+    });
+  }
+  var tm = 0; new MutationObserver(function () { if (tm) return; tm = setTimeout(function () { tm = 0; run(); }, 60); }).observe(document.body, { childList: true, subtree: true });
+  run();
+})();
+</script>
 <script src="/push.js" data-mode="auth" defer></script>
 </body></html>
