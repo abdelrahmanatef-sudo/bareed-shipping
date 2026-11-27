@@ -1028,6 +1028,8 @@ select.search { appearance: auto; cursor: pointer; }
     var lateN = store.shipments.filter(function (x) { return x.status !== 'delivered' && x.status !== 'returned' && (Date.now() - new Date(x.created_at || x.createdAt || Date.now())) > 48 * 3600e3; }).length;
     var mrs = mreqRows || [], actN = mrs.filter(function (m) { return m.status === 'active'; }).length, penN = mrs.filter(function (m) { return m.status === 'pending'; }).length;
     h += '<div class="tiles">' + tile('box', '', t('k_today'), todayN, t('n_today')) + tile('truck', lateN ? 'neg' : '', t('k_late'), lateN, t('n_late')) + tile('store', '', t('k_mer'), actN, t('n_mer', { p: penN })) + '</div>';
+    var cAct = store.couriers.filter(function (c) { return c.status === 'active'; }), cOn = cAct.filter(function (c) { return c.available; }).length;
+    h += '<div class="tiles">' + tile('truck', cOn ? 'pos' : 'neg', t('k_conn'), cOn + ' / ' + cAct.length, t('n_conn', { o: cAct.length - cOn })) + '</div>';
     h += '<div class="card"><h2>' + t('h_status') + '</h2><div class="pipe">' + STATUSES.map(function (k) {
       return counts[k] ? '<i class="f-' + k + '" style="width:' + (counts[k] / total * 100) + '%"></i>' : '';
     }).join('') + '</div><div class="legend">' + STATUSES.map(function (k) {
@@ -1804,8 +1806,8 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.en, { f_all: 'All', f_cash: 'Holds cash', f_carry: 'Carrying now', f_clear: 'Nothing due', f_login: 'Has login', f_nologin: 'No login', f_owed: 'Owed money', f_owes: 'Owes money', f_open: 'Open shipments', f_pend: 'Awaiting activation', f_act: 'Active', f_sus: 'Suspended', f_q: 'Search by name...', f_from: 'From', f_to: 'To', f_today: 'Today', f_7: '7 days', f_month: 'This month', f_empty: 'No results for this filter', f_reset: 'Clear filter' });
   Object.assign(I18N.ar, { fl_late: 'متأخرة (+48 ساعة)', fl_unas: 'من غير مندوب' });
   Object.assign(I18N.en, { fl_late: 'Late (48h+)', fl_unas: 'No courier' });
-  Object.assign(I18N.ar, { f_avail: 'متاح للشغل', f_unavail: 'مش متاح', f_copen: 'عنده شحنات مفتوحة', f_mact: 'شغّال', f_msusp: 'موقوف' });
-  Object.assign(I18N.en, { f_avail: 'Available', f_unavail: 'Unavailable', f_copen: 'Has open shipments', f_mact: 'Active', f_msusp: 'Suspended' });
+  Object.assign(I18N.ar, { f_avail: 'فاتح', f_unavail: 'قافل', k_conn: 'المناديب الفاتحين', n_conn: '{o} قافل دلوقتي', f_copen: 'عنده شحنات مفتوحة', f_mact: 'شغّال', f_msusp: 'موقوف' });
+  Object.assign(I18N.en, { f_avail: 'Open', f_unavail: 'Closed', k_conn: 'Couriers open', n_conn: '{o} closed now', f_copen: 'Has open shipments', f_mact: 'Active', f_msusp: 'Suspended' });
   Object.assign(I18N.ar, { dt_h: '{n} شحنة · إجمالي {m} ج.م' });
   Object.assign(I18N.en, { dt_h: '{n} shipments · total {m} EGP' });
   var FDEF = {
@@ -2003,8 +2005,8 @@ select.search { appearance: auto; cursor: pointer; }
   /* ---- courier cash handovers + availability ---- */
   Object.assign(I18N.ar, { cur_s: 'ج' });
   Object.assign(I18N.en, { cur_s: 'EGP' });
-  Object.assign(I18N.ar, { av_on: 'متاح', av_off: 'مش متاح', ho_h: 'تسليمات فلوس المناديب', ho_claim: 'المندوب بيقول إنه سلّم', ho_recv: 'المبلغ اللي استلمته فعلاً', ho_note: 'ملاحظة (اختياري)', ho_ok: 'تأكيد الاستلام', ho_rej: 'رفض', ho_short: 'عجز', ho_surp: 'زيادة', ho_none: 'مفيش طلبات تسليم معلّقة', ho_hist: 'آخر التسليمات', ho_cnt: 'شحنة', ho_done: 'تم تسجيل الاستلام', ho_rejd: 'مرفوض', ho_pend: 'معلّق', ho_tot_short: 'إجمالي العجز المسجّل' });
-  Object.assign(I18N.en, { av_on: 'Available', av_off: 'Unavailable', ho_h: 'Courier cash handovers', ho_claim: 'Courier says he handed over', ho_recv: 'Amount you actually received', ho_note: 'Note (optional)', ho_ok: 'Confirm receipt', ho_rej: 'Reject', ho_short: 'Shortage', ho_surp: 'Surplus', ho_none: 'No pending handovers', ho_hist: 'Recent handovers', ho_cnt: 'shipments', ho_done: 'Receipt recorded', ho_rejd: 'Rejected', ho_pend: 'Pending', ho_tot_short: 'Total recorded shortage' });
+  Object.assign(I18N.ar, { av_on: 'فاتح', av_off: 'قافل', ho_h: 'تسليمات فلوس المناديب', ho_claim: 'المندوب بيقول إنه سلّم', ho_recv: 'المبلغ اللي استلمته فعلاً', ho_note: 'ملاحظة (اختياري)', ho_ok: 'تأكيد الاستلام', ho_rej: 'رفض', ho_short: 'عجز', ho_surp: 'زيادة', ho_none: 'مفيش طلبات تسليم معلّقة', ho_hist: 'آخر التسليمات', ho_cnt: 'شحنة', ho_done: 'تم تسجيل الاستلام', ho_rejd: 'مرفوض', ho_pend: 'معلّق', ho_tot_short: 'إجمالي العجز المسجّل' });
+  Object.assign(I18N.en, { av_on: 'Open', av_off: 'Closed', ho_h: 'Courier cash handovers', ho_claim: 'Courier says he handed over', ho_recv: 'Amount you actually received', ho_note: 'Note (optional)', ho_ok: 'Confirm receipt', ho_rej: 'Reject', ho_short: 'Shortage', ho_surp: 'Surplus', ho_none: 'No pending handovers', ho_hist: 'Recent handovers', ho_cnt: 'shipments', ho_done: 'Receipt recorded', ho_rejd: 'Rejected', ho_pend: 'Pending', ho_tot_short: 'Total recorded shortage' });
   var HO = [];
   var SP = [];
   Object.assign(I18N.ar, { sp_btn: 'سدّد عجز', sp_prompt: 'المبلغ اللي المندوب سدّده من العجز (ج.م):', sp_note: 'ملاحظة (اختياري):', sp_done: 'اتسجّل سداد العجز.', sp_big: 'المبلغ أكبر من العجز المسجّل.' });
