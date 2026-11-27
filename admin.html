@@ -511,6 +511,7 @@ select.search { appearance: auto; cursor: pointer; }
       <button class="nav-item" data-tab="me"><svg class="i" viewBox="0 0 24 24"><path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/></svg><span data-i18n="nav_me"></span></button>
       <button class="nav-item" data-tab="tr"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4"/></svg><span data-i18n="nav_tr"></span></button>
       <button class="nav-item" data-tab="rp"><svg class="i" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span data-i18n="nav_rp"></span></button>
+      <button class="nav-item" data-tab="ac"><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg><span data-i18n="nav_ac"></span></button>
       <button class="nav-item" data-tab="ct"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M12 12h2M16 12h0M8 16h2M12 16h2M16 16h0"/></svg><span data-i18n="nav_ct"></span></button>
     </nav>
     <div class="side-links"><a class="nav-item" href="/merchant" target="_blank" rel="noopener" title="" data-i18n-title="ql_m"><svg class="i" viewBox="0 0 24 24"><path d="M4 9 5.5 4h13L20 9"/><path d="M4 9h16v2a3 3 0 0 1-6 0 3 3 0 0 1-4 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v7h14v-7"/></svg><span data-i18n="ql_m"></span></a><a class="nav-item" href="/courier" target="_blank" rel="noopener" title="" data-i18n-title="ql_c"><svg class="i" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/></svg><span data-i18n="ql_c"></span></a><a class="nav-item" href="/" target="_blank" rel="noopener" title="" data-i18n-title="ql_s"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span data-i18n="ql_s"></span></a></div>
@@ -618,10 +619,10 @@ select.search { appearance: auto; cursor: pointer; }
         <div id="me-list" class="cards"></div>
       </section>
 
-      <section id="p-rp" class="stack" hidden>
+      <section id="p-ac" class="stack" hidden>
         <div class="card" id="pnl">
           <h2 data-i18n="pl_h"></h2><p class="note" data-i18n="pl_note"></p>
-          <div class="toolbar"><input class="search" type="month" id="pnl-m" style="max-width:180px"></div>
+          <div class="toolbar"><input class="search" type="month" id="pnl-m" style="max-width:180px"><button class="btn sm" type="button" id="pnl-csv" data-i18n="pl_csv"></button></div>
           <div id="pnl-sum"></div>
           <details class="add" id="ex-add"><summary><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="ex_add"></span></summary>
             <form id="ex-form" autocomplete="off"><div class="fgrid">
@@ -629,10 +630,14 @@ select.search { appearance: auto; cursor: pointer; }
               <div class="field"><label for="ex-cat" data-i18n="ex_cat"></label><select id="ex-cat"></select></div>
               <div class="field"><label for="ex-amt" data-i18n="ex_amt"></label><input id="ex-amt" type="number" min="0.01" step="any" inputmode="decimal" required></div>
               <div class="field"><label for="ex-note" data-i18n="ex_note"></label><input id="ex-note" maxlength="300"></div>
+              <div class="field"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="ex-monthly"><span data-i18n="ex_monthly"></span></label></div>
             </div><div class="row"><button class="btn" type="submit" data-i18n="ex_save"></button></div></form>
           </details>
           <div id="ex-list"></div>
         </div>
+      </section>
+
+      <section id="p-rp" class="stack" hidden>
         <div class="card" id="mrep"><h2 data-i18n="mp_h"></h2><p class="note" data-i18n="mp_note"></p>
           <div class="toolbar"><input class="search" type="month" id="mrep-m" style="max-width:180px"><button class="btn sm" type="button" id="mrep-btn" data-i18n="mp_btn"></button></div>
           <div id="mrep-sum"></div></div>
@@ -740,8 +745,8 @@ select.search { appearance: auto; cursor: pointer; }
       brand: 'بريد', brand_sub: 'للشحن السريع', logout: 'خروج',
       h_areas: 'مناطق التغطية (إنت اللي بتفتحها)', areas_note: 'المدن المفتوحة بس هي اللي التجار يقدروا يسجّلوا ليها شحنات، والكل بيشوف حالتها في الصفحة الرئيسية. غيّر الحالة والأجرة من هنا.', a_open: 'مفتوحة', a_closed: 'قريباً', a_city_ar: 'اسم المدينة بالعربي', a_city_en: 'City (English)', a_fee: 'الأجرة', a_add: 'ضيف مدينة', a_ok: 'تم الحفظ',
       h_mreq: 'طلبات وحسابات التجار', mr_pending: 'قيد المراجعة', mr_active: 'مفعّل', mr_suspended: 'موقوف', mr_approve: 'تفعيل', mr_suspend: 'إيقاف', mr_reactivate: 'إعادة تفعيل',
-      nav_ov: 'نظرة عامة', nav_sh: 'الشحنات', nav_co: 'المناديب', nav_me: 'التجار', nav_ct: 'التكلفة',
-      pg_ov: 'نظرة عامة', pg_sh: 'الشحنات', pg_co: 'المناديب', pg_me: 'التجار والتسوية', pg_ct: 'التكلفة والربح',
+      nav_ov: 'نظرة عامة', nav_sh: 'الشحنات', nav_co: 'المناديب', nav_me: 'التجار', nav_ct: 'حاسبة التكلفة', nav_ac: 'الحسابات',
+      pg_ov: 'نظرة عامة', pg_sh: 'الشحنات', pg_co: 'المناديب', pg_me: 'التجار والتسوية', pg_ct: 'حاسبة التكلفة (تقدير)', pg_ac: 'الحسابات والأرباح',
       hero_h: 'كل شحناتك وفلوسك في مكان واحد', hero_p: 'تابع الشحنات والمناديب وتسوية الـ COD وربح كل شحنة.',
       auth_title: 'تسجيل الدخول', auth_sub: 'لفريق بريد بس.', email: 'الإيميل', password: 'الباسورد', enter: 'دخول',
       err_login: 'الإيميل أو الباسورد غلط.', err_admin: 'الحساب ده مش متسجل كأدمن في بريد.',
@@ -795,8 +800,8 @@ select.search { appearance: auto; cursor: pointer; }
       brand: 'Bareed', brand_sub: 'Fast Delivery', logout: 'Sign out',
       h_areas: 'Coverage areas (you decide what opens)', areas_note: 'Only open cities accept merchant shipments, and everyone sees their status on the home page. Change status and fee here.', a_open: 'Open', a_closed: 'Soon', a_city_ar: 'City name (Arabic)', a_city_en: 'City (English)', a_fee: 'Fee', a_add: 'Add city', a_ok: 'Saved',
       h_mreq: 'Merchant accounts & requests', mr_pending: 'Pending review', mr_active: 'Active', mr_suspended: 'Suspended', mr_approve: 'Approve', mr_suspend: 'Suspend', mr_reactivate: 'Reactivate',
-      nav_ov: 'Overview', nav_sh: 'Shipments', nav_co: 'Delivery Representatives', nav_me: 'Merchants', nav_ct: 'Costs',
-      pg_ov: 'Overview', pg_sh: 'Shipments', pg_co: 'Delivery Representatives', pg_me: 'Merchants & settlement', pg_ct: 'Costs & profit',
+      nav_ov: 'Overview', nav_sh: 'Shipments', nav_co: 'Delivery Representatives', nav_me: 'Merchants', nav_ct: 'Cost calculator', nav_ac: 'Accounts',
+      pg_ov: 'Overview', pg_sh: 'Shipments', pg_co: 'Delivery Representatives', pg_me: 'Merchants & settlement', pg_ct: 'Cost calculator (estimate)', pg_ac: 'Accounts & profit',
       hero_h: 'All your deliveries and cash in one place', hero_p: 'Track shipments, delivery representatives, COD settlement and the profit on every shipment.',
       auth_title: 'Sign in', auth_sub: 'For the Bareed team only.', email: 'Email', password: 'Password', enter: 'Sign in',
       err_login: 'Wrong email or password.', err_admin: 'This account is not an admin of Bareed.',
@@ -859,7 +864,7 @@ select.search { appearance: auto; cursor: pointer; }
     ['other', 'u_egp'], ['fixed', 'u_month'], ['rate', 'u_pct'], ['avgCod', 'u_egp'], ['volume', 'u_ship']];
   var STATUSES = ['new', 'picked_up', 'out_for_delivery', 'delivered', 'returned'];
   var FILTER_KEYS = { all: 'fl_all', new: 'fl_new', picked_up: 'fl_picked', out_for_delivery: 'fl_out', delivered: 'fl_del', returned: 'fl_ret', late: 'fl_late', unassigned: 'fl_unas' };
-  var PAGES = ['ov', 'sh', 'co', 'me', 'rp', 'ct', 'tr', 'sp'];
+  var PAGES = ['ov', 'sh', 'co', 'me', 'ac', 'rp', 'ct', 'tr', 'sp'];
 
   var store = { shipments: [], couriers: [], merchants: [], zones: [], events: {} };
   var MEV = 'm';
@@ -1029,7 +1034,8 @@ select.search { appearance: auto; cursor: pointer; }
     var mrs = mreqRows || [], actN = mrs.filter(function (m) { return m.status === 'active'; }).length, penN = mrs.filter(function (m) { return m.status === 'pending'; }).length;
     h += '<div class="tiles">' + tile('box', '', t('k_today'), todayN, t('n_today')) + tile('truck', lateN ? 'neg' : '', t('k_late'), lateN, t('n_late')) + tile('store', '', t('k_mer'), actN, t('n_mer', { p: penN })) + '</div>';
     var cAct = store.couriers.filter(function (c) { return c.status === 'active'; }), cOn = cAct.filter(function (c) { return c.available; }).length;
-    h += '<div class="tiles">' + tile('truck', cOn ? 'pos' : 'neg', t('k_conn'), cOn + ' / ' + cAct.length, t('n_conn', { o: cAct.length - cOn })) + '</div>';
+    var pc = plCalc(NOW_MONTH);
+    h += '<div class="tiles">' + tile('trend', pc.net >= 0 ? 'pos' : 'neg', t(pc.net >= 0 ? 'k_net' : 'k_netl'), money(Math.abs(pc.net)), t('n_net', { i: money(pc.tin), o: money(pc.tout) })) + tile('truck', cOn ? 'pos' : 'neg', t('k_conn'), cOn + ' / ' + cAct.length, t('n_conn', { o: cAct.length - cOn })) + '</div>';
     h += '<div class="card"><h2>' + t('h_status') + '</h2><div class="pipe">' + STATUSES.map(function (k) {
       return counts[k] ? '<i class="f-' + k + '" style="width:' + (counts[k] / total * 100) + '%"></i>' : '';
     }).join('') + '</div><div class="legend">' + STATUSES.map(function (k) {
@@ -1806,8 +1812,8 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.en, { f_all: 'All', f_cash: 'Holds cash', f_carry: 'Carrying now', f_clear: 'Nothing due', f_login: 'Has login', f_nologin: 'No login', f_owed: 'Owed money', f_owes: 'Owes money', f_open: 'Open shipments', f_pend: 'Awaiting activation', f_act: 'Active', f_sus: 'Suspended', f_q: 'Search by name...', f_from: 'From', f_to: 'To', f_today: 'Today', f_7: '7 days', f_month: 'This month', f_empty: 'No results for this filter', f_reset: 'Clear filter' });
   Object.assign(I18N.ar, { fl_late: 'متأخرة (+48 ساعة)', fl_unas: 'من غير مندوب' });
   Object.assign(I18N.en, { fl_late: 'Late (48h+)', fl_unas: 'No courier' });
-  Object.assign(I18N.ar, { f_avail: 'فاتح', f_unavail: 'قافل', k_conn: 'المناديب الفاتحين', n_conn: '{o} قافل دلوقتي', f_copen: 'عنده شحنات مفتوحة', f_mact: 'شغّال', f_msusp: 'موقوف' });
-  Object.assign(I18N.en, { f_avail: 'Open', f_unavail: 'Closed', k_conn: 'Couriers open', n_conn: '{o} closed now', f_copen: 'Has open shipments', f_mact: 'Active', f_msusp: 'Suspended' });
+  Object.assign(I18N.ar, { f_avail: 'فاتح', f_unavail: 'قافل', k_conn: 'المناديب الفاتحين', k_net: 'صافي ربح الشهر', k_netl: 'صافي خسارة الشهر', n_net: 'داخل {i} · خارج {o}', pl_csv: 'تصدير Excel', ex_monthly: 'يتكرر كل شهر (مرتبات، إيجار...)', n_conn: '{o} قافل دلوقتي', f_copen: 'عنده شحنات مفتوحة', f_mact: 'شغّال', f_msusp: 'موقوف' });
+  Object.assign(I18N.en, { f_avail: 'Open', f_unavail: 'Closed', k_conn: 'Couriers open', k_net: 'Net profit this month', k_netl: 'Net loss this month', n_net: 'in {i} · out {o}', pl_csv: 'Export Excel', ex_monthly: 'Repeats every month (salaries, rent...)', n_conn: '{o} closed now', f_copen: 'Has open shipments', f_mact: 'Active', f_msusp: 'Suspended' });
   Object.assign(I18N.ar, { dt_h: '{n} شحنة · إجمالي {m} ج.م' });
   Object.assign(I18N.en, { dt_h: '{n} shipments · total {m} EGP' });
   var FDEF = {
@@ -2120,12 +2126,29 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.en, { pl_h: 'Monthly P&L (actual)', pl_note: 'Income and costs are calculated from real shipments and the expenses you or the accountant record.', ex_add: 'Record an expense', ex_date: 'Date', ex_cat: 'Category', ex_amt: 'Amount (EGP)', ex_note: 'Note (optional)', ex_save: 'Save expense',
     ex_rent: 'Rent', ex_salaries: 'Salaries', ex_fuel: 'Fuel', ex_phones: 'Phones & internet', ex_marketing: 'Marketing & ads', ex_maintenance: 'Maintenance', ex_packaging: 'Packaging & supplies', ex_other: 'Other',
     pl_in: 'Income', pl_ships: 'Delivered shipment fees', pl_comm: 'COD commission', pl_ret: 'Return fees', pl_tin: 'Total income', pl_out: 'Costs', pl_cour: 'Courier pay', pl_exp: 'Recorded expenses', pl_tout: 'Total costs', pl_net: 'Net profit', pl_loss: 'Net loss', pl_cnt: 'Delivered / returned', pl_noex: 'No expenses recorded for this month yet. Add them to complete the picture.', ex_none: 'No expenses this month', ex_done: 'Expense recorded.', ex_del_q: 'Delete this expense?', ex_deld: 'Deleted.', ex_by_cat: 'Expenses by category' });
-  function exMonth(m) { return (EX || []).filter(function (x) { return String(x.spent_on).slice(0, 7) === m; }); }
+  function exMonth(m) { return (EX || []).filter(function (x) { var k = String(x.spent_on).slice(0, 7); return x.monthly ? k <= m : k === m; }); }
   function exSum(m) { return exMonth(m).reduce(function (n, x) { return n + (+x.amount); }, 0); }
   async function loadExpenses() {
     if (local || !sb) return;
     var r = await sb.from('expenses').select('*').order('spent_on', { ascending: false }).limit(2000);
     if (r.error) return; EX = r.data || []; renderPnl();
+  }
+  function plCalc(m) {
+    var D = 0, R = 0, fees = 0, comm = 0, cpay = 0;
+    store.shipments.forEach(function (s) {
+      if (monthKey(s.doneAt) !== m) return;
+      if (s.status === 'delivered') { D++; fees += (+s.fee || 0); comm += commission(s); cpay += courierPayFor(s); }
+      else if (s.status === 'returned') { R++; cpay += courierPayFor(s); }
+    });
+    var retf = R * cfg.returnFee, tin = fees + comm + retf, exp = exSum(m);
+    return { D: D, R: R, fees: fees, comm: comm, retf: retf, tin: tin, cpay: cpay, exp: exp, tout: cpay + exp, net: tin - cpay - exp };
+  }
+  function pnlCsv() {
+    var m = el('pnl-m').value || NOW_MONTH, c = plCalc(m), q = function (v) { return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; };
+    var rows = [['Bareed', m], [], ['Income'], ['Delivered shipments', c.D], ['Shipping fees', c.fees], ['COD commission', c.comm], ['Return fees', c.retf], ['Total income', c.tin], [], ['Costs'], ['Courier pay', c.cpay], ['Recorded expenses', c.exp], ['Total costs', c.tout], [], ['Net profit', c.net], [], ['Expenses'], ['Date', 'Category', 'Amount', 'Monthly', 'Note']];
+    exMonth(m).forEach(function (x) { rows.push([x.spent_on, x.category, x.amount, x.monthly ? 'yes' : '', x.note || '']); });
+    var csv = '\ufeff' + rows.map(function (r) { return r.map(q).join(','); }).join('\r\n');
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'bareed-accounts-' + m + '.csv'; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
   }
   function renderPnl() {
     var box = el('pnl-sum'); if (!box) return;
@@ -2149,7 +2172,7 @@ select.search { appearance: auto; cursor: pointer; }
     var byc = {}; list.forEach(function (x) { byc[x.category] = (byc[x.category] || 0) + (+x.amount); });
     lb.innerHTML = '<h3>' + t('ex_by_cat') + '</h3><div class="chips">' + Object.keys(byc).map(function (c) { return '<span class="badge">' + t('ex_' + c) + ': ' + money(byc[c]) + '</span>'; }).join(' ') + '</div>' +
       '<div class="tablewrap"><table><tbody>' + list.map(function (x) {
-        return '<tr><td>' + esc(String(x.spent_on)) + '</td><td>' + t('ex_' + x.category) + '</td><td><b>' + money(x.amount) + '</b></td><td>' + esc(x.note || '') + '</td><td>' + (canWrite ? '<button class="icon-del" type="button" data-exdel="' + esc(x.id) + '" aria-label="Delete">✕</button>' : '') + '</td></tr>';
+        return '<tr><td>' + (x.monthly ? '🔁 ' : '') + esc(String(x.spent_on)) + '</td><td>' + t('ex_' + x.category) + '</td><td><b>' + money(x.amount) + '</b></td><td>' + esc(x.note || '') + '</td><td>' + (canWrite ? '<button class="icon-del" type="button" data-exdel="' + esc(x.id) + '" aria-label="Delete">✕</button>' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>';
   }
   (function () {
@@ -2157,14 +2180,14 @@ select.search { appearance: auto; cursor: pointer; }
     var fill = function () { var c = sel.value; sel.innerHTML = EXCATS.map(function (k) { return '<option value="' + k + '">' + t('ex_' + k) + '</option>'; }).join(''); if (c) sel.value = c; };
     fill(); el('ex-date').value = new Date().toISOString().slice(0, 10);
     el('lang') && el('lang').addEventListener('click', function () { setTimeout(fill, 0); });
-    el('pnl-m').addEventListener('change', renderPnl);
+    el('pnl-m').addEventListener('change', renderPnl); el('pnl-csv').addEventListener('click', pnlCsv);
     el('ex-form').addEventListener('submit', function (e) {
       e.preventDefault();
       var amt = parseFloat(el('ex-amt').value); if (!(amt > 0)) { toast(t('t_err')); return; }
-      var row = { spent_on: el('ex-date').value, category: el('ex-cat').value, amount: Math.round(amt * 100) / 100, note: el('ex-note').value.trim() || null };
+      var row = { spent_on: el('ex-date').value, category: el('ex-cat').value, amount: Math.round(amt * 100) / 100, note: el('ex-note').value.trim() || null, monthly: !!el('ex-monthly').checked };
       safe(async function () {
         var r = await sb.from('expenses').insert(row); if (r.error) throw r.error;
-        el('ex-amt').value = ''; el('ex-note').value = ''; toast(t('ex_done')); await loadExpenses(); renderAll();
+        el('ex-amt').value = ''; el('ex-note').value = ''; el('ex-monthly').checked = false; toast(t('ex_done')); await loadExpenses(); renderAll();
       });
     });
     document.addEventListener('click', function (e) {
