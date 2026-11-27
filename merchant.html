@@ -296,7 +296,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   var PT = null, MP = { get: function () { return PT; } };
   function mapLbl() { el('map-tg').textContent = '📍 ' + (PT ? t('map_edit') : t('map_btn')); }
   function mapSum() { var b = el('mapbox'); b.hidden = !PT; if (PT) b.innerHTML = '<div style="padding:8px 12px;border-radius:10px;background:rgba(10,139,224,.12);font-size:14px">✓ A → B · ' + esc(PT.km != null ? PT.km : '—') + ' ' + t('km') + '</div>'; mapLbl(); }
-  function openMap() { if (window.BareedMap) BareedMap.pickFull({ value: PT, onDone: function (v) { PT = v; mapSum(); } }); }
+  function openMap() { if (window.BareedMap) BareedMap.pickFull({ value: PT, places: function (q) { return sb.rpc('places_search', { p_q: q }).then(function (r) { return r.data || []; }); }, onDone: function (v) { PT = v; mapSum(); } }); }
   mapLbl(); el('map-tg').addEventListener('click', openMap);
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-mq]'); if (!b) return;

@@ -111,8 +111,9 @@
   /* Full-screen, Uber-style picker: search on top, fixed pin in the centre, move the map under it, confirm A then B. */
   function pickFull(opts) {
     opts = opts || {};
-    var X = ar ? { t: 'حدد على الخريطة', ta: 'نقطة الاستلام (من)', tb: 'نقطة التسليم (إلى)', ca: 'تأكيد نقطة الاستلام', cb: 'تأكيد نقطة التسليم', done: 'تم ✓', ea: 'تعديل الاستلام', eb: 'تعديل التسليم', ph: 'ابحث عن شارع أو مكان…', me: '📍 موقعي', hint: 'حرّك الخريطة وخلّي الدبوس على المكان بالظبط', load: 'جاري تحميل الخريطة…', fail: 'الخريطة مفتحتش. اتأكد من النت.', retry: 'حاول تاني', sf: 'البحث مش شغال دلوقتي، حرّك الخريطة بإيدك.', nf: 'مفيش نتايج، جرّب كلمة تانية.', route: 'جاري حساب المسافة…', srch: 'جاري البحث…' }
+    var X = ar ? { t: 'حدد على الخريطة', ta: 'نقطة الاستلام (من)', tb: 'نقطة التسليم (إلى)', ca: 'تأكيد نقطة الاستلام', cb: 'تأكيد نقطة التسليم', done: 'تم ✓', ea: 'تعديل الاستلام', eb: 'تعديل التسليم', ph: 'ابحث عن مكان، أو الصق رابط جوجل ماب…', me: '📍 موقعي', hint: 'حرّك الخريطة وخلّي الدبوس على المكان بالظبط', load: 'جاري تحميل الخريطة…', fail: 'الخريطة مفتحتش. اتأكد من النت.', retry: 'حاول تاني', sf: 'البحث مش شغال دلوقتي، حرّك الخريطة بإيدك.', nf: 'مفيش نتايج، جرّب كلمة تانية.', route: 'جاري حساب المسافة…', srch: 'جاري البحث…' }
       : { t: 'Set on map', ta: 'Pickup point (from)', tb: 'Drop-off point (to)', ca: 'Confirm pickup', cb: 'Confirm drop-off', done: 'Done ✓', ea: 'Edit pickup', eb: 'Edit drop-off', ph: 'Search a street or place…', me: '📍 My location', hint: 'Move the map so the pin is exactly on the spot', load: 'Loading map…', fail: 'Map did not load. Check your connection.', retry: 'Retry', sf: 'Search is unavailable, move the map by hand.', nf: 'No results, try another word.', route: 'Calculating distance…', srch: 'Searching…' };
+    if (opts.single) { X.ta = ar ? 'حدد المكان' : 'Set the place'; X.ca = ar ? 'تأكيد المكان' : 'Confirm place'; }
     var v = opts.value || {}, st = { a: v.a || null, b: v.b || null, km: v.km || null, step: v.a && v.b ? 'review' : (v.a ? 'b' : 'a') };
     var ov = document.createElement('div');
     ov.setAttribute('dir', ar ? 'rtl' : 'ltr');
@@ -159,6 +160,7 @@
     function center() { var c = map.getCenter(); return { lat: Math.round(c.lat * 1e6) / 1e6, lng: Math.round(c.lng * 1e6) / 1e6 }; }
     function confirm() {
       var p = center();
+      if (opts.single) { if (opts.onDone) opts.onDone({ a: p }); close(); return; }
       if (st.step === 'a') { st.a = p; st.km = null; if (st.b) { st.step = 'review'; calc(); } else { st.step = 'b'; } }
       else { st.b = p; st.km = null; st.step = 'review'; calc(); }
       ui();
@@ -198,12 +200,19 @@
       });
     }
     var sTok = 0;
+    function gl(v) {
+      if (!/google\.[a-z.]+\/maps|maps\.google|goo\.gl/i.test(v) && !/^\s*-?\d{1,2}\.\d+\s*,\s*-?\d{1,3}\.\d+\s*$/.test(v)) return null;
+      var m = v.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || v.match(/[?&](?:q|ll|query|destination)=(-?\d+\.\d+)(?:,|%2C)(-?\d+\.\d+)/) || v.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || v.match(/^\s*(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)\s*$/);
+      return m ? { lat: +m[1], lng: +m[2] } : null;
+    }
     function search() {
       var val = q('.pf-q').value.trim(); if (!val || !map) return;
+      var lk = gl(val); if (lk) { showRes(null); map.setView([lk.lat, lk.lng], 17); return; }
       var my = ++sTok, r0 = q('.pf-res'); r0.style.display = 'block'; r0.innerHTML = '<div style="padding:12px;font-size:14px">' + esc(X.srch) + '</div>';
       var anyOk = false;
       function step(fn) { return fn().then(function (l) { anyOk = true; return l; }).catch(function () { return []; }); }
-      step(function () { return nom(val); })
+      var own = function () { return opts.places ? Promise.resolve(opts.places(val)).then(function (l) { return (l || []).map(function (x) { return { display_name: '⭐ ' + x.name, lat: x.lat, lon: x.lng }; }); }).catch(function () { return []; }) : Promise.resolve([]); };
+      own().then(function (k) { return step(function () { return nom(val); }).then(function (l) { return k.concat(l); }); })
         .then(function (l) { return l.length ? l : step(function () { return nom(val + ' الحوامدية'); }); })
         .then(function (l) { return l.length ? l : step(function () { return pho(val); }); })
         .then(function (l) { if (my !== sTok) return; showRes(l, anyOk ? X.nf : X.sf); });

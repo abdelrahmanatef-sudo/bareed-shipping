@@ -623,7 +623,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     var PT = null, OMP = { get: function () { return PT; } }, mtg = el('o-map-tg'), mbx = el('o-mapbox');
     function mapLbl() { mtg.textContent = '📍 ' + (PT ? (lang === 'ar' ? 'تعديل النقاط على الخريطة' : 'Edit points on the map') : (lang === 'ar' ? 'حدد على الخريطة (البداية والنهاية)' : 'Set start and end on the map')); }
     function mapSum() { mbx.hidden = !PT; if (PT) mbx.innerHTML = '<div style="padding:8px 12px;border-radius:10px;background:rgba(10,139,224,.12);font-size:14px">✓ A → B · ' + esc(PT.km != null ? PT.km : '—') + ' ' + (lang === 'ar' ? 'كم' : 'km') + '</div>'; mapLbl(); }
-    function openMap() { if (window.BareedMap) BareedMap.pickFull({ value: PT, onDone: function (v) { PT = v; mapSum(); } }); }
+    function openMap() { if (window.BareedMap) BareedMap.pickFull({ value: PT, places: function (q) { return sb.rpc('places_search', { p_q: q }).then(function (r) { return r.data || []; }); }, onDone: function (v) { PT = v; mapSum(); } }); }
     mapLbl(); mtg.addEventListener('click', openMap);
     function open() { el('o-done').hidden = true; form.hidden = false; amsg.textContent = ''; el('omodal').hidden = false; if (!PT) setTimeout(openMap, 250); }
     el('send-btn').addEventListener('click', open);

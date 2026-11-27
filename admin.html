@@ -4,6 +4,7 @@
 <title>بريد · Bareed</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%231A9CF0'/%3E%3Crect x='13' y='16' width='26' height='18' rx='4' fill='none' stroke='%23FFFFFF' stroke-width='2.8'/%3E%3Cpath d='M14.5 19.5 26 27.5l11.500-8' fill='none' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 22h4M7.500 28H10' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E">
 <script src="/phone-guard.js"></script>
+<script src="/map-picker.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Rubik:wght@400;500;600&display=swap">
 <style>
@@ -1063,7 +1064,7 @@ select.search { appearance: auto; cursor: pointer; }
       var u = location.origin + q[2];
       return '<div class="tile"><div class="top"><span class="ic">' + ic(q[0]) + '</span>' + t(q[1]) + '</div><div class="row" style="margin-top:10px"><a class="btn sm" target="_blank" rel="noopener" href="' + q[2] + '">' + t('ql_open') + '</a><button class="btn ghost sm" type="button" data-qcopy="' + esc(u) + '">' + t('ql_copy') + '</button></div></div>';
     }).join('') + '</div></div>' + backupCard() + h;
-    el('p-ov').innerHTML = h + '<div id="vis-card">' + visHtml() + '</div>';
+    el('p-ov').innerHTML = h + '<div id="vis-card">' + visHtml() + '</div><div id="pl-card">' + plHtml() + '</div>';
   }
 
   function renderShipments() {
@@ -1278,6 +1279,23 @@ select.search { appearance: auto; cursor: pointer; }
       '<h3 style="margin:12px 0 6px">' + t('vs_days') + '</h3>' + (v.days || []).map(function (d) { return '<div class="bar rev"><span dir="ltr">' + String(d.d).slice(5) + '</span><span class="track"><i style="width:' + (d.v / mx * 100) + '%"></i></span><span class="num">' + d.u + ' / ' + d.v + '</span></div>'; }).join('') +
       ((v.pages || []).length ? '<h3 style="margin:12px 0 6px">' + t('vs_pages') + '</h3>' + v.pages.map(function (p) { return '<div class="kv"><span dir="ltr">' + esc(p.path) + '</span><b>' + p.v + '</b></div>'; }).join('') : '') + '</div>';
   }
+  var PLC = null;
+  function plHtml() {
+    var h = '<div class="card" style="padding:16px"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>⭐ أماكن معروفة (للبحث على الخريطة)</b><span class="muted" style="font-size:13px">العميل لما يكتب اسم مكان بيظهر له الأول من هنا</span></div>';
+    h += '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="pl-name" maxlength="120" placeholder="اسم المكان، مثلاً: ملعب باريس" style="flex:1;min-width:160px"><button type="button" class="btn" id="pl-add">📍 حدد على الخريطة وأضف</button></div>';
+    if (PLC && PLC.length) h += '<div style="margin-top:10px;display:grid;gap:6px">' + PLC.map(function (p) { return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.08)"><span>' + esc(p.name) + '</span><button type="button" class="btn ghost sm" data-pldel="' + esc(p.id) + '">حذف</button></div>'; }).join('') + '</div>';
+    else if (PLC) h += '<div class="muted" style="margin-top:10px;font-size:13px">لسه مفيش أماكن. اكتب اسم مكان واضغط الزرار.</div>';
+    return h + '</div>';
+  }
+  async function plLoad() { var r = await sb.rpc('admin_places_list'); if (r.error) return; PLC = r.data || []; var c = el('pl-card'); if (c) c.innerHTML = plHtml(); }
+  document.addEventListener('click', async function (e) {
+    var d = e.target.closest && e.target.closest('[data-pldel]');
+    if (d) { if (!confirm('تحذف المكان ده؟')) return; var r = await sb.rpc('admin_place_delete', { p_id: d.getAttribute('data-pldel') }); if (r.error) toast('تعذّر الحذف'); else plLoad(); return; }
+    if (e.target.closest && e.target.closest('#pl-add')) {
+      var nm = (el('pl-name').value || '').trim(); if (nm.length < 2) { toast('اكتب اسم المكان الأول'); return; }
+      BareedMap.pickFull({ single: true, onDone: async function (v) { var r = await sb.rpc('admin_place_save', { p_name: nm, p_lat: v.a.lat, p_lng: v.a.lng }); if (r.error) toast('تعذّر الحفظ'); else { toast('اتضاف ✓'); plLoad(); } } });
+    }
+  });
   async function visLoad() { var r = await sb.rpc('admin_visit_stats'); if (r.error || !r.data || !r.data.today || !r.data.roles) return; VIS = r.data; var c = el('vis-card'); if (c) c.innerHTML = visHtml(); }
   function renderAll() {
     renderOverview(); renderShipments(); renderCouriers(); renderMerchants(); renderReports(); renderCosts(); if (typeof renderPnl === 'function') renderPnl(); if (typeof renderAreas === "function") renderAreas(); if (typeof renderMreq === "function") renderMreq();
@@ -2413,7 +2431,7 @@ select.search { appearance: auto; cursor: pointer; }
   });
   function syncAll() { return Promise.all([refresh('merchants'), refresh('shipments'), refresh('couriers'), refreshCfg(), loadMerchantReqs(), loadAreasAdmin(), loadCourierLog(), loadHandovers(), loadIndOrders(), loadExpenses()]); }
   async function startData() {
-    if (started) return; started = true; spStart(); visLoad(); setInterval(function () { if (document.visibilityState === 'visible') visLoad(); }, 60000); if (location.hash === '#support') { try { setTab('sp'); } catch (e) {} }
+    if (started) return; started = true; spStart(); visLoad(); plLoad(); setInterval(function () { if (document.visibilityState === 'visible') visLoad(); }, 60000); if (location.hash === '#support') { try { setTab('sp'); } catch (e) {} }
     try { await syncAll(); banner(null); } catch (e) { banner('bn_read'); }
     channel = sb.channel('bareed').on('postgres_changes', { event: '*', schema: 'public' }, function () {
       clearTimeout(syncTimer); syncTimer = setTimeout(function () { syncAll().catch(function () {}); }, 400);
