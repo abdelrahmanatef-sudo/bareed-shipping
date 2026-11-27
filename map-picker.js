@@ -15,7 +15,12 @@
     return loading;
   }
   function hav(a, b) { var R = 6371, r = Math.PI / 180, dl = (b.lat - a.lat) * r, dn = (b.lng - a.lng) * r, x = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dn / 2) * Math.sin(dn / 2); return R * 2 * Math.asin(Math.sqrt(x)); }
+  var RC = {};
   function route(a, b) {
+    var ck = a.lat + ',' + a.lng + ';' + b.lat + ',' + b.lng; if (RC[ck]) return Promise.resolve(RC[ck]);
+    return route0(a, b).then(function (r) { if (!r.est) RC[ck] = r; return r; });
+  }
+  function route0(a, b) {
     var fb = { km: Math.round(hav(a, b) * 1.3 * 10) / 10, line: null, est: true };
     var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 8000);
     return fetch('https://router.project-osrm.org/route/v1/driving/' + a.lng + ',' + a.lat + ';' + b.lng + ',' + b.lat + '?overview=full&geometries=geojson', { signal: ctl ? ctl.signal : undefined })
@@ -81,10 +86,11 @@
     return { get: function () { return st.a && st.b ? { a: st.a, b: st.b, km: st.km } : null; } };
   }
 
-  function view(el, a, b, km) {
-    el.innerHTML = '<div class="bm-map" style="height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--line,#DAE6F0)"></div><div class="bm-info" style="margin-top:6px;font-size:13px"></div>';
+  function view(el, a, b, km, o) {
+    o = o || {}; var H = o.height || 300;
+    el.innerHTML = '<div class="bm-map" style="height:' + H + 'px;border-radius:12px;overflow:hidden;border:1px solid var(--line,#DAE6F0)"></div><div class="bm-info" style="margin-top:6px;font-size:13px"></div>';
     load().then(function () {
-      var map = L.map(el.querySelector('.bm-map')).setView([a.lat, a.lng], 14);
+      var map = L.map(el.querySelector('.bm-map'), o.static ? { dragging: false, touchZoom: false, scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, zoomControl: false, attributionControl: false } : {}).setView([a.lat, a.lng], 14);
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
       L.marker([a.lat, a.lng], { icon: icon('A', '#0A8BE0') }).addTo(map); L.marker([b.lat, b.lng], { icon: icon('B', '#E5484D') }).addTo(map);
       map.fitBounds([[a.lat, a.lng], [b.lat, b.lng]], { padding: [30, 30] }); setTimeout(function () { map.invalidateSize(); }, 200);
