@@ -3,10 +3,10 @@
   var URL0 = 'https://ybkkdjpgkkdnijafsuai.supabase.co', KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlia2tkanBna2tkbmlqYWZzdWFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0ODkyNDksImV4cCI6MjExMDA2NTI0OX0.PJ-leYQkSNyKaCs_hnFiYdgUVkpQYyLo8eFKvSL40gU';
   var me = document.currentScript, SKEY = (me && me.getAttribute('data-key')) || 'sb-ybkkdjpgkkdnijafsuai-auth-token', MODE = (me && me.getAttribute('data-mode')) || 'auto';
   var ar = (document.documentElement.lang || 'ar').slice(0, 2) !== 'en';
-  var L = ar ? { t: 'مساعدة بريد', tb: 'المساعد', th: 'موظف بريد', ph: 'اكتب رسالتك...', send: 'إرسال', nm: 'اسمك', tel: 'رقم تليفونك', hi: 'اكتب رسالتك وموظف بريد هيرد عليك هنا.', closed: 'المحادثة اتقفلت. ابعت رسالة جديدة لو محتاج.', e_rate: 'بعتّ رسائل كتير، استنى شوية.', e_name: 'اكتب اسمك.', e_phone: 'اكتب رقم تليفون صحيح.', e_gen: 'الرسالة ما اتبعتش، جرّب تاني.',
+  var L = ar ? { t: 'مساعدة بريد', tb: 'المساعد', th: 'موظف بريد', ph: 'اكتب رسالتك...', send: 'إرسال', nm: 'اسمك', tel: 'رقم تليفونك', hi: 'اكتب رسالتك وموظف بريد هيرد عليك هنا.', closed: 'المحادثة اتقفلت. ابعت رسالة جديدة لو محتاج.', e_rate: 'بعتّ رسائل كتير، استنى شوية.', e_name: 'اكتب اسمك.', e_phone: 'اكتب رقم موبايل مصري من 11 رقم يبدأ بـ 01.', e_gen: 'الرسالة ما اتبعتش، جرّب تاني.',
       bhi: 'أهلاً! أنا مساعد بريد. اسألني عن التغطية، التسجيل، التحصيل، أو تتبّع شحنتك. ولو عايز موظف دوس على «موظف بريد».', c_track: 'تتبع شحنة', c_human: 'كلّم موظف', askCode: 'اكتب كود الشحنة (شكله BR-XXXXXXXX).', nf: 'ما لقيتش شحنة بالكود ده، اتأكد منه وجرّب تاني.', st: 'حالة الشحنة', bfail: 'مقدرتش أرد دلوقتي. دوس على «موظف بريد» وهنساعدك.',
       s: { new: 'جديدة', picked_up: 'اتستلمت من التاجر', out_for_delivery: 'في الطريق للعميل', delivered: 'اتسلمت', returned: 'مرتجعة' } }
-    : { t: 'Bareed help', tb: 'Assistant', th: 'Agent', ph: 'Type your message...', send: 'Send', nm: 'Your name', tel: 'Your phone', hi: 'Write your message and a Bareed agent will reply here.', closed: 'This chat was closed. Send a new message if you need.', e_rate: 'Too many messages, please wait a bit.', e_name: 'Enter your name.', e_phone: 'Enter a valid phone number.', e_gen: 'Message was not sent, try again.',
+    : { t: 'Bareed help', tb: 'Assistant', th: 'Agent', ph: 'Type your message...', send: 'Send', nm: 'Your name', tel: 'Your phone', hi: 'Write your message and a Bareed agent will reply here.', closed: 'This chat was closed. Send a new message if you need.', e_rate: 'Too many messages, please wait a bit.', e_name: 'Enter your name.', e_phone: 'Enter an 11-digit Egyptian mobile number starting with 01.', e_gen: 'Message was not sent, try again.',
       bhi: 'Hi! I am the Bareed assistant. Ask about coverage, sign-up, COD or track a shipment. Tap "Agent" to talk to a person.', c_track: 'Track a shipment', c_human: 'Talk to an agent', askCode: 'Type the shipment code (looks like BR-XXXXXXXX).', nf: 'No shipment found with that code.', st: 'Shipment status', bfail: 'I cannot answer right now. Tap "Agent" and we will help.',
       s: { new: 'New', picked_up: 'Picked up', out_for_delivery: 'Out for delivery', delivered: 'Delivered', returned: 'Returned' } };
   var st = { open: false, last: 0, tid: null, guest: false, busy: false, timer: null, mode: 'bot', hist: [], await: null, started: false, unread: 0 };
@@ -110,7 +110,7 @@
     e.preventDefault(); var v = q('bc-i').value.trim(); if (!v) return; err('');
     if (st.mode === 'bot') { q('bc-i').value = ''; botSend(v); return; }
     var args = Object.assign({ p_body: v }, tokArg());
-    if (useGuest()) { var nm = q('bc-nm').value.trim(), tl = q('bc-tl').value.trim(); if (!st.tid) { args.p_name = nm; args.p_phone = tl; ls('bareed-chat-guest', JSON.stringify({ n: nm, p: tl })); } }
+    if (useGuest()) { var nm = q('bc-nm').value.trim(), tl = q('bc-tl').value.replace(/[\s-]/g, ''); if (!st.tid && !/^01[0125][0-9]{8}$/.test(tl)) { err('e_phone'); return; } if (!st.tid) { args.p_name = nm; args.p_phone = tl; ls('bareed-chat-guest', JSON.stringify({ n: nm, p: tl })); } }
     rpc('support_send', args).then(function (r) {
       if (!r.ok) {
         var m = String((r.j && r.j.message) || '');

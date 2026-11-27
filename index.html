@@ -346,7 +346,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       foot: 'شحن وتوصيل داخل مصر', foot2: 'بنبدأ من الجيزة',
       a_name: 'اسم المتجر', a_phone: 'رقم التليفون', a_addr: 'عنوان المتجر (مكان استلام الشحنات)', a_email: 'الإيميل', a_pass: 'الباسورد (8 حروف على الأقل)',
       t_login: 'أهلاً بيك', t_signup: 'إنشاء حساب تاجر', s_login: 'سجّل دخول عشان تكمّل شغلك', s_signup: 'سجّل بيانات متجرك وإحنا نفعّل الحساب', a_remember: 'افتكر الإيميل', sw_to_signup: 'مش عندك حساب؟', sw_to_login: 'عندك حساب؟', go_login: 'دخول', go_signup: 'إنشاء الحساب',
-      e_login: 'الإيميل أو الباسورد غلط.', e_fail: 'حصلت مشكلة، جرّب تاني.', e_name: 'اكتب اسم المتجر ورقم التليفون.',
+      e_ph11: 'رقم الموبايل لازم يكون 11 رقم مصري يبدأ بـ 01 (مثال: 01012345678).', e_login: 'الإيميل أو الباسورد غلط.', e_fail: 'حصلت مشكلة، جرّب تاني.', e_name: 'اكتب اسم المتجر ورقم التليفون.',
       ok_signup: 'تم إنشاء الحساب. لو وصلك إيميل تأكيد افتحه الأول، وبعدها سجّل دخول.', no_lib: 'الخدمة مش متاحة دلوقتي. اتأكد من النت وحدّث الصفحة.',
       st_new: 'جديدة', st_picked_up: 'اتاخدت من التاجر', st_out_for_delivery: 'مع المندوب', st_delivered: 'تم التسليم للعميل', st_returned: 'مرتجعة'
     },
@@ -373,7 +373,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       foot: 'Delivery across Egypt', foot2: 'Starting in Giza',
       a_name: 'Store name', a_phone: 'Phone number', a_addr: 'Store address (pickup location)', a_email: 'Email', a_pass: 'Password (at least 8 characters)',
       t_login: 'Welcome', t_signup: 'Create a merchant account', s_login: 'Sign in to continue your journey', s_signup: 'Enter your store details and we will activate the account', a_remember: 'Remember my email', sw_to_signup: 'Don’t have an account?', sw_to_login: 'Already have an account?', go_login: 'Sign in', go_signup: 'Create account',
-      e_login: 'Wrong email or password.', e_fail: 'Something went wrong. Try again.', e_name: 'Enter your store name and phone number.',
+      e_ph11: 'Phone must be an 11-digit Egyptian mobile starting with 01 (e.g. 01012345678).', e_login: 'Wrong email or password.', e_fail: 'Something went wrong. Try again.', e_name: 'Enter your store name and phone number.',
       ok_signup: 'Account created. If you received a confirmation email, open it first, then sign in.', no_lib: 'The service is unavailable right now. Check your connection and reload.',
       st_new: 'New', st_picked_up: 'Picked up from merchant', st_out_for_delivery: 'Out for delivery', st_delivered: 'Delivered', st_returned: 'Returned'
     }
@@ -609,6 +609,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       } else {
         var name = el('a-name').value.trim(), phone = el('a-phone').value.trim(), address = el('a-addr').value.trim();
         if (!name || !phone) { msg('e_name'); return; }
+        if (!/^01[0125][0-9]{8}$/.test(phone)) { msg('e_ph11'); return; }
         var s = await sb.auth.signUp({ email: email, password: pass, options: { data: { name: name, phone: phone, address: address } } });
         if (s.error) { msg('e_fail'); return; }
         if (s.data && s.data.session) { location.href = 'merchant'; } else { msg('ok_signup', true); }
@@ -674,6 +675,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 
 })();
 </script>
+<script src="/phone-guard.js"></script>
 <script src="/map-picker.js" defer></script>
 <script src="/support-chat.js" data-mode="auto" defer></script>
 <script src="/track.js" defer></script>
