@@ -176,8 +176,8 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   Object.assign(D.en, { bk_h: 'Bulk upload from Excel', bk_note: 'Download the template, fill in your shipments (name, phone, governorate, city, address, COD) and upload it. Every row is checked before adding.', bk_tpl: 'Download template', bk_ready: 'Ready', bk_bad: 'Has problems', bk_go: 'Upload {n} shipments', bk_row: 'Row', bk_done: '{n} shipments uploaded', bk_failed: '{n} failed', bk_empty: 'The file is empty or does not match the template', bk_many: 'Maximum 300 shipments at a time', bk_e_name: 'Name missing', bk_e_phone: 'Invalid phone', bk_e_addr: 'Address missing', bk_e_cod: 'Invalid COD', bk_e_area: 'Area not covered or misspelled', bk_prog: 'Uploading... {n}/{m}', bk_read: 'Could not read the file' });
   Object.assign(D.ar, { py_h: 'تحويلات بريد ليك', py_total: 'إجمالي اللي اتحوّل لك', py_none: 'لسه مفيش تحويلات', py_date: 'التاريخ', py_amt: 'المبلغ', py_n: 'عدد الشحنات', py_note: 'ملاحظة' });
   Object.assign(D.en, { py_h: 'Payouts from Bareed', py_total: 'Total paid to you', py_none: 'No payouts yet', py_date: 'Date', py_amt: 'Amount', py_n: 'Shipments', py_note: 'Note' });
-  Object.assign(D.ar, { e_map: 'لازم تحدد البداية والنهاية على الخريطة', map_btn: 'حدد البداية والنهاية على الخريطة', wq: 'بانتظار سعر المندوب', q_ok: 'موافقة', q_neg: 'تفاوض', q_no: 'إلغاء', q_dec: 'اتلغت', q_conf: 'تلغي الشحنة دي؟', km: 'كم' });
-  Object.assign(D.en, { e_map: 'Set start and end points on the map', map_btn: 'Set start and end on the map', wq: 'Waiting for courier price', q_ok: 'Approve', q_neg: 'Negotiate', q_no: 'Cancel', q_dec: 'Cancelled', q_conf: 'Cancel this shipment?', km: 'km' });
+  Object.assign(D.ar, { map_edit: 'تعديل النقاط على الخريطة', e_map: 'لازم تحدد البداية والنهاية على الخريطة', map_btn: 'حدد البداية والنهاية على الخريطة', wq: 'بانتظار سعر المندوب', q_ok: 'موافقة', q_neg: 'تفاوض', q_no: 'إلغاء', q_dec: 'اتلغت', q_conf: 'تلغي الشحنة دي؟', km: 'كم' });
+  Object.assign(D.en, { map_edit: 'Edit points on the map', e_map: 'Set start and end points on the map', map_btn: 'Set start and end on the map', wq: 'Waiting for courier price', q_ok: 'Approve', q_neg: 'Negotiate', q_no: 'Cancel', q_dec: 'Cancelled', q_conf: 'Cancel this shipment?', km: 'km' });
   Object.assign(D.ar, { lb: 'طباعة بوليصة', lb_m: 'التاجر' });
   Object.assign(D.en, { lb: 'Print label', lb_m: 'Merchant' });
   function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
@@ -293,9 +293,11 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   }
 
   /* events */
-  var MP = null;
-  el('map-tg').textContent = '📍 ' + t('map_btn');
-  el('map-tg').addEventListener('click', function () { var b = el('mapbox'); b.hidden = !b.hidden; if (!b.hidden && !MP && window.BareedMap) MP = BareedMap.picker(b, {}); });
+  var PT = null, MP = { get: function () { return PT; } };
+  function mapLbl() { el('map-tg').textContent = '📍 ' + (PT ? t('map_edit') : t('map_btn')); }
+  function mapSum() { var b = el('mapbox'); b.hidden = !PT; if (PT) b.innerHTML = '<div style="padding:8px 12px;border-radius:10px;background:rgba(10,139,224,.12);font-size:14px">✓ A → B · ' + esc(PT.km != null ? PT.km : '—') + ' ' + t('km') + '</div>'; mapLbl(); }
+  function openMap() { if (window.BareedMap) BareedMap.pickFull({ value: PT, onDone: function (v) { PT = v; mapSum(); } }); }
+  mapLbl(); el('map-tg').addEventListener('click', openMap);
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-mq]'); if (!b) return;
     var p = b.getAttribute('data-mq').split('|'); if (p[1] === 'cancel' && !confirm(t('q_conf'))) return;
@@ -304,11 +306,11 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   el('f-gov').addEventListener('change', fillCities); el('f-city').addEventListener('change', showQuote);
   el('form').addEventListener('submit', async function (e) {
     e.preventDefault(); var go = el('f-go'); go.disabled = true;
-    var pt = MP && MP.get(); if (!pt) { go.disabled = false; toast('err', t('e_map')); var mbx = el('mapbox'); if (mbx.hidden) el('map-tg').click(); mbx.scrollIntoView({ block: 'center' }); return; }
+    var pt = MP && MP.get(); if (!pt) { go.disabled = false; toast('err', t('e_map')); openMap(); return; }
     var r = await sb.rpc('create_shipment_v2', { p_customer_name: el('f-name').value, p_customer_phone: el('f-phone').value, p_address: el('f-addr').value, p_cod: +el('f-cod').value || 0, p_area_id: el('f-city').value, p_pickup_lat: pt ? pt.a.lat : null, p_pickup_lng: pt ? pt.a.lng : null, p_drop_lat: pt ? pt.b.lat : null, p_drop_lng: pt ? pt.b.lng : null, p_km: pt ? pt.km : null });
     go.disabled = false;
     if (r.error) { toast('err', /area_not_covered/.test(r.error.message) ? t('e_area') : /not_active/.test(r.error.message) ? t('e_inactive') : t('e_save')); return; }
-    toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; el('f-cod').value = 0; MP = null; el('mapbox').innerHTML = ''; el('mapbox').hidden = true; await load();
+    toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; el('f-cod').value = 0; PT = null; mapSum(); await load();
   });
 
   var PMETH = { ar: { cash: 'كاش', vodafone: 'محفظة إلكترونية', instapay: 'إنستاباي', bank: 'تحويل بنكي', other: 'أخرى' }, en: { cash: 'Cash', vodafone: 'E-wallet', instapay: 'InstaPay', bank: 'Bank transfer', other: 'Other' } };

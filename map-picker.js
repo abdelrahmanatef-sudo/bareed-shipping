@@ -5,13 +5,23 @@
   var T = ar ? { a: 'بداية (من)', b: 'نهاية (إلى)', me: 'موقعي', go: 'بحث', ph: 'ابحث عن مكان أو عنوان', hint: 'اختار «بداية» أو «نهاية» ثم اضغط على الخريطة، أو اسحب العلامة.', km: 'المسافة تقريباً', unit: 'كم', est: '(تقدير)', nf: 'مقدرتش ألاقي المكان ده', gps: 'فعّل الموقع في المتصفح', reset: 'مسح' }
     : { a: 'Start (from)', b: 'End (to)', me: 'My location', go: 'Search', ph: 'Search a place or address', hint: 'Pick “Start” or “End”, then tap the map, or drag a marker.', km: 'Approx. distance', unit: 'km', est: '(estimate)', nf: 'Place not found', gps: 'Turn on location in the browser', reset: 'Clear' };
   var CENTER = [29.9, 31.25], loading = null;
+  var CDNS = ['https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/', 'https://unpkg.com/leaflet@1.9.4/dist/', 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/'];
+  function tryCdn(i) {
+    return new Promise(function (res, rej) {
+      if (i >= CDNS.length) return rej(new Error('leaflet'));
+      var c = document.createElement('link'); c.rel = 'stylesheet'; c.href = CDNS[i] + 'leaflet.css'; document.head.appendChild(c);
+      var s = document.createElement('script'), done = false;
+      var tm = setTimeout(function () { if (done) return; done = true; s.remove(); res(tryCdn(i + 1)); }, 9000);
+      s.src = CDNS[i] + 'leaflet.js';
+      s.onload = function () { if (done) return; done = true; clearTimeout(tm); res(); };
+      s.onerror = function () { if (done) return; done = true; clearTimeout(tm); res(tryCdn(i + 1)); };
+      document.head.appendChild(s);
+    });
+  }
   function load() {
     if (window.L) return Promise.resolve();
     if (loading) return loading;
-    loading = new Promise(function (res, rej) {
-      var c = document.createElement('link'); c.rel = 'stylesheet'; c.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css'; document.head.appendChild(c);
-      var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'; s.onload = function () { res(); }; s.onerror = function () { loading = null; rej(new Error('leaflet')); }; document.head.appendChild(s);
-    });
+    loading = tryCdn(0).catch(function (e) { loading = null; throw e; });
     return loading;
   }
   function hav(a, b) { var R = 6371, r = Math.PI / 180, dl = (b.lat - a.lat) * r, dn = (b.lng - a.lng) * r, x = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dn / 2) * Math.sin(dn / 2); return R * 2 * Math.asin(Math.sqrt(x)); }
@@ -97,5 +107,112 @@
       route(a, b).then(function (r) { if (r.line) { var pl = L.polyline(r.line, { color: '#0A8BE0', weight: 5, opacity: .8 }).addTo(map); map.fitBounds(pl.getBounds(), { padding: [30, 30] }); } el.querySelector('.bm-info').innerHTML = '<b>' + T.km + ': ' + esc(r.km) + ' ' + T.unit + '</b> ' + (r.est ? T.est : ''); });
     }).catch(function () { el.querySelector('.bm-map').textContent = 'Map unavailable'; });
   }
-  window.BareedMap = { picker: picker, view: view };
+
+  /* Full-screen, Uber-style picker: search on top, fixed pin in the centre, move the map under it, confirm A then B. */
+  function pickFull(opts) {
+    opts = opts || {};
+    var X = ar ? { t: 'حدد على الخريطة', ta: 'نقطة الاستلام (من)', tb: 'نقطة التسليم (إلى)', ca: 'تأكيد نقطة الاستلام', cb: 'تأكيد نقطة التسليم', done: 'تم ✓', ea: 'تعديل الاستلام', eb: 'تعديل التسليم', ph: 'ابحث عن شارع أو مكان…', me: '📍 موقعي', hint: 'حرّك الخريطة وخلّي الدبوس على المكان بالظبط', load: 'جاري تحميل الخريطة…', fail: 'الخريطة مفتحتش. اتأكد من النت.', retry: 'حاول تاني', sf: 'البحث مش شغال دلوقتي، حرّك الخريطة بإيدك.', nf: 'مفيش نتايج، جرّب كلمة تانية.', route: 'جاري حساب المسافة…' }
+      : { t: 'Set on map', ta: 'Pickup point (from)', tb: 'Drop-off point (to)', ca: 'Confirm pickup', cb: 'Confirm drop-off', done: 'Done ✓', ea: 'Edit pickup', eb: 'Edit drop-off', ph: 'Search a street or place…', me: '📍 My location', hint: 'Move the map so the pin is exactly on the spot', load: 'Loading map…', fail: 'Map did not load. Check your connection.', retry: 'Retry', sf: 'Search is unavailable, move the map by hand.', nf: 'No results, try another word.', route: 'Calculating distance…' };
+    var v = opts.value || {}, st = { a: v.a || null, b: v.b || null, km: v.km || null, step: v.a && v.b ? 'review' : (v.a ? 'b' : 'a') };
+    var ov = document.createElement('div');
+    ov.setAttribute('dir', ar ? 'rtl' : 'ltr');
+    ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:#fff;color:#0B1B2B;display:flex;flex-direction:column;font-family:inherit';
+    ov.innerHTML = '<div style="padding:10px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid #DAE6F0"><button type="button" class="pf-x" style="width:40px;height:40px;border-radius:12px;border:1px solid #DAE6F0;background:#fff;font-size:20px;cursor:pointer">×</button><b class="pf-t" style="flex:1;font-size:16px"></b></div>' +
+      '<div style="padding:8px 12px;position:relative"><div style="display:flex;gap:6px"><input class="pf-q" style="flex:1;min-width:0;height:44px;border-radius:12px;border:1px solid #DAE6F0;padding:0 12px;font:inherit;font-size:16px" maxlength="120" autocomplete="off"><button type="button" class="pf-go" style="height:44px;padding:0 14px;border-radius:12px;border:0;background:#0A8BE0;color:#fff;font:inherit;cursor:pointer">🔍</button></div><div class="pf-res" style="display:none;position:absolute;left:12px;right:12px;top:56px;z-index:1000;background:#fff;border:1px solid #DAE6F0;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.18);max-height:220px;overflow:auto"></div></div>' +
+      '<div style="flex:1;position:relative;min-height:0"><div class="pf-map" style="position:absolute;inset:0"></div><div class="pf-pin" style="position:absolute;left:50%;top:50%;width:0;height:0;z-index:600;pointer-events:none"><div class="pf-pc" style="position:absolute;left:-18px;top:-46px;width:36px;height:46px;display:flex;flex-direction:column;align-items:center"><div class="pf-pl" style="width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#0A8BE0;border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.4)"></div></div><div style="position:absolute;left:-4px;top:-3px;width:8px;height:8px;border-radius:50%;background:rgba(0,0,0,.35)"></div></div><div class="pf-msg" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:#fff;z-index:700;text-align:center;padding:20px"></div></div>' +
+      '<div style="padding:10px 12px 14px;border-top:1px solid #DAE6F0;background:#fff"><div class="pf-info" style="font-size:14px;margin-bottom:8px;min-height:20px"></div><div class="pf-btns" style="display:flex;gap:8px;flex-wrap:wrap"></div></div>';
+    document.body.appendChild(ov);
+    var prevOv = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    var q = function (c) { return ov.querySelector(c); }, map = null, mA = null, mB = null, line = null, seq = 0;
+    q('.pf-q').placeholder = X.ph;
+    function btn(txt, main, fn) { var b = document.createElement('button'); b.type = 'button'; b.textContent = txt; b.style.cssText = 'height:46px;border-radius:12px;font:inherit;font-weight:700;cursor:pointer;padding:0 16px;' + (main ? 'flex:1;min-width:140px;border:0;background:#0A8BE0;color:#fff' : 'border:1px solid #DAE6F0;background:#fff;color:#0B1B2B'); b.onclick = fn; return b; }
+    function close() { document.body.style.overflow = prevOv; if (map) { try { map.remove(); } catch (e) {} } ov.remove(); }
+    q('.pf-x').onclick = close;
+    function ui() {
+      var bt = q('.pf-btns'); bt.innerHTML = '';
+      var pin = q('.pf-pin'), pl = q('.pf-pl');
+      if (st.step === 'review') {
+        pin.style.display = 'none';
+        q('.pf-t').textContent = X.t;
+        q('.pf-info').innerHTML = st.km != null ? '<b>' + esc(T.km) + ': ' + esc(st.km) + ' ' + T.unit + '</b> ' + (st.est ? T.est : '') : X.route;
+        bt.appendChild(btn(X.ea, false, function () { st.step = 'a'; ui(); focus(st.a); }));
+        bt.appendChild(btn(X.eb, false, function () { st.step = 'b'; ui(); focus(st.b); }));
+        var d = btn(X.done, true, function () { if (opts.onDone) opts.onDone({ a: st.a, b: st.b, km: st.km, est: st.est }); close(); });
+        bt.appendChild(d);
+      } else {
+        pin.style.display = '';
+        pl.style.background = st.step === 'a' ? '#0A8BE0' : '#E5484D';
+        q('.pf-t').textContent = st.step === 'a' ? X.ta : X.tb;
+        q('.pf-info').textContent = X.hint;
+        bt.appendChild(btn(X.me, false, gps));
+        bt.appendChild(btn(st.step === 'a' ? X.ca : X.cb, true, confirm));
+      }
+      paint();
+    }
+    function focus(p) { if (map && p) map.setView([p.lat, p.lng], 16); }
+    function paint() {
+      if (!map) return;
+      if (st.a) { if (mA) mA.setLatLng([st.a.lat, st.a.lng]); else mA = L.marker([st.a.lat, st.a.lng], { icon: icon('A', '#0A8BE0'), interactive: false }).addTo(map); }
+      if (st.b) { if (mB) mB.setLatLng([st.b.lat, st.b.lng]); else mB = L.marker([st.b.lat, st.b.lng], { icon: icon('B', '#E5484D'), interactive: false }).addTo(map); }
+      if (st.step !== 'review' && line) { map.removeLayer(line); line = null; }
+    }
+    function center() { var c = map.getCenter(); return { lat: Math.round(c.lat * 1e6) / 1e6, lng: Math.round(c.lng * 1e6) / 1e6 }; }
+    function confirm() {
+      var p = center();
+      if (st.step === 'a') { st.a = p; st.km = null; if (st.b) { st.step = 'review'; calc(); } else { st.step = 'b'; } }
+      else { st.b = p; st.km = null; st.step = 'review'; calc(); }
+      ui();
+      if (st.step === 'b' && map) { if (!st.b) map.setView([p.lat + 0.004, p.lng + 0.004], map.getZoom()); else focus(st.b); }
+    }
+    function calc() {
+      var my = ++seq; st.km = null;
+      route(st.a, st.b).then(function (r) {
+        if (my !== seq) return; st.km = r.km; st.est = r.est;
+        if (map) { if (line) map.removeLayer(line); if (r.line) { line = L.polyline(r.line, { color: '#0A8BE0', weight: 5, opacity: .85 }).addTo(map); map.fitBounds(line.getBounds(), { padding: [50, 50] }); } else map.fitBounds([[st.a.lat, st.a.lng], [st.b.lat, st.b.lng]], { padding: [50, 50] }); }
+        if (st.step === 'review') ui();
+      });
+    }
+    function gps() {
+      if (!navigator.geolocation) { q('.pf-info').textContent = T.gps; return; }
+      navigator.geolocation.getCurrentPosition(function (p) { if (map) map.setView([p.coords.latitude, p.coords.longitude], 17); }, function () { q('.pf-info').textContent = T.gps; }, { enableHighAccuracy: true, timeout: 10000 });
+    }
+    function showRes(list, msg) {
+      var r = q('.pf-res'); r.innerHTML = '';
+      if (!list) { r.style.display = 'none'; return; }
+      r.style.display = 'block';
+      if (!list.length) { r.innerHTML = '<div style="padding:12px;font-size:14px">' + esc(msg || X.nf) + '</div>'; return; }
+      list.forEach(function (it) {
+        var d = document.createElement('div'); d.style.cssText = 'padding:11px 12px;border-bottom:1px solid #EEF3F8;font-size:14px;cursor:pointer'; d.textContent = it.display_name;
+        d.onclick = function () { showRes(null); if (map) map.setView([+it.lat, +it.lon], 17); };
+        r.appendChild(d);
+      });
+    }
+    function search() {
+      var val = q('.pf-q').value.trim(); if (!val || !map) return;
+      var ctl = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ctl) ctl.abort(); }, 9000);
+      fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&countrycodes=eg&accept-language=ar&viewbox=31.0,30.1,31.5,29.7&q=' + encodeURIComponent(val), { signal: ctl ? ctl.signal : undefined })
+        .then(function (r) { return r.json(); }).then(function (j) { clearTimeout(tm); showRes(j || []); })
+        .catch(function () { clearTimeout(tm); showRes([], X.sf); });
+    }
+    q('.pf-go').onclick = search;
+    q('.pf-q').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); search(); } });
+    function boot() {
+      var m = q('.pf-msg'); m.style.display = 'flex'; m.innerHTML = '<div style="font-size:15px"></div>'; m.firstChild.textContent = X.load;
+      load().then(function () {
+        m.style.display = 'none';
+        var c0 = st.a || CENTER;
+        map = L.map(q('.pf-map'), { zoomControl: false, attributionControl: false }).setView(Array.isArray(c0) ? c0 : [c0.lat, c0.lng], st.a ? 16 : 14);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        L.control.zoom({ position: ar ? 'bottomleft' : 'bottomright' }).addTo(map);
+        map.on('movestart', function () { showRes(null); });
+        setTimeout(function () { map.invalidateSize(); }, 100); setTimeout(function () { map.invalidateSize(); }, 400);
+        ui(); if (st.step === 'review') { if (st.km == null) calc(); else if (st.a && st.b) calc(); }
+      }).catch(function () {
+        m.innerHTML = '<div style="font-size:15px"></div>'; m.firstChild.textContent = X.fail;
+        m.appendChild(btn(X.retry, true, boot));
+      });
+    }
+    ui(); boot();
+  }
+  window.BareedMap = { picker: picker, view: view, pickFull: pickFull };
 })();

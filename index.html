@@ -620,9 +620,12 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   /* ---------- individual orders ---------- */
   (function () {
     var form = el('o-form'), amsg = el('o-msg');
-    var OMP = null, mtg = el('o-map-tg'); mtg.textContent = '📍 ' + (lang === 'ar' ? 'حدد نقطة البداية والنهاية على الخريطة' : 'Set start and end points on the map');
-    mtg.addEventListener('click', function () { var b = el('o-mapbox'); b.hidden = !b.hidden; if (!b.hidden && !OMP && window.BareedMap) OMP = BareedMap.picker(b, {}); });
-    function open() { el('o-done').hidden = true; form.hidden = false; amsg.textContent = ''; el('omodal').hidden = false; }
+    var PT = null, OMP = { get: function () { return PT; } }, mtg = el('o-map-tg'), mbx = el('o-mapbox');
+    function mapLbl() { mtg.textContent = '📍 ' + (PT ? (lang === 'ar' ? 'تعديل النقاط على الخريطة' : 'Edit points on the map') : (lang === 'ar' ? 'حدد على الخريطة (البداية والنهاية)' : 'Set start and end on the map')); }
+    function mapSum() { mbx.hidden = !PT; if (PT) mbx.innerHTML = '<div style="padding:8px 12px;border-radius:10px;background:rgba(10,139,224,.12);font-size:14px">✓ A → B · ' + esc(PT.km != null ? PT.km : '—') + ' ' + (lang === 'ar' ? 'كم' : 'km') + '</div>'; mapLbl(); }
+    function openMap() { if (window.BareedMap) BareedMap.pickFull({ value: PT, onDone: function (v) { PT = v; mapSum(); } }); }
+    mapLbl(); mtg.addEventListener('click', openMap);
+    function open() { el('o-done').hidden = true; form.hidden = false; amsg.textContent = ''; el('omodal').hidden = false; if (!PT) setTimeout(openMap, 250); }
     el('send-btn').addEventListener('click', open);
     el('o-close').addEventListener('click', function () { el('omodal').hidden = true; });
     el('omodal').addEventListener('click', function (e) { if (e.target === el('omodal')) el('omodal').hidden = true; });
@@ -632,10 +635,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       if (!sb) { amsg.className = 'msg err'; amsg.textContent = t('no_lib'); return; }
       var btn = el('o-submit'); btn.disabled = true; amsg.textContent = '';
       var ntk = null; try { ntk = localStorage.getItem('bareed-chat-token'); if (!ntk) { ntk = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var q = Math.random() * 16 | 0; return (c === 'x' ? q : (q & 3 | 8)).toString(16); }); localStorage.setItem('bareed-chat-token', ntk); } localStorage.setItem('bareed-notify-offer', '1'); } catch (e) {}
-      var opt = OMP && OMP.get(); if (!opt) { btn.disabled = false; amsg.className = 'msg err'; amsg.textContent = lang === 'ar' ? 'لازم تحدد نقطة البداية (A) والنهاية (B) على الخريطة.' : 'Please set the start (A) and end (B) points on the map.'; var mb = el('o-mapbox'); if (mb.hidden) mtg.click(); mb.scrollIntoView({ block: 'center' }); return; } sb.rpc('submit_public_order_v2', { p_name: el('o-sn').value, p_phone: el('o-sp').value, p_address: el('o-pa').value, p_notes: el('o-nt').value, p_token: ntk, p_pickup_lat: opt ? opt.a.lat : null, p_pickup_lng: opt ? opt.a.lng : null, p_drop_lat: opt ? opt.b.lat : null, p_drop_lng: opt ? opt.b.lng : null, p_km: opt ? opt.km : null }).then(function (r) {
+      var opt = OMP && OMP.get(); if (!opt) { btn.disabled = false; amsg.className = 'msg err'; amsg.textContent = lang === 'ar' ? 'لازم تحدد نقطة البداية (A) والنهاية (B) على الخريطة.' : 'Please set the start (A) and end (B) points on the map.'; openMap(); return; } sb.rpc('submit_public_order_v2', { p_name: el('o-sn').value, p_phone: el('o-sp').value, p_address: el('o-pa').value, p_notes: el('o-nt').value, p_token: ntk, p_pickup_lat: opt ? opt.a.lat : null, p_pickup_lng: opt ? opt.a.lng : null, p_drop_lat: opt ? opt.b.lat : null, p_drop_lng: opt ? opt.b.lng : null, p_km: opt ? opt.km : null }).then(function (r) {
         btn.disabled = false;
         if (r.error) { amsg.className = 'msg err'; amsg.textContent = /rate_limited/.test(r.error.message) ? t('o_rate') : /invalid_input|area_not/.test(r.error.message) ? t('o_err') : t('o_fail'); return; }
-        var c = r.data && r.data.code; form.hidden = true; form.reset();
+        var c = r.data && r.data.code; form.hidden = true; form.reset(); PT = null; mapSum();
         var d = el('o-done'); d.hidden = false;
         d.innerHTML = '<h2>' + esc(t('o_ok')) + '</h2><p style="font-family:var(--font-display);font-size:28px;color:var(--brand)" dir="ltr">' + esc(c) + '</p><p class="nm-sub">' + esc(t('o_ok2')) + '</p><button class="btn" type="button" id="o-tr">' + esc(t('o_track')) + '</button>';
         el('o-tr').onclick = function () { el('omodal').hidden = true; el('tr-in').value = c; el('track-form').dispatchEvent(new Event('submit', { cancelable: true })); el('track-form').scrollIntoView({ behavior: 'smooth', block: 'center' }); };
