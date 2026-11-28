@@ -1206,9 +1206,9 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.en, { fx_h: 'My fixed monthly costs', fx_p: 'Record salaries, rent and anything that repeats every month. The calculator uses them automatically for net profit and break-even. (They also show in Accounts.)', fx_tot: 'Total monthly costs', fx_none: 'No monthly costs yet. The calculator uses the assumption below.', fx_add: 'Add' });
   function fxAuto() { return (EX || []).some(function (x) { return x.monthly && +x.amount > 0; }); }
   function fxSync() { var fi = el('cfg-fixed'); if (!fi) return; var hint = fi.nextElementSibling; if (fxAuto()) { fi.value = fx(); fi.disabled = true; if (hint) hint.textContent = t('fx_auto'); } else if (hint) hint.textContent = t('u_egp'); }
-  var SC_KEY = 'bareed-sc';
+  var SC_KEY = 'bareed-sc2';
   function scGet() {
-    var d = { price: +cfg.fee || 40, my: Math.max(0, 100 - (+cfg.courierSharePct || 80)), day: 10, days: 30, target: 0 }, o = {};
+    var d = { price: 30, my: 20, day: 10, days: 30, target: 30000 }, o = {};
     try { o = JSON.parse(localStorage.getItem(SC_KEY) || '{}') || {}; } catch (e) {}
     Object.keys(d).forEach(function (k) { if (o[k] !== undefined && o[k] !== '' && isFinite(+o[k])) d[k] = +o[k]; });
     return d;
