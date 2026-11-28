@@ -2207,6 +2207,8 @@ select.search { appearance: auto; cursor: pointer; }
     var r = await sb.from('expenses').select('*').order('spent_on', { ascending: false }).limit(2000);
     if (r.error) return; EX = r.data || []; renderPnl();
   }
+  Object.assign(I18N.ar, { acs_mine: 'ربحي من الشحن', acs_exp: 'مصاريفي', acs_ships: 'شحنة', acs_per: 'متوسط ربحك من الشحنة:', acs_need: 'محتاج', acs_ok: 'غطّيت المصاريف ✓', acs_more: 'فاضل', acs_none: 'لسه مفيش شحنات اتسلّمت الشهر ده.', acs_how: 'ربحي من الشحن = اللي بيدفعه العميل − حصة المندوب. الصافي = ربحي من الشحن − مصاريفي (مرتبات وإيجار وغيره).', acs_det: 'التفاصيل الكاملة' });
+  Object.assign(I18N.en, { acs_mine: 'My profit from shipping', acs_exp: 'My expenses', acs_ships: 'shipments', acs_per: 'Average profit per shipment:', acs_need: 'you need', acs_ok: 'expenses covered ✓', acs_more: 'still', acs_none: 'No delivered shipments this month yet.', acs_how: 'Profit from shipping = what customers pay − courier share. Net = profit from shipping − my expenses (salaries, rent, etc.).', acs_det: 'Full details' });
   function plCalc(m) {
     var D = 0, R = 0, fees = 0, comm = 0, cpay = 0;
     store.shipments.forEach(function (s) {
@@ -2236,9 +2238,14 @@ select.search { appearance: auto; cursor: pointer; }
     });
     var retf = R * cfg.returnFee, tin = fees + comm + retf, exp = exSum(m), tout = cpay + exp, net = tin - tout;
     var row = function (k, v, b) { return '<div class="kv"><span>' + (b ? '<b>' + k + '</b>' : k) + '</span>' + (b ? '<b>' + v + '</b>' : '<span>' + v + '</span>') + '</div>'; };
-    var h = '<div class="card" style="margin:8px 0"><h3>' + t('pl_in') + '</h3>' + row(t('pl_cnt'), D + ' / ' + R) + row(t('pl_ships'), money(fees)) + row(t('pl_comm'), money(comm)) + row(t('pl_ret'), money(retf)) + row(t('pl_tin'), money(tin), 1) +
+    var mine = tin - cpay, per = D ? mine / D : 0, need = per > 0 ? Math.ceil(exp / per) : 0;
+    var big = function (lbl, val, col, sub) { return '<div style="flex:1;min-width:140px;padding:14px;border-radius:14px;background:rgba(127,127,127,.09);text-align:center"><div style="font-size:13px;opacity:.8">' + lbl + '</div><div style="font-size:24px;font-weight:800;margin-top:4px;color:' + col + '">' + val + '</div>' + (sub ? '<div style="font-size:12px;opacity:.7;margin-top:2px">' + sub + '</div>' : '') + '</div>'; };
+    var simple = '<div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0">' + big(t('acs_mine'), money(mine), 'var(--good,#1e8e3e)', D + ' ' + t('acs_ships')) + big(t('acs_exp'), money(exp), 'var(--bad,#c0392b)', '') + big(t(net >= 0 ? 'pl_net' : 'pl_loss'), money(Math.abs(net)), net >= 0 ? 'var(--good,#1e8e3e)' : 'var(--bad,#c0392b)', '') + '</div>' +
+      '<div class="note" style="margin:4px 0 10px">' + (D ? t('acs_per') + ' <b>' + money(per) + '</b>' + (exp > 0 ? ' · ' + t('acs_need') + ' <b>' + need + '</b> ' + t('acs_ships') + ' (' + (D >= need ? t('acs_ok') : t('acs_more') + ' ' + (need - D)) + ')' : '') : t('acs_none')) + '</div>' +
+      '<div class="note" style="margin:0 0 8px">' + t('acs_how') + '</div>';
+    var h = simple + '<details style="margin:8px 0"><summary style="cursor:pointer;font-weight:700">' + t('acs_det') + '</summary><div class="card" style="margin:8px 0"><h3>' + t('pl_in') + '</h3>' + row(t('pl_cnt'), D + ' / ' + R) + row(t('pl_ships'), money(fees)) + row(t('pl_comm'), money(comm)) + row(t('pl_ret'), money(retf)) + row(t('pl_tin'), money(tin), 1) +
       '<h3 style="margin-top:10px">' + t('pl_out') + '</h3>' + row(t('pl_cour'), money(cpay)) + row(t('pl_exp'), money(exp)) + row(t('pl_tout'), money(tout), 1) +
-      '<div class="kv" style="margin-top:10px;font-size:1.15em"><b>' + t(net >= 0 ? 'pl_net' : 'pl_loss') + '</b><b style="color:' + (net >= 0 ? 'var(--good,#1e8e3e)' : 'var(--bad,#c0392b)') + '">' + money(Math.abs(net)) + '</b></div></div>';
+      '<div class="kv" style="margin-top:10px;font-size:1.15em"><b>' + t(net >= 0 ? 'pl_net' : 'pl_loss') + '</b><b style="color:' + (net >= 0 ? 'var(--good,#1e8e3e)' : 'var(--bad,#c0392b)') + '">' + money(Math.abs(net)) + '</b></div></div></details>';
     if (!exMonth(m).length) h += '<p class="note">' + t('pl_noex') + '</p>';
     box.innerHTML = h;
     var list = exMonth(m), lb = el('ex-list');
