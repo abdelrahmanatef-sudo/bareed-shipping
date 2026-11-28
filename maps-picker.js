@@ -150,7 +150,7 @@
 
   function attach(input) {
     if (!input || STATE.has(input)) return;
-    var st = { pt: null };
+    var st = { pt: null }, wasReq = input.required;
     STATE.set(input, st);
     var row = el('div', 'display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap');
     var btn = el('button', 'border:1px solid #1A9CF0;background:transparent;color:#1A9CF0;border-radius:10px;font:inherit;font-weight:600;padding:8px 14px;cursor:pointer', T.btn);
@@ -161,8 +161,8 @@
     (input.parentNode || document.body).appendChild(row);
 
     function paint() {
-      if (st.pt) { chip.hidden = false; chip.textContent = '✓ ' + T.done; btn.textContent = T.change; }
-      else { chip.hidden = true; btn.textContent = T.btn; }
+      if (st.pt) { chip.hidden = false; chip.textContent = '✓ ' + T.done; btn.textContent = T.change; input.required = false; }
+      else { chip.hidden = true; btn.textContent = T.btn; input.required = wasReq; }
     }
     btn.addEventListener('click', function () {
       open(st.pt, function (r) {
@@ -180,6 +180,7 @@
   function value(input) {
     var st = STATE.get(input), v = input.value || '';
     if (!st || !st.pt) return v;
+    if (!v.trim()) v = en ? 'Pinned location on map' : '📍 موقع محدد على الخريطة';
     var l = link(st.pt.lat, st.pt.lng), max = (input.maxLength > 0 ? input.maxLength : 300);
     return v.slice(0, Math.max(0, max - l.length - 1)).trim() + ' ' + l;
   }
