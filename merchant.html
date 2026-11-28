@@ -4,6 +4,8 @@
 <title>لوحة التاجر · بريد</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='13' fill='%231A9CF0'/%3E%3Crect x='13' y='16' width='26' height='18' rx='4' fill='none' stroke='%23FFFFFF' stroke-width='2.8'/%3E%3Cpath d='M14.5 19.5 26 27.5l11.500-8' fill='none' stroke='%23FFFFFF' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="/phone-guard.js"></script>
+<script src="/map-picker.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700&family=Rubik:wght@400;500;600&display=swap">
 <style>
 :root {
@@ -86,6 +88,15 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   #label-print, #label-print * { visibility: visible; }
   #label-print { display: block !important; position: absolute; inset: 0 auto auto 0; max-width: none; width: 100%; border: 0; border-radius: 0; }
 }
+
+@media (max-width: 860px) { .tb-links { display: none !important; } .nav { overflow-x: auto; justify-content: flex-start; scrollbar-width: none; -webkit-overflow-scrolling: touch; } .nav::-webkit-scrollbar { display: none; } .nav-item { flex: 0 0 auto; min-width: 66px; padding: 7px 8px; } .nav-item span { overflow: visible; text-overflow: clip; } }
+@media (max-width: 700px) {
+  .tablewrap table.cardify { min-width: 0; display: block; } table.cardify thead { display: none; } table.cardify tbody { display: block; }
+  table.cardify tbody tr { display: block; margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line, #dae6f0); border-radius: 14px; }
+  table.cardify td { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 5px 0; border: 0 !important; text-align: end; white-space: normal; }
+  table.cardify td::before { content: attr(data-label); color: var(--muted, #536a82); font-size: 12px; flex: none; text-align: start; }
+  table.cardify td:empty { display: none; }
+}
 </style><link rel="manifest" href="/manifest-app.webmanifest"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="تاجر بريد"><link rel="icon" type="image/png" href="/icons/icon-192.png"><script>if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){})});</script></head>
 <body>
 <div class="load" id="load">…</div>
@@ -115,6 +126,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
             <div class="field"><label for="f-cod" data-i18n="f_cod"></label><input id="f-cod" type="number" min="0" max="1000000" value="0" inputmode="numeric" required></div>
           </div>
           <div id="quote" class="quote" hidden></div>
+          <div><button type="button" id="map-tg" class="btn ghost sm"></button><div id="mapbox" hidden style="margin-top:8px"></div></div>
           <div><button class="btn" type="submit" id="f-go" data-i18n="f_save"></button></div>
           <p class="note" data-i18n="f_note"></p>
         </form>
@@ -141,6 +153,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
       isadmin: 'إنت داخل بحساب الأدمن، والصفحة دي للتجار بس. افتح لوحة الأدمن من /admin، أو اضغط خروج وادخل بحساب التاجر.', pending: 'حسابك قيد المراجعة. هنفعّله قريباً وتقدر تضيف شحنات بعدها.', suspended: 'حسابك موقوف. تواصل مع بريد.', nomerchant: 'مفيش حساب تاجر مرتبط بالإيميل ده.',
       k_all: 'كل الشحنات', k_open: 'شحنات شغّالة', k_del: 'اتسلّمت', k_ret: 'مرتجعة', k_cod: 'COD اتحصّل', k_due: 'مستحقاتك عند بريد', cur: 'جنيه',
       h_status: 'شحناتك حسب الحالة', h_new: 'شحنة جديدة', h_ships: 'شحناتك', f_customer: 'اسم العميل', f_phone: 'تليفون العميل', f_gov: 'المحافظة', f_city: 'المدينة', f_addr: 'العنوان بالتفصيل', f_cod: 'قيمة الـ COD (جنيه)', f_save: 'سجّل الشحنة',
+      pp: 'بانتظار التسعير', quote2: 'المندوب هيحدد سعر الشحن وهيوصلك إشعار تقبله أو تفاوض عليه.',
       f_note: 'المدن اللي مكتوب جنبها «قريباً» لسه مش مفتوحة للتوصيل.', soon: 'قريباً', pick: 'اختار المدينة', quote: 'أجرة الشحن لـ {c}: {f} جنيه',
       search: 'ابحث بالكود أو اسم العميل', export: 'تصدير Excel', th_code: 'الكود', th_area: 'المنطقة', th_cod: 'COD', th_fee: 'الأجرة', th_status: 'الحالة', th_date: 'التاريخ', track: 'تتبع', close: 'قفل',
       fl_all: 'الكل', fl_new: 'جديدة', fl_picked_up: 'اتاخدت من التاجر', fl_out_for_delivery: 'مع المندوب', fl_delivered: 'تم التسليم للعميل', fl_returned: 'مرتجعة',
@@ -150,6 +163,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
       isadmin: 'You are signed in as admin, and this page is for merchants only. Open the admin dashboard at /admin, or sign out and sign in with a merchant account.', pending: 'Your account is under review. We will activate it soon, then you can add shipments.', suspended: 'Your account is suspended. Please contact Bareed.', nomerchant: 'No merchant account is linked to this email.',
       k_all: 'All shipments', k_open: 'In progress', k_del: 'Delivered', k_ret: 'Returned', k_cod: 'COD collected', k_due: 'Balance owed to you', cur: 'EGP',
       h_status: 'Your shipments by status', h_new: 'New shipment', h_ships: 'Your shipments', f_customer: 'Customer name', f_phone: 'Customer phone', f_gov: 'Governorate', f_city: 'City', f_addr: 'Full address', f_cod: 'COD amount (EGP)', f_save: 'Create shipment',
+      pp: 'Pending price', quote2: 'The courier will set the shipping price and you get a notification to approve or negotiate.',
       f_note: 'Cities marked “Soon” are not open for delivery yet.', soon: 'Soon', pick: 'Choose a city', quote: 'Shipping fee to {c}: {f} EGP',
       search: 'Search by code or customer', export: 'Export Excel', th_code: 'Code', th_area: 'Area', th_cod: 'COD', th_fee: 'Fee', th_status: 'Status', th_date: 'Date', track: 'Track', close: 'Close',
       fl_all: 'All', fl_new: 'New', fl_picked_up: 'Picked up', fl_out_for_delivery: 'Out', fl_delivered: 'Delivered', fl_returned: 'Returned',
@@ -162,6 +176,8 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   Object.assign(D.en, { bk_h: 'Bulk upload from Excel', bk_note: 'Download the template, fill in your shipments (name, phone, governorate, city, address, COD) and upload it. Every row is checked before adding.', bk_tpl: 'Download template', bk_ready: 'Ready', bk_bad: 'Has problems', bk_go: 'Upload {n} shipments', bk_row: 'Row', bk_done: '{n} shipments uploaded', bk_failed: '{n} failed', bk_empty: 'The file is empty or does not match the template', bk_many: 'Maximum 300 shipments at a time', bk_e_name: 'Name missing', bk_e_phone: 'Invalid phone', bk_e_addr: 'Address missing', bk_e_cod: 'Invalid COD', bk_e_area: 'Area not covered or misspelled', bk_prog: 'Uploading... {n}/{m}', bk_read: 'Could not read the file' });
   Object.assign(D.ar, { py_h: 'تحويلات بريد ليك', py_total: 'إجمالي اللي اتحوّل لك', py_none: 'لسه مفيش تحويلات', py_date: 'التاريخ', py_amt: 'المبلغ', py_n: 'عدد الشحنات', py_note: 'ملاحظة' });
   Object.assign(D.en, { py_h: 'Payouts from Bareed', py_total: 'Total paid to you', py_none: 'No payouts yet', py_date: 'Date', py_amt: 'Amount', py_n: 'Shipments', py_note: 'Note' });
+  Object.assign(D.ar, { map_edit: 'تعديل النقاط على الخريطة', e_map: 'لازم تحدد البداية والنهاية على الخريطة', map_btn: 'حدد البداية والنهاية على الخريطة', wq: 'بانتظار سعر المندوب', q_ok: 'موافقة', q_neg: 'تفاوض', q_no: 'إلغاء', q_dec: 'اتلغت', q_conf: 'تلغي الشحنة دي؟', km: 'كم' });
+  Object.assign(D.en, { map_edit: 'Edit points on the map', e_map: 'Set start and end points on the map', map_btn: 'Set start and end on the map', wq: 'Waiting for courier price', q_ok: 'Approve', q_neg: 'Negotiate', q_no: 'Cancel', q_dec: 'Cancelled', q_conf: 'Cancel this shipment?', km: 'km' });
   Object.assign(D.ar, { lb: 'طباعة بوليصة', lb_m: 'التاجر' });
   Object.assign(D.en, { lb: 'Print label', lb_m: 'Merchant' });
   function t(k, v) { var s = (D[lang] && D[lang][k]) || D.ar[k] || k; if (v) Object.keys(v).forEach(function (n) { s = s.split('{' + n + '}').join(v[n]); }); return s; }
@@ -215,7 +231,7 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     var list = visible();
     el('rows').innerHTML = list.map(function (s) {
       return '<tr><td class="code">' + esc(s.code) + '</td><td>' + esc(s.customer_name) + '<small dir="ltr" style="text-align:start">' + esc(s.customer_phone) + '</small></td><td>' + esc(s.zone || '') + '<small>' + esc(s.address) + '</small></td>' +
-        '<td>' + fmt(s.cod) + '</td><td>' + fmt(s.fee) + '</td><td><span class="badge s-' + s.status + '">' + t('st_' + s.status) + '</span></td><td>' + esc(dt(s.created_at)) + '</td>' +
+        '<td>' + fmt(s.cod) + '</td><td>' + feeCell(s) + '</td><td><span class="badge s-' + s.status + '">' + t('st_' + s.status) + '</span></td><td>' + esc(dt(s.created_at)) + '</td>' +
         '<td><button class="btn ghost sm" type="button" data-track="' + esc(s.id) + '">' + t('track') + '</button> <button class="btn ghost sm" type="button" data-label="' + esc(s.id) + '">' + t('lb') + '</button></td></tr>'; }).join('');
     var em = el('empty'); em.hidden = !!list.length;
     if (!list.length) em.innerHTML = ships.length ? '<b>' + t('e_res') + '</b>' : '<b>' + t('e_none') + '</b>' + t('e_none_h');
@@ -238,15 +254,23 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
     csel.innerHTML = '<option value="">' + t('pick') + '</option>' + cs.map(function (a) { return '<option value="' + esc(a.id) + '"' + (a.is_active ? '' : ' disabled') + (a.id === prev ? ' selected' : '') + '>' + esc(cname(a)) + (a.is_active ? '' : ' · ' + t('soon')) + '</option>'; }).join('');
     showQuote();
   }
+  function feeCell(s) {
+    if (s.price_pending) return '<small>' + t('pp') + '</small>';
+    var km = s.route_km ? '<small>📏 ' + esc(s.route_km) + ' ' + t('km') + '</small>' : '';
+    if (s.req_stage === 'pending' || s.req_stage === 'accepted') return '<small>' + t('wq') + '</small>' + km;
+    if (s.req_stage === 'quoted') return '<b>' + fmt(s.quote) + '</b>' + km + '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px"><button class="btn sm" type="button" data-mq="' + esc(s.id) + '|approve">' + t('q_ok') + '</button><button class="btn ghost sm" type="button" data-mq="' + esc(s.id) + '|negotiate">' + t('q_neg') + '</button><button class="btn ghost sm" type="button" data-mq="' + esc(s.id) + '|cancel">' + t('q_no') + '</button></div>';
+    if (s.req_stage === 'declined') return '<small>' + t('q_dec') + '</small>';
+    return fmt(s.fee) + km;
+  }
   function showQuote() {
     var a = areas.filter(function (x) { return x.id === el('f-city').value; })[0], q = el('quote');
-    q.hidden = !a; if (a) q.textContent = t('quote', { c: cname(a), f: fmt(a.fee) });
+    q.hidden = !a; if (a) q.textContent = t('quote2');
   }
   function renderAll() { renderStatic(); if (me && me.status === 'active') { renderTiles(); renderRows(); renderForm(); if (typeof renderPayouts === 'function') renderPayouts(); } }
 
   /* data */
   async function load() {
-    var r = await sb.from('shipments').select('id,code,customer_name,customer_phone,address,cod,fee,status,zone,merchant_settled,created_at').order('created_at', { ascending: false }).limit(1000);
+    var r = await sb.from('shipments').select('id,code,customer_name,customer_phone,address,cod,fee,price_pending,req_stage,quote,route_km,status,zone,merchant_settled,created_at').order('created_at', { ascending: false }).limit(1000);
     if (r.error) { toast('err', t('e_load')); return; }
     ships = r.data; renderAll();
   }
@@ -269,13 +293,24 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   }
 
   /* events */
+  var PT = null, MP = { get: function () { return PT; } };
+  function mapLbl() { el('map-tg').textContent = '📍 ' + (PT ? t('map_edit') : t('map_btn')); }
+  function mapSum() { var b = el('mapbox'); b.hidden = !PT; if (PT) b.innerHTML = '<div style="padding:8px 12px;border-radius:10px;background:rgba(10,139,224,.12);font-size:14px">✓ A → B · ' + esc(PT.km != null ? PT.km : '—') + ' ' + t('km') + '</div>'; mapLbl(); }
+  function openMap() { if (window.BareedMap) BareedMap.pickFull({ value: PT, places: function (q) { return sb.rpc('places_search', { p_q: q }).then(function (r) { return r.data || []; }); }, onDone: function (v) { PT = v; mapSum(); } }); }
+  mapLbl(); el('map-tg').addEventListener('click', openMap);
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-mq]'); if (!b) return;
+    var p = b.getAttribute('data-mq').split('|'); if (p[1] === 'cancel' && !confirm(t('q_conf'))) return;
+    b.disabled = true; sb.rpc('merchant_respond_quote', { p_shipment: p[0], p_action: p[1] }).then(function (r) { if (r.error) toast('err', t('e_save')); else { toast('ok', t('ok')); } load(); });
+  });
   el('f-gov').addEventListener('change', fillCities); el('f-city').addEventListener('change', showQuote);
   el('form').addEventListener('submit', async function (e) {
     e.preventDefault(); var go = el('f-go'); go.disabled = true;
-    var r = await sb.rpc('create_shipment', { p_customer_name: el('f-name').value, p_customer_phone: el('f-phone').value, p_address: (window.BareedMaps ? BareedMaps.value(el('f-addr')) : el('f-addr').value), p_cod: +el('f-cod').value || 0, p_area_id: el('f-city').value });
+    var pt = MP && MP.get(); if (!pt) { go.disabled = false; toast('err', t('e_map')); openMap(); return; }
+    var r = await sb.rpc('create_shipment_v2', { p_customer_name: el('f-name').value, p_customer_phone: el('f-phone').value, p_address: el('f-addr').value, p_cod: +el('f-cod').value || 0, p_area_id: el('f-city').value, p_pickup_lat: pt ? pt.a.lat : null, p_pickup_lng: pt ? pt.a.lng : null, p_drop_lat: pt ? pt.b.lat : null, p_drop_lng: pt ? pt.b.lng : null, p_km: pt ? pt.km : null });
     go.disabled = false;
     if (r.error) { toast('err', /area_not_covered/.test(r.error.message) ? t('e_area') : /not_active/.test(r.error.message) ? t('e_inactive') : t('e_save')); return; }
-    toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; if (window.BareedMaps) BareedMaps.reset(el('f-addr')); el('f-cod').value = 0; await load();
+    toast('ok', t('ok')); el('f-name').value = ''; el('f-phone').value = ''; el('f-addr').value = ''; el('f-cod').value = 0; PT = null; mapSum(); await load();
   });
 
   var PMETH = { ar: { cash: 'كاش', vodafone: 'محفظة إلكترونية', instapay: 'إنستاباي', bank: 'تحويل بنكي', other: 'أخرى' }, en: { cash: 'Cash', vodafone: 'E-wallet', instapay: 'InstaPay', bank: 'Bank transfer', other: 'Other' } };
@@ -431,4 +466,20 @@ td small { display: block; color: var(--muted); font-size: 12px; } td.code { fon
   start();
 })();
 </script>
-<script src="/install.js" defer></script><script src="/maps-picker.js" defer></script></body></html>
+<script src="/support-chat.js" data-mode="auth" defer></script>
+<script src="/track.js" defer></script>
+<script>
+(function () {
+  function run() {
+    document.querySelectorAll('.tablewrap table').forEach(function (tb) {
+      var ths = [].map.call(tb.querySelectorAll('thead th'), function (h) { return h.textContent.trim(); });
+      if (!ths.length) return; tb.classList.add('cardify');
+      tb.querySelectorAll('tbody tr').forEach(function (tr) { [].forEach.call(tr.children, function (td, i) { if (ths[i] && td.getAttribute('data-label') !== ths[i]) td.setAttribute('data-label', ths[i]); }); });
+    });
+  }
+  var tm = 0; new MutationObserver(function () { if (tm) return; tm = setTimeout(function () { tm = 0; run(); }, 60); }).observe(document.body, { childList: true, subtree: true });
+  run();
+})();
+</script>
+<script src="/push.js" data-mode="auth" defer></script>
+</body></html>
