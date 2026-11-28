@@ -663,6 +663,7 @@ select.search { appearance: auto; cursor: pointer; }
         <div class="card" id="fx-card"></div>
         <div class="card" id="goal-card"></div>
         <div class="card"><h2 data-i18n="ac_self"></h2><p class="note" data-i18n="ac_self_p"></p><div class="row"><button class="btn sm" type="button" id="myacct2" data-i18n="ac_self_btn"></button></div></div>
+        <details class="card" style="padding:12px 16px"><summary style="cursor:pointer;font-weight:700" id="adv-sum"></summary>
         <div class="card">
           <h2 data-i18n="h_assume"></h2>
           <p class="note" data-i18n="assume_note"></p>
@@ -681,6 +682,7 @@ select.search { appearance: auto; cursor: pointer; }
         </div>
         <div class="card"><h2 data-i18n="h_unit"></h2><div id="unit"></div></div>
         <div class="card"><h2 data-i18n="h_whatif"></h2><div id="whatif"></div></div>
+        </details>
         <div class="card" id="areas-card"><h2 data-i18n="h_areas"></h2><p class="note" data-i18n="areas_note"></p>
           <select class="search" id="ar-gov" style="max-width:260px" aria-label="Governorate"></select>
           <div id="ar-list"></div>
@@ -1204,30 +1206,44 @@ select.search { appearance: auto; cursor: pointer; }
   Object.assign(I18N.en, { fx_h: 'My fixed monthly costs', fx_p: 'Record salaries, rent and anything that repeats every month. The calculator uses them automatically for net profit and break-even. (They also show in Accounts.)', fx_tot: 'Total monthly costs', fx_none: 'No monthly costs yet. The calculator uses the assumption below.', fx_add: 'Add' });
   function fxAuto() { return (EX || []).some(function (x) { return x.monthly && +x.amount > 0; }); }
   function fxSync() { var fi = el('cfg-fixed'); if (!fi) return; var hint = fi.nextElementSibling; if (fxAuto()) { fi.value = fx(); fi.disabled = true; if (hint) hint.textContent = t('fx_auto'); } else if (hint) hint.textContent = t('u_egp'); }
-  var GOAL_KEY = 'bareed-goal';
-  function goalCard(u) {
+  var SC_KEY = 'bareed-sc';
+  function scGet() {
+    var d = { price: +cfg.fee || 40, my: Math.max(0, 100 - (+cfg.courierSharePct || 80)), day: 10, days: 30, target: 0 }, o = {};
+    try { o = JSON.parse(localStorage.getItem(SC_KEY) || '{}') || {}; } catch (e) {}
+    Object.keys(d).forEach(function (k) { if (o[k] !== undefined && o[k] !== '' && isFinite(+o[k])) d[k] = +o[k]; });
+    return d;
+  }
+  function goalCard() {
     var box = el('goal-card'); if (!box) return;
-    var tg = ''; try { tg = localStorage.getItem(GOAL_KEY) || ''; } catch (e) {}
-    var focus = document.activeElement && document.activeElement.id === 'goal-t';
-    box.innerHTML = '<h2>' + t('gl_h') + '</h2><div class="field" style="max-width:320px"><label for="goal-t">' + t('gl_t') + '</label><input id="goal-t" type="number" min="0" step="any" inputmode="decimal" value="' + esc(tg) + '" placeholder="0"></div><div id="goal-out"></div>';
-    goalOut(u); if (focus) { var i = el('goal-t'); i.focus(); }
+    if (box.getAttribute('data-l') === lang && el('sc-price')) { goalOut(); return; }
+    var d = scGet(), f = function (id, lbl, v, hint) { return '<div class="field"><label for="sc-' + id + '">' + lbl + '</label><input id="sc-' + id + '" type="number" min="0" step="any" inputmode="decimal" value="' + esc(v) + '">' + (hint ? '<span class="hint">' + hint + '</span>' : '') + '</div>'; };
+    box.setAttribute('data-l', lang);
+    box.innerHTML = '<h2>' + t('gl_h') + '</h2><p class="note">' + t('gl_p') + '</p><div class="fgrid">' + f('price', t('gl_price'), d.price, t('u_egp')) + f('my', t('gl_my'), d.my, '%') + f('day', t('gl_dayin'), d.day, t('gl_ships')) + f('days', t('gl_days'), d.days, '') + f('target', t('gl_t'), d.target, t('u_egp')) + '</div><div id="goal-out"></div>';
+    goalOut();
   }
-  function goalOut(u) {
+  function goalOut() {
     var o = el('goal-out'); if (!o) return;
-    if (!(u && u.margin > 0)) { o.innerHTML = '<p class="note">' + t('gl_nomargin') + '</p>'; return; }
-    var target = Math.max(0, parseFloat((el('goal-t') || {}).value) || 0), f = fx();
-    var need = Math.ceil((f + target) / u.margin), perDay = Math.ceil(need / 30);
-    o.innerHTML = '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"><div style="flex:1;min-width:150px;padding:14px;border-radius:14px;background:rgba(127,127,127,.09);text-align:center"><div style="font-size:13px;opacity:.8">' + t('gl_day') + '</div><div style="font-size:30px;font-weight:800;color:var(--good,#1e8e3e)">' + perDay + '</div><div style="font-size:12px;opacity:.7">' + t('gl_perday') + '</div></div><div style="flex:1;min-width:150px;padding:14px;border-radius:14px;background:rgba(127,127,127,.09);text-align:center"><div style="font-size:13px;opacity:.8">' + t('gl_month') + '</div><div style="font-size:30px;font-weight:800">' + need + '</div><div style="font-size:12px;opacity:.7">' + t('gl_ships') + '</div></div></div>' +
-      '<p class="note" style="margin-top:8px">' + t('gl_how', { f: fmt(f), m: fmt1(u.margin), t: fmt(target) }) + '</p>';
+    var g = function (id) { return Math.max(0, parseFloat((el('sc-' + id) || {}).value) || 0); };
+    var price = g('price'), my = g('my'), day = g('day'), days = g('days') || 30, target = g('target'), exp = fx();
+    try { localStorage.setItem(SC_KEY, JSON.stringify({ price: el('sc-price').value, my: el('sc-my').value, day: el('sc-day').value, days: el('sc-days').value, target: el('sc-target').value })); } catch (e) {}
+    var per = price * my / 100, gross = per * day * days, net = gross - exp;
+    var tile = function (lbl, val, col, sub) { return '<div style="flex:1;min-width:140px;padding:14px;border-radius:14px;background:rgba(127,127,127,.09);text-align:center"><div style="font-size:13px;opacity:.8">' + lbl + '</div><div style="font-size:24px;font-weight:800;margin-top:4px' + (col ? ';color:' + col : '') + '">' + val + '</div>' + (sub ? '<div style="font-size:12px;opacity:.7;margin-top:2px">' + sub + '</div>' : '') + '</div>'; };
+    var h = '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">' + tile(t('gl_per'), money(per), '', t('gl_per_s')) + tile(t('gl_gross'), money(gross), 'var(--good,#1e8e3e)', fmt(day * days) + ' ' + t('gl_ships')) + tile(t('gl_exp'), money(exp), 'var(--bad,#c0392b)', exp ? '' : t('gl_noexp')) + '</div>' +
+      '<div style="padding:16px;border-radius:14px;margin-top:10px;text-align:center;background:rgba(127,127,127,.09)"><div style="font-size:14px;opacity:.85">' + t(net >= 0 ? 'pl_net' : 'pl_loss') + '</div><div style="font-size:32px;font-weight:800;color:' + (net >= 0 ? 'var(--good,#1e8e3e)' : 'var(--bad,#c0392b)') + '">' + money(Math.abs(net)) + '</div></div>';
+    if (per > 0) {
+      var need = Math.ceil((exp + target) / per), nd = Math.ceil(need / days);
+      h += '<div style="padding:16px;border-radius:14px;margin-top:10px;text-align:center;border:2px solid var(--good,#1e8e3e)"><div style="font-size:14px">' + t(target > 0 ? 'gl_need_t' : 'gl_need') + '</div><div style="font-size:34px;font-weight:800">' + nd + ' <small style="font-size:16px">' + t('gl_perday') + '</small></div><div style="font-size:13px;opacity:.8">' + fmt(need) + ' ' + t('gl_ships') + ' ' + t('gl_inmonth') + '</div></div>';
+    } else h += '<p class="note" style="margin-top:10px">' + t('gl_nomargin') + '</p>';
+    o.innerHTML = h;
   }
-  document.addEventListener('input', function (e) { if (e.target && e.target.id === 'goal-t') { try { localStorage.setItem(GOAL_KEY, e.target.value); } catch (x) {} goalOut(unitEconomics(lastAvg)); } });
+  document.addEventListener('input', function (e) { if (e.target && e.target.id && e.target.id.indexOf('sc-') === 0) goalOut(); });
   var lastAvg = 450;
-  Object.assign(I18N.ar, { fx_auto: 'بيتحسب تلقائي من «مصاريفي الشهرية الثابتة» فوق', gl_h: 'عايز توصل لكام شحنة؟', gl_t: 'عايز تكسب صافي كام في الشهر؟ (اختياري)', gl_day: 'لازم توصل لـ', gl_perday: 'شحنة في اليوم', gl_month: 'يعني في الشهر', gl_ships: 'شحنة', gl_nomargin: 'الربح من الشحنة الواحدة صفر أو سالب بالافتراضات الحالية. راجع سعر الشحنة ونسبة المندوب تحت.', gl_how: 'محسوبة كده: (مصاريفك الثابتة {f} + الصافي اللي عايزه {t}) ÷ ربحك من الشحنة الواحدة {m} جنيه، على 30 يوم.' });
-  Object.assign(I18N.en, { fx_auto: 'Calculated automatically from “My fixed monthly costs” above', gl_h: 'How many shipments do I need?', gl_t: 'Net profit you want per month (optional)', gl_day: 'You need', gl_perday: 'shipments per day', gl_month: 'That is per month', gl_ships: 'shipments', gl_nomargin: 'Profit per shipment is zero or negative with the current assumptions. Check the fee and courier share below.', gl_how: 'Calculated as: (fixed costs {f} + wanted net {t}) ÷ profit per shipment {m} EGP, over 30 days.' });
+  Object.assign(I18N.ar, { fx_auto: 'بيتحسب تلقائي من «مصاريفي الشهرية الثابتة» فوق', gl_h: 'حاسبة ربحي', gl_p: 'ربحك = نسبتك من سعر الشحنة (20%). المصاريف اللي سجلتها فوق بتتخصم منه تلقائياً.', gl_price: 'متوسط سعر الشحنة', gl_my: 'نسبتي من السعر', gl_dayin: 'عدد الشحنات في اليوم', gl_days: 'أيام الشغل في الشهر', gl_t: 'صافي الربح اللي عايزه في الشهر (اختياري)', gl_per: 'ربحي من الشحنة', gl_per_s: 'سعر × نسبتي', gl_gross: 'ربحي في الشهر', gl_exp: 'مصاريفي في الشهر', gl_noexp: 'سجّلها في الكارت اللي فوق', gl_ships: 'شحنة', gl_need: 'عشان تغطي مصاريفك لازم توصل لـ', gl_need_t: 'عشان تغطي مصاريفك وتكسب صافي هدفك لازم توصل لـ', gl_perday: 'شحنة في اليوم', gl_inmonth: 'في الشهر', gl_nomargin: 'اكتب سعر الشحنة ونسبتك عشان الحساب يشتغل.', gl_adv: 'إعدادات متقدمة (للمحاسب)' });
+  Object.assign(I18N.en, { fx_auto: 'Calculated automatically from “My fixed monthly costs” above', gl_h: 'My profit calculator', gl_p: 'Your profit = your share of the shipping price (20%). The costs you recorded above are deducted automatically.', gl_price: 'Average shipping price', gl_my: 'My share of the price', gl_dayin: 'Shipments per day', gl_days: 'Working days per month', gl_t: 'Net profit I want per month (optional)', gl_per: 'My profit per shipment', gl_per_s: 'price × my share', gl_gross: 'My profit per month', gl_exp: 'My costs per month', gl_noexp: 'Record them in the card above', gl_ships: 'shipments', gl_need: 'To cover your costs you need', gl_need_t: 'To cover your costs and reach your net target you need', gl_perday: 'shipments per day', gl_inmonth: 'per month', gl_nomargin: 'Enter the shipping price and your share to calculate.', gl_adv: 'Advanced settings (for an accountant)' });
   function renderCosts() {
-    fxCard();
+    fxCard(); var as_ = el('adv-sum'); if (as_) as_.textContent = t('gl_adv');
     var st = monthStats(), avg = st.D >= 5 ? st.avgCod : cfg.avgCod;
-    var u = unitEconomics(avg), top = Math.max(u.rev, 1); lastAvg = avg; goalCard(u); fxSync();
+    var u = unitEconomics(avg), top = Math.max(u.rev, 1); lastAvg = avg; goalCard(); fxSync();
     function bar(label, val, cls) { return '<div class="bar ' + cls + '"><span>' + label + '</span><span class="track"><i style="width:' + Math.max(0, Math.min(100, val / top * 100)) + '%"></i></span><span class="num">' + fmt1(val) + '</span></div>'; }
     el('unit').innerHTML = '<div class="bars">' + bar(t('b_rev'), u.rev, 'rev') + bar(t('b_courier'), u.courier, 'cost') + bar(t('b_fuel'), u.other, 'cost') + bar(t('b_left'), u.margin, 'gain') + '</div>' +
       '<p class="note" style="margin-top:12px">' + t('unit_note', { r: cfg.rate, a: fmt(avg), s: st.D >= 5 ? t('src_real') : t('src_est') }) + '</p>';
