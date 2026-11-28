@@ -660,6 +660,7 @@ select.search { appearance: auto; cursor: pointer; }
         <div class="card"><h2 data-i18n="rp_merchants"></h2><div class="tablewrap" id="rp-me"></div></div>
       </section>
       <section id="p-ct" class="stack" hidden>
+        <div class="card" id="fx-card"></div>
         <div class="card"><h2 data-i18n="ac_self"></h2><p class="note" data-i18n="ac_self_p"></p><div class="row"><button class="btn sm" type="button" id="myacct2" data-i18n="ac_self_btn"></button></div></div>
         <div class="card">
           <h2 data-i18n="h_assume"></h2>
@@ -945,7 +946,7 @@ select.search { appearance: auto; cursor: pointer; }
     var cpay = 0;
     store.shipments.forEach(function (s) { if (monthKey(s.doneAt) === NOW_MONTH && (s.status === 'delivered' || s.status === 'returned')) cpay += courierPayFor(s); });
     var exr = (typeof exMonth === 'function') ? exMonth(NOW_MONTH) : [], exs = exr.reduce(function (n, x) { return n + (+x.amount); }, 0);
-    var profit = exr.length ? rev - cpay - exs : rev - (cpay + (D + R) * cfg.other) - cfg.fixed;
+    var profit = exr.length ? rev - cpay - exs : rev - (cpay + (D + R) * cfg.other) - fx();
     return { D: D, R: R, created: created, rev: rev, profit: profit, avgCod: D ? codSum / D : 0 };
   }
   var FLT = { co: { q: '', from: '', to: '', mode: 'all' }, me: { q: '', from: '', to: '', mode: 'all' }, mr: { q: '', mode: 'all' } };
@@ -977,7 +978,7 @@ select.search { appearance: auto; cursor: pointer; }
     var rev = r * revD + (1 - r) * cfg.returnFee;
     var courier = r * (cfg.fee * cfg.courierSharePct / 100) + (1 - r) * cfg.courierReturned;
     var margin = rev - courier - cfg.other;
-    return { rev: rev, courier: courier, other: cfg.other, margin: margin, be: margin > 0 ? Math.ceil(cfg.fixed / margin) : null };
+    return { rev: rev, courier: courier, other: cfg.other, margin: margin, be: margin > 0 ? Math.ceil(fx() / margin) : null };
   }
 
   /* ---------- writes ---------- */
@@ -1037,7 +1038,7 @@ select.search { appearance: auto; cursor: pointer; }
       tile('check', '', t('k_rate'), rate + '<small>%</small>', t('n_rate')) +
       tile('wallet', '', t('k_hold'), money(holdTotal), t('n_hold')) +
       tile('store', '', t('k_due'), money(dueTotal), t('n_due')) +
-      tile('trend', st.profit >= 0 ? 'pos' : 'neg', t('k_profit'), money(st.profit), t('n_profit', { n: fmt(cfg.fixed) })) + '</div>';
+      tile('trend', st.profit >= 0 ? 'pos' : 'neg', t('k_profit'), money(st.profit), t('n_profit', { n: fmt(fx()) })) + '</div>';
     var d0 = new Date(); d0.setHours(0, 0, 0, 0);
     var todayN = store.shipments.filter(function (x) { return new Date(x.created_at || x.createdAt || 0) >= d0; }).length;
     var lateN = store.shipments.filter(function (x) { return x.status !== 'delivered' && x.status !== 'returned' && (Date.now() - new Date(x.created_at || x.createdAt || Date.now())) > 48 * 3600e3; }).length;
@@ -1054,7 +1055,7 @@ select.search { appearance: auto; cursor: pointer; }
       ((counts.new || counts.out_for_delivery) ? '<p class="note">' + (counts.new ? t('msg_new', { n: counts.new }) + ' ' : '') + (counts.out_for_delivery ? t('msg_out', { n: counts.out_for_delivery }) : '') + '</p>' : '') + '</div>';
     if (u.be) {
       var pct = Math.min(100, Math.round(st.created / u.be * 100));
-      h += '<div class="card"><h2>' + t('h_be') + '</h2><p>' + t('be_text', { m: fmt1(u.margin) + ' ' + t('cur'), n: fmt(u.be), f: fmt(cfg.fixed) + ' ' + t('cur') }) + '</p>' +
+      h += '<div class="card"><h2>' + t('h_be') + '</h2><p>' + t('be_text', { m: fmt1(u.margin) + ' ' + t('cur'), n: fmt(u.be), f: fmt(fx()) + ' ' + t('cur') }) + '</p>' +
         '<div class="progress" role="img" aria-label="' + pct + '%"><i style="width:' + pct + '%"></i></div><p class="note">' + t('be_prog', { a: st.created, b: fmt(u.be) }) + '</p></div>';
     } else {
       h += '<div class="card"><h2>' + t('h_be') + '</h2><p>' + t('be_loss') + '</p></div>';
@@ -1181,15 +1182,35 @@ select.search { appearance: auto; cursor: pointer; }
     }).join('');
   }
 
+  function fx() { var a = (EX || []).filter(function (x) { return x.monthly; }).reduce(function (n, x) { return n + (+x.amount); }, 0); return a > 0 ? a : (+cfg.fixed || 0); }
+  function fxCard() {
+    var box = el('fx-card'); if (!box) return;
+    var list = (EX || []).filter(function (x) { return x.monthly; }), tot = list.reduce(function (n, x) { return n + (+x.amount); }, 0);
+    var focus = document.activeElement && box.contains(document.activeElement) ? document.activeElement.id : '';
+    var keep = { c: el('fx-cat') ? el('fx-cat').value : '', a: el('fx-amt') ? el('fx-amt').value : '', n: el('fx-note') ? el('fx-note').value : '' };
+    box.innerHTML = '<h2>' + t('fx_h') + '</h2><p class="note">' + t('fx_p') + '</p>' +
+      (list.length ? '<div style="display:grid;gap:6px;margin:8px 0">' + list.map(function (x) { return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:rgba(127,127,127,.08)"><span>' + t('ex_' + x.category) + (x.note ? ' · ' + esc(x.note) : '') + '</span><span><b>' + money(x.amount) + '</b> <button type="button" class="icon-del" data-exdel="' + esc(x.id) + '" aria-label="x">✕</button></span></div>'; }).join('') + '</div><div class="kv" style="font-size:1.1em"><b>' + t('fx_tot') + '</b><b>' + money(tot) + '</b></div>' : '<p class="note">' + t('fx_none') + '</p>') +
+      '<div class="fgrid" style="margin-top:10px"><div class="field"><label for="fx-cat">' + t('ex_cat') + '</label><select id="fx-cat" class="search">' + EXCATS.map(function (k) { return '<option value="' + k + '">' + t('ex_' + k) + '</option>'; }).join('') + '</select></div><div class="field"><label for="fx-amt">' + t('ex_amt') + '</label><input id="fx-amt" type="number" min="0.01" step="any" inputmode="decimal"></div><div class="field"><label for="fx-note">' + t('ex_note') + '</label><input id="fx-note" maxlength="300"></div></div><div class="row"><button class="btn" type="button" id="fx-add">' + t('fx_add') + '</button></div>';
+    if (keep.c) el('fx-cat').value = keep.c; el('fx-amt').value = keep.a; el('fx-note').value = keep.n; if (focus && el(focus)) el(focus).focus();
+  }
+  document.addEventListener('click', function (e) {
+    if (!(e.target.closest && e.target.closest('#fx-add'))) return;
+    var amt = parseFloat(el('fx-amt').value); if (!(amt > 0)) { toast(t('t_err')); return; }
+    var row = { spent_on: new Date().toISOString().slice(0, 10), category: el('fx-cat').value, amount: Math.round(amt * 100) / 100, note: el('fx-note').value.trim() || null, monthly: true };
+    safe(async function () { var r = await sb.from('expenses').insert(row); if (r.error) throw r.error; el('fx-amt').value = ''; el('fx-note').value = ''; toast(t('ex_done')); await loadExpenses(); renderAll(); });
+  });
+  Object.assign(I18N.ar, { fx_h: 'مصاريفي الشهرية الثابتة', fx_p: 'سجّل هنا المرتبات والإيجار وأي مصروف بيتكرر كل شهر. الحاسبة بتستخدمها تلقائياً وبتحسبلك الصافي ونقطة التعادل. (بتظهر كمان في «الحسابات».)', fx_tot: 'إجمالي المصاريف الشهرية', fx_none: 'لسه مسجلتش مصاريف شهرية. الحاسبة بتستخدم الرقم اللي في الافتراضات تحت.', fx_add: 'ضيف' });
+  Object.assign(I18N.en, { fx_h: 'My fixed monthly costs', fx_p: 'Record salaries, rent and anything that repeats every month. The calculator uses them automatically for net profit and break-even. (They also show in Accounts.)', fx_tot: 'Total monthly costs', fx_none: 'No monthly costs yet. The calculator uses the assumption below.', fx_add: 'Add' });
   function renderCosts() {
+    fxCard();
     var st = monthStats(), avg = st.D >= 5 ? st.avgCod : cfg.avgCod;
     var u = unitEconomics(avg), top = Math.max(u.rev, 1);
     function bar(label, val, cls) { return '<div class="bar ' + cls + '"><span>' + label + '</span><span class="track"><i style="width:' + Math.max(0, Math.min(100, val / top * 100)) + '%"></i></span><span class="num">' + fmt1(val) + '</span></div>'; }
     el('unit').innerHTML = '<div class="bars">' + bar(t('b_rev'), u.rev, 'rev') + bar(t('b_courier'), u.courier, 'cost') + bar(t('b_fuel'), u.other, 'cost') + bar(t('b_left'), u.margin, 'gain') + '</div>' +
       '<p class="note" style="margin-top:12px">' + t('unit_note', { r: cfg.rate, a: fmt(avg), s: st.D >= 5 ? t('src_real') : t('src_est') }) + '</p>';
-    var vol = cfg.volume, profit = u.margin * vol - cfg.fixed;
+    var vol = cfg.volume, profit = u.margin * vol - fx();
     el('whatif').innerHTML = '<div class="result">' +
-      tile('wallet', '', t('w_rev'), money(u.rev * vol), '') + tile('box', '', t('w_var'), money((u.courier + u.other) * vol), '') + tile('store', '', t('w_fixed'), money(cfg.fixed), '') +
+      tile('wallet', '', t('w_rev'), money(u.rev * vol), '') + tile('box', '', t('w_var'), money((u.courier + u.other) * vol), '') + tile('store', '', t('w_fixed'), money(fx()), '') +
       tile('trend', profit >= 0 ? 'pos' : 'neg', t('w_profit', { n: fmt(vol) }), money(profit), '') +
       tile('check', '', t('w_be'), u.be ? fmt(u.be) + ' <small>' + t('w_be_u') + '</small>' : '-', '') + '</div>';
   }
@@ -2050,7 +2071,7 @@ select.search { appearance: auto; cursor: pointer; }
       }
       ships.push(s);
     });
-    T.other = (T.D + T.R) * cfg.other; T.fixed = cfg.fixed; T.net = T.rev - T.cour - T.other - T.fixed;
+    T.other = (T.D + T.R) * cfg.other; T.fixed = fx(); T.net = T.rev - T.cour - T.other - T.fixed;
     return { me: me, co: co, T: T, ships: ships };
   }
   function renderMonthly() {
